@@ -172,7 +172,7 @@ body.sidebar-collapsed .sidebar > *:not(.sidebar-toggle){
 }
 
 .profile-links{
-  display: flex;
+  display: inline-flex;   /* 인라인 박스로 만들어 부모의 text-align:center를 따라 가운데 정렬되게 함 */
   gap: 14px;
   margin-top: 4px;
 }
@@ -449,6 +449,7 @@ body.sidebar-collapsed .sidebar > *:not(.sidebar-toggle){
 .about-card .profile-avatar{ margin: 0 auto 20px; width: 110px; height: 110px; }
 .about-card h2{ font-size: 26px; margin-bottom: 14px; }
 .about-card p{ font-size: 14px; line-height: 1.9; color: var(--muted); max-width: 520px; margin: 0 auto; }
+.about-card .profile-links{ margin-top: 28px; }   /* 설명과 링크 사이 간격 (사이드바 쪽 간격에는 영향 없음) */
 
 .no-result{
   text-align: center;
