@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>글쓰기 — Portfolio Blog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500;700&family=EB+Garamond:ital@0;1&display=swap" rel="stylesheet">
+<!-- 홈 화면과 동일한 공용 스타일시트를 그대로 사용 -->
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+
+<header class="site-topbar">
+  <div class="brand">Portfolio Blog</div>
+  <nav><a href="index.html">← 홈으로</a></nav>
+</header>
+
+<main>
+  <div class="page-inner">
+
+    <div class="editor-header">
+      <h1>새 글 쓰기</h1>
+      <p>작성한 글은 완성된 HTML 페이지로 만들어져 작업 폴더의 posts 폴더에 저장됩니다.</p>
+    </div>
+
+    <!-- 이 기능의 동작 조건/한계를 미리 안내 -->
+    <div class="editor-note">
+      ⓘ 이 저장 기능은 Chrome / Edge 같은 Chromium 계열 브라우저에서만 동작합니다
+      (Safari, Firefox는 지원하지 않음). 먼저 블로그 작업 폴더(이 write.html 파일이 들어있는 폴더)를
+      연결해주세요. 이후에는 같은 브라우저에서 다시 방문해도 자동으로 그 폴더에 연결됩니다.
+      비밀번호가 설정되어 있다면 연결 후 비밀번호 확인 화면이 나타납니다.
+      (posts 폴더가 없다면 첫 저장 시 자동으로 만들어집니다.)
+    </div>
+
+    <!-- 1단계: 작업 폴더 연결 전 -->
+    <div class="editor-gate" id="editorGate">
+      <button type="button" class="btn" id="connectBtn">폴더 연결</button>
+      <p class="editor-status" id="gateStatus"></p>
+    </div>
+
+    <!-- 2단계: 폴더는 연결됐지만 비밀번호 확인이 필요할 때 -->
+    <div class="lock-screen" id="lockScreen" hidden>
+      <p class="lock-title">비밀번호를 입력해주세요</p>
+      <form id="lockForm">
+        <input type="password" id="lockPassword" placeholder="비밀번호" autocomplete="current-password">
+        <button type="submit" class="btn btn-primary">확인</button>
+      </form>
+      <p class="lock-status" id="lockStatus"></p>
+    </div>
+
+    <!-- 3단계: 잠금 해제 후에만 보이는 실제 글쓰기 화면 -->
+    <div id="editorContent" hidden>
+
+      <form id="postForm">
+
+        <!-- 제목 -->
+        <div class="field">
+          <label for="fieldTitle">제목</label>
+          <input type="text" id="fieldTitle" placeholder="글 제목을 입력하세요" autocomplete="off">
+        </div>
+
+        <!-- 카테고리 선택 (설정 페이지에서 관리하는 카테고리 목록으로 채워짐) -->
+        <div class="field">
+          <label for="fieldCategory">카테고리 선택</label>
+          <select id="fieldCategory"></select>
+        </div>
+
+        <!-- 설명 -->
+        <div class="field field--desc">
+          <label for="fieldDesc">설명</label>
+          <textarea id="fieldDesc" rows="2" placeholder="목록 카드/글 상단에 보여줄 짧은 설명"></textarea>
+        </div>
+
+        <!-- 본문 (마크다운) -->
+        <div class="field">
+          <label for="fieldBody">본문 (마크다운으로 작성)</label>
+          <div class="md-toolbar">
+            <button type="button" class="btn btn-sm" id="insertImageBtn">이미지 삽입</button>
+            <input type="file" id="imageFileInput" accept="image/*" multiple hidden>
+            <span class="md-toolbar-hint">사진은 posts/assets/글제목 폴더에 저장되고, 본문에 자동으로 삽입됩니다.</span>
+          </div>
+          <div class="md-editor">
+            <textarea id="fieldBody" placeholder="# 소제목&#10;&#10;마크다운으로 본문을 작성하세요."></textarea>
+            <div class="md-preview" id="mdPreview"></div>
+          </div>
+        </div>
+
+        <div class="editor-actions">
+          <button type="submit" class="btn btn-primary" id="publishBtn" disabled>게시하기</button>
+        </div>
+
+        <p class="editor-status" id="statusMsg"></p>
+
+      </form>
+
+      <!-- 최근 작성한 글 (manifest.json 기준으로 채워짐) -->
+      <section class="editor-recent" id="editorRecent" hidden>
+        <div class="side-heading">최근 작성한 글</div>
+        <ul class="recent-list" id="editorRecentList"></ul>
+      </section>
+
+    </div>
+
+  </div>
+</main>
+
+<!-- 마크다운 -> HTML 변환용 (본문 미리보기 + 실제 저장 시 둘 다 사용) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+<!-- posts 폴더 읽기/쓰기 공용 헬퍼 -->
+<script src="site-storage.js"></script>
+
+<script>
+  const fieldTitle = document.getElementById('fieldTitle');
+  const fieldCategory = document.getElementById('fieldCategory');
+  const fieldDesc = document.getElementById('fieldDesc');
+  const fieldBody = document.getElementById('fieldBody');
+  const mdPreview = document.getElementById('mdPreview');
+  const publishBtn = document.getElementById('publishBtn');
+  const statusMsg = document.getElementById('statusMsg');
+  const editorRecent = document.getElementById('editorRecent');
+  const editorRecentList = document.getElementById('editorRecentList');
+  const postForm = document.getElementById('postForm');
+
+  const editorGate = document.getElementById('editorGate');
+  const gateStatus = document.getElementById('gateStatus');
+  const connectBtn = document.getElementById('connectBtn');
+  const lockScreen = document.getElementById('lockScreen');
+  const lockForm = document.getElementById('lockForm');
+  const lockPassword = document.getElementById('lockPassword');
+  const lockStatus = document.getElementById('lockStatus');
+  const editorContent = document.getElementById('editorContent');
+
+  let siteHandle = null;   // 연결된 작업 폴더 핸들 (연결 전에는 null)
+  let siteConfig = null;   // site-config.json 내용(카테고리 목록, 비밀번호 해시 등)
+
+  // 이 글의 사진이 저장될 폴더 이름(slug). 이미지를 처음 삽입할 때 그 시점의 제목으로
+  // 한 번 정해지면 이후 제목을 바꿔도 같은 폴더를 계속 씀(이미 삽입된 이미지 경로가 안 깨지도록).
+  // 게시 시에도 이 slug를 그대로 파일명에 사용해 이미지 폴더와 글 slug가 항상 일치하게 함.
+  let lockedSlug = null;
+
+  // ---------- 본문 마크다운 실시간 미리보기 ----------
+  function updatePreview(){
+    mdPreview.innerHTML = renderMarkdown(fieldBody.value);
+  }
+  fieldBody.addEventListener('input', updatePreview);
+  updatePreview();
+
+  // 필수 입력값이 모두 채워졌는지 체크해서 "게시하기" 버튼 활성/비활성 전환
+  function updatePublishState(){
+    const ready = fieldTitle.value.trim() && fieldDesc.value.trim() && fieldBody.value.trim();
+    publishBtn.disabled = !ready;
+  }
+  [fieldTitle, fieldDesc, fieldBody].forEach(el => el.addEventListener('input', updatePublishState));
+  updatePublishState();
+
+  function setStatus(text, kind){
+    statusMsg.textContent = text;
+    statusMsg.className = 'editor-status' + (kind ? ' is-' + kind : '');
+  }
+  function setGateStatus(text, kind){
+    gateStatus.textContent = text;
+    gateStatus.className = 'editor-status' + (kind ? ' is-' + kind : '');
+  }
+  function setLockStatus(text, kind){
+    lockStatus.textContent = text;
+    lockStatus.className = 'lock-status' + (kind ? ' is-' + kind : '');
+  }
+
+  // 카테고리 <select>를 site-config.json의 카테고리 목록으로 채움
+  function populateCategorySelect(categories){
+    fieldCategory.innerHTML = categories.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+  }
+
+  // ---------- 작업 폴더 연결 ----------
+  // 이미 연결된 적 있는 폴더가 있으면 그걸 재사용(권한 확인)하고,
+  // 없으면 새로 폴더 선택창을 띄웁니다. (반드시 버튼 클릭 등 사용자 동작 안에서 호출)
+  async function ensureSiteHandle(){
+    if (siteHandle) return siteHandle;
+    let handle = await getSiteFolderHandle({ promptIfNeeded: true });
+    if (!handle) handle = await connectSiteFolder();
+    siteHandle = handle;
+    return handle;
+  }
+
+  async function refreshRecentList(){
+    try{
+      const postsDir = await getPostsDirHandle(siteHandle, { create: false });
+      const manifest = await readJSON(postsDir, 'manifest.json');
+      if (!manifest || !manifest.length){
+        editorRecent.hidden = true;
+        return;
+      }
+      const recent = [...manifest].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 5);
+      editorRecentList.innerHTML = recent.map(p => `
+        <li>
+          <a href="posts/${p.filename}" target="_blank" rel="noopener">
+            <div class="recent-title">${escapeHtml(p.title)}</div>
+            <div class="recent-date">${p.date}</div>
+          </a>
+        </li>
+      `).join('');
+      editorRecent.hidden = false;
+    } catch(e){
+      editorRecent.hidden = true;
+    }
+  }
+
+  // 실제 글쓰기 화면을 보여줌 (비밀번호 확인이 끝났거나, 애초에 비밀번호가 없을 때)
+  function showEditor(){
+    lockScreen.hidden = true;
+    editorContent.hidden = false;
+  }
+
+  // 폴더 연결 직후 공통으로 수행할 일: 설정 로드 + 카테고리 목록 채우기 + 비밀번호 확인 여부 판단
+  async function afterConnected(handle){
+    siteHandle = handle;
+    editorGate.hidden = true;
+    siteConfig = await loadSiteConfig(handle);
+    populateCategorySelect(siteConfig.categories);
+    await refreshRecentList();
+
+    if (!siteConfig.passwordHash){
+      // 아직 비밀번호가 설정되어 있지 않으면 그냥 통과(설정 페이지에서 만들 수 있음을 안내만 함)
+      showEditor();
+      return;
+    }
+    if (sessionStorage.getItem('blogUnlocked') === '1'){
+      showEditor();
+      return;
+    }
+    lockScreen.hidden = false;
+    lockPassword.focus();
+  }
+
+  async function onConnectClick(){
+    if (!isFsaSupported()){
+      setGateStatus('이 브라우저는 폴더 연결 기능을 지원하지 않습니다 (Chrome/Edge에서 열어주세요).', 'error');
+      return;
+    }
+    try{
+      setGateStatus('폴더 선택창을 확인해주세요…', '');
+      const handle = await ensureSiteHandle();
+      await afterConnected(handle);
+    } catch(e){
+      setGateStatus('폴더 연결이 취소되었거나 실패했습니다.', 'error');
+    }
+  }
+  connectBtn.addEventListener('click', onConnectClick);
+
+  // 비밀번호 확인
+  lockForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const entered = lockPassword.value;
+    lockPassword.value = '';
+    if (!entered){
+      setLockStatus('비밀번호를 입력해주세요.', 'error');
+      return;
+    }
+    setLockStatus('확인 중…', '');
+    const hash = await sha256Hex(entered);
+    if (hash === siteConfig.passwordHash){
+      sessionStorage.setItem('blogUnlocked', '1');
+      showEditor();
+    } else {
+      setLockStatus('비밀번호가 올바르지 않습니다.', 'error');
+    }
+  });
+
+  // 페이지를 열었을 때, 이전에 연결해둔 폴더가 있고 권한이 살아있으면 조용히 재연결
+  (async function tryAutoConnect(){
+    if (!isFsaSupported()) return;
+    const handle = await getSiteFolderHandle({ promptIfNeeded: false });
+    if (!handle) return;
+    await afterConnected(handle);
+  })();
+
+  // ---------- 본문에 이미지 삽입 ----------
+  // textarea의 현재 커서 위치에 text를 끼워넣고, 커서를 그 뒤로 이동시킴
+  function insertAtCursor(textarea, text){
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const before = textarea.value.slice(0, start);
+    const after = textarea.value.slice(end);
+    textarea.value = before + text + after;
+    const cursor = start + text.length;
+    textarea.focus();
+    textarea.selectionStart = textarea.selectionEnd = cursor;
+  }
+
+  const insertImageBtn = document.getElementById('insertImageBtn');
+  const imageFileInput = document.getElementById('imageFileInput');
+
+  insertImageBtn.addEventListener('click', () => {
+    if (!fieldTitle.value.trim()){
+      setStatus('이미지를 넣기 전에 제목을 먼저 입력해주세요.', 'error');
+      fieldTitle.focus();
+      return;
+    }
+    imageFileInput.click();
+  });
+
+  imageFileInput.addEventListener('change', async () => {
+    const files = Array.from(imageFileInput.files || []);
+    imageFileInput.value = ''; // 같은 파일을 다시 선택할 수 있도록 초기화
+    if (!files.length) return;
+
+    if (!lockedSlug) lockedSlug = slugify(fieldTitle.value.trim());
+
+    try{
+      setStatus('이미지 업로드 중…', '');
+      const handle = await ensureSiteHandle();
+      const postsDir = await getPostsDirHandle(handle, { create: true });
+      const assetsDir = await getNestedDirHandle(postsDir, ['assets', lockedSlug], { create: true });
+
+      const inserts = [];
+      for (const file of files){
+        const name = await uniqueFileName(assetsDir, file.name);
+        await writeFile(assetsDir, name, file);
+        const alt = file.name.replace(/\.[^.]+$/, '');
+        inserts.push(`![${alt}](assets/${lockedSlug}/${name})`);
+      }
+      insertAtCursor(fieldBody, inserts.join('\n') + '\n');
+      updatePreview();
+      updatePublishState();
+      setStatus(`이미지 ${files.length}개가 추가되었습니다.`, 'ok');
+    } catch(e){
+      setStatus('이미지 업로드에 실패했습니다: ' + (e && e.message ? e.message : e), 'error');
+    }
+  });
+
+  // ---------- 게시하기: manifest 갱신 + 모든 글 재생성 + 저장 ----------
+  // 매번 "모든 글"을 다시 생성하는 이유: 새 글이 추가되면 그 글의 앞/뒤에 있던
+  // 기존 글들의 "이전 글/다음 글" 링크도 함께 바뀌어야 하기 때문입니다.
+  postForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const title = fieldTitle.value.trim();
+    const category = fieldCategory.value;
+    const description = fieldDesc.value.trim();
+    const markdown = fieldBody.value;
+    if (!title || !description || !markdown.trim()) return;
+
+    publishBtn.disabled = true;
+    try{
+      setStatus('저장 중…', '');
+      const handle = await ensureSiteHandle();
+      const postsDir = await getPostsDirHandle(handle, { create: true });
+
+      let manifest = await readJSON(postsDir, 'manifest.json');
+      if (!Array.isArray(manifest)) manifest = [];
+
+      // slug/파일명이 겹치지 않도록 번호를 붙여 고유하게 만듦
+      // (이미지를 이미 넣었다면 그때 정해진 lockedSlug를 그대로 써서 이미지 폴더 경로와 일치시킴)
+      const date = todayISODate();
+      const baseSlug = lockedSlug || slugify(title);
+      let slug = baseSlug;
+      let filename = `${date}-${slug}.html`;
+      let n = 2;
+      const existingFilenames = new Set(manifest.map(p => p.filename));
+      while (existingFilenames.has(filename)){
+        slug = `${baseSlug}-${n}`;
+        filename = `${date}-${slug}.html`;
+        n++;
+      }
+
+      manifest.push({ slug, filename, title, category, description, date, markdown });
+
+      // 발행일(오래된 글 -> 최신 글) 순으로 정렬해야 "이전 글=더 과거/다음 글=더 최신"이 맞음
+      manifest.sort((a, b) => a.date.localeCompare(b.date) || a.filename.localeCompare(b.filename));
+
+      // 글 전체를 다시 생성 (prev/next가 모든 글에서 정확하도록)
+      for (let i = 0; i < manifest.length; i++){
+        const p = manifest[i];
+        const prev = i > 0 ? { title: manifest[i-1].title, filename: manifest[i-1].filename } : null;
+        const next = i < manifest.length - 1 ? { title: manifest[i+1].title, filename: manifest[i+1].filename } : null;
+        const html = buildPostHtml({
+          title: p.title,
+          category: p.category,
+          description: p.description,
+          bodyHtml: renderMarkdown(p.markdown),
+          date: p.date,
+          prev, next
+        });
+        await writeText(postsDir, p.filename, html);
+      }
+
+      await writeJSON(postsDir, 'manifest.json', manifest);
+
+      setStatus(`게시 완료! → posts/${filename}`, 'ok');
+      await refreshRecentList();
+
+      // 다음 글 작성을 위해 폼 비우기
+      fieldTitle.value = '';
+      fieldDesc.value = '';
+      fieldBody.value = '';
+      lockedSlug = null;
+      updatePreview();
+    } catch(e){
+      setStatus('저장에 실패했습니다: ' + (e && e.message ? e.message : e), 'error');
+    } finally {
+      updatePublishState();
+    }
+  });
+</script>
+
+</body>
+</html>
