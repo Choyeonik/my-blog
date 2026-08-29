@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>설정 — Portfolio Blog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500;700&family=EB+Garamond:ital@0;1&display=swap" rel="stylesheet">
+<!-- 홈 화면과 동일한 공용 스타일시트를 그대로 사용 -->
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+
+<header class="site-topbar">
+  <div class="brand">Portfolio Blog</div>
+  <nav><a href="index.html">← 홈으로</a></nav>
+</header>
+
+<main>
+  <div class="page-inner">
+
+    <div class="editor-header">
+      <h1>설정</h1>
+      <p>프로필 사진과 카테고리 목록, 비밀번호를 관리합니다. 변경 사항은 작업 폴더에 바로 저장됩니다.</p>
+    </div>
+
+    <!-- 이 기능의 동작 조건/한계를 미리 안내 -->
+    <div class="editor-note">
+      ⓘ 이 기능은 Chrome / Edge 같은 Chromium 계열 브라우저에서만 동작합니다
+      (Safari, Firefox는 지원하지 않음). 먼저 블로그 작업 폴더(이 settings.html 파일이 들어있는 폴더)를
+      연결해주세요. 비밀번호가 설정되어 있다면 연결 후 비밀번호 확인 화면이 나타납니다.
+      <br>⚠ 이 사이트는 서버 없이 정적 파일로만 동작하기 때문에, 비밀번호는 페이지 소스를 볼 수 있는
+      사람까지 완전히 막지는 못합니다. "아무나 실수로 못 건드리게" 하는 가벼운 잠금으로 이해해주세요.
+    </div>
+
+    <!-- 1단계: 작업 폴더 연결 전 -->
+    <div class="editor-gate" id="editorGate">
+      <button type="button" class="btn" id="connectBtn">폴더 연결</button>
+      <p class="editor-status" id="gateStatus"></p>
+    </div>
+
+    <!-- 2단계: 폴더는 연결됐지만 비밀번호 확인이 필요할 때 -->
+    <div class="lock-screen" id="lockScreen" hidden>
+      <p class="lock-title">비밀번호를 입력해주세요</p>
+      <form id="lockForm">
+        <input type="password" id="lockPassword" placeholder="비밀번호" autocomplete="current-password">
+        <button type="submit" class="btn btn-primary">확인</button>
+      </form>
+      <p class="lock-status" id="lockStatus"></p>
+    </div>
+
+    <!-- 3단계: 잠금 해제 후에만 보이는 실제 설정 화면 -->
+    <div id="settingsContent" hidden>
+
+      <!-- 프로필 사진 -->
+      <section class="settings-section">
+        <h2>프로필 사진</h2>
+        <p class="settings-desc">홈 화면 사이드바와 About 카드에 보여줄 프로필 사진입니다.</p>
+        <div class="avatar-setting">
+          <div class="profile-avatar"><img id="avatarPreview" src="" alt="프로필 사진"></div>
+          <div>
+            <button type="button" class="btn btn-sm" id="changeAvatarBtn">사진 변경</button>
+            <input type="file" id="avatarFileInput" accept="image/*" hidden>
+            <p class="editor-status" id="avatarStatus"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 카테고리 관리 -->
+      <section class="settings-section">
+        <h2>카테고리 관리</h2>
+        <p class="settings-desc">
+          여기서 추가/삭제한 카테고리가 홈 화면 사이드바와 새 글 쓰기의 카테고리 선택 목록에 그대로 적용됩니다.
+          카테고리를 삭제해도 이미 작성된 글은 지워지지 않지만, 사이드바에서 그 카테고리로 필터링할 수는
+          없게 됩니다.
+        </p>
+        <div class="category-manage-list" id="categoryManageList"></div>
+        <form class="category-add-row" id="categoryAddForm">
+          <input type="text" id="newCategoryInput" placeholder="새 카테고리 이름" autocomplete="off">
+          <button type="submit" class="btn btn-sm">추가</button>
+        </form>
+        <p class="editor-status" id="categoryStatus"></p>
+      </section>
+
+      <!-- 비밀번호 -->
+      <section class="settings-section">
+        <h2 id="passwordSectionTitle">비밀번호 설정</h2>
+        <p class="settings-desc" id="passwordSectionDesc">
+          새 글 쓰기 / 설정 페이지에 들어올 때 필요한 비밀번호입니다. 아직 설정되어 있지 않습니다.
+        </p>
+        <form class="password-form" id="passwordForm">
+          <div class="field" id="currentPasswordField" hidden>
+            <label for="currentPasswordInput">현재 비밀번호</label>
+            <input type="password" id="currentPasswordInput" autocomplete="current-password">
+          </div>
+          <div class="field">
+            <label for="newPasswordInput">새 비밀번호</label>
+            <input type="password" id="newPasswordInput" autocomplete="new-password">
+          </div>
+          <div class="field">
+            <label for="newPasswordConfirmInput">새 비밀번호 확인</label>
+            <input type="password" id="newPasswordConfirmInput" autocomplete="new-password">
+          </div>
+          <button type="submit" class="btn btn-primary" id="passwordSubmitBtn">저장</button>
+        </form>
+        <p class="editor-status" id="passwordStatus"></p>
+      </section>
+
+    </div>
+
+  </div>
+</main>
+
+<!-- posts 폴더 읽기/쓰기 + 설정 파일 공용 헬퍼 -->
+<script src="site-storage.js"></script>
+
+<script>
+  const editorGate = document.getElementById('editorGate');
+  const gateStatus = document.getElementById('gateStatus');
+  const connectBtn = document.getElementById('connectBtn');
+  const lockScreen = document.getElementById('lockScreen');
+  const lockForm = document.getElementById('lockForm');
+  const lockPassword = document.getElementById('lockPassword');
+  const lockStatus = document.getElementById('lockStatus');
+  const settingsContent = document.getElementById('settingsContent');
+
+  const avatarPreview = document.getElementById('avatarPreview');
+  const changeAvatarBtn = document.getElementById('changeAvatarBtn');
+  const avatarFileInput = document.getElementById('avatarFileInput');
+  const avatarStatus = document.getElementById('avatarStatus');
+
+  const categoryManageList = document.getElementById('categoryManageList');
+  const categoryAddForm = document.getElementById('categoryAddForm');
+  const newCategoryInput = document.getElementById('newCategoryInput');
+  const categoryStatus = document.getElementById('categoryStatus');
+
+  const passwordSectionTitle = document.getElementById('passwordSectionTitle');
+  const passwordSectionDesc = document.getElementById('passwordSectionDesc');
+  const passwordForm = document.getElementById('passwordForm');
+  const currentPasswordField = document.getElementById('currentPasswordField');
+  const currentPasswordInput = document.getElementById('currentPasswordInput');
+  const newPasswordInput = document.getElementById('newPasswordInput');
+  const newPasswordConfirmInput = document.getElementById('newPasswordConfirmInput');
+  const passwordStatus = document.getElementById('passwordStatus');
+
+  let siteHandle = null;
+  let siteConfig = null;   // { categories, avatar, passwordHash }
+
+  function setGateStatus(text, kind){
+    gateStatus.textContent = text;
+    gateStatus.className = 'editor-status' + (kind ? ' is-' + kind : '');
+  }
+  function setLockStatus(text, kind){
+    lockStatus.textContent = text;
+    lockStatus.className = 'lock-status' + (kind ? ' is-' + kind : '');
+  }
+  function setAvatarStatus(text, kind){
+    avatarStatus.textContent = text;
+    avatarStatus.className = 'editor-status' + (kind ? ' is-' + kind : '');
+  }
+  function setCategoryStatus(text, kind){
+    categoryStatus.textContent = text;
+    categoryStatus.className = 'editor-status' + (kind ? ' is-' + kind : '');
+  }
+  function setPasswordStatus(text, kind){
+    passwordStatus.textContent = text;
+    passwordStatus.className = 'editor-status' + (kind ? ' is-' + kind : '');
+  }
+
+  // ---------- 작업 폴더 연결 ----------
+  async function ensureSiteHandle(){
+    if (siteHandle) return siteHandle;
+    let handle = await getSiteFolderHandle({ promptIfNeeded: true });
+    if (!handle) handle = await connectSiteFolder();
+    siteHandle = handle;
+    return handle;
+  }
+
+  function showSettings(){
+    lockScreen.hidden = true;
+    settingsContent.hidden = false;
+  }
+
+  function renderAvatarPreview(){
+    avatarPreview.src = window.currentAvatarUrl || avatarDataUri('portfolio-profile', 200);
+  }
+
+  // 인라인 SVG 플레이스홀더 아바타 생성 (index.html의 함수와 동일한 방식)
+  function hashSeed(str){
+    let h = 0;
+    for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
+    return h;
+  }
+  function avatarDataUri(seed, size){
+    const n = hashSeed(String(seed));
+    const bg = 222 + (n % 10);
+    const fg = 170 + (n % 12);
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">`
+      + `<rect width="100" height="100" fill="rgb(${bg},${bg},${bg-4})"/>`
+      + `<circle cx="50" cy="38" r="18" fill="rgb(${fg},${fg},${fg})"/>`
+      + `<path d="M14 92c4-24 20-36 36-36s32 12 36 36" fill="rgb(${fg},${fg},${fg})"/>`
+      + `</svg>`;
+    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+  }
+
+  function renderCategoryManageList(){
+    const canRemove = siteConfig.categories.length > 1;
+    categoryManageList.innerHTML = siteConfig.categories.map(cat => `
+      <div class="category-manage-row">
+        <span>${escapeHtml(cat)}</span>
+        <button type="button" class="category-manage-remove" data-category="${escapeHtml(cat)}" ${canRemove ? '' : 'disabled'}>삭제</button>
+      </div>
+    `).join('');
+    categoryManageList.querySelectorAll('.category-manage-remove').forEach(btn => {
+      btn.addEventListener('click', () => onRemoveCategory(btn.dataset.category));
+    });
+  }
+
+  async function onRemoveCategory(cat){
+    if (siteConfig.categories.length <= 1) return;
+    siteConfig.categories = siteConfig.categories.filter(c => c !== cat);
+    try{
+      await saveSiteConfig(siteHandle, siteConfig);
+      renderCategoryManageList();
+      setCategoryStatus(`"${cat}" 카테고리를 삭제했습니다.`, 'ok');
+    } catch(e){
+      setCategoryStatus('저장에 실패했습니다: ' + (e && e.message ? e.message : e), 'error');
+    }
+  }
+
+  categoryAddForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = newCategoryInput.value.trim();
+    if (!name){
+      setCategoryStatus('카테고리 이름을 입력해주세요.', 'error');
+      return;
+    }
+    if (siteConfig.categories.includes(name)){
+      setCategoryStatus('이미 있는 카테고리 이름입니다.', 'error');
+      return;
+    }
+    siteConfig.categories.push(name);
+    try{
+      await saveSiteConfig(siteHandle, siteConfig);
+      newCategoryInput.value = '';
+      renderCategoryManageList();
+      setCategoryStatus(`"${name}" 카테고리를 추가했습니다.`, 'ok');
+    } catch(e){
+      setCategoryStatus('저장에 실패했습니다: ' + (e && e.message ? e.message : e), 'error');
+    }
+  });
+
+  // ---------- 프로필 사진 ----------
+  changeAvatarBtn.addEventListener('click', () => avatarFileInput.click());
+
+  avatarFileInput.addEventListener('change', async () => {
+    const file = avatarFileInput.files && avatarFileInput.files[0];
+    avatarFileInput.value = '';
+    if (!file) return;
+
+    try{
+      setAvatarStatus('저장 중…', '');
+      const assetsDir = await getNestedDirHandle(siteHandle, ['assets'], { create: true });
+      const ext = (file.name.match(/\.[^.]+$/) || ['.jpg'])[0].toLowerCase();
+      const newRelPath = `assets/profile-photo${ext}`;
+
+      // 확장자가 바뀌어 파일명이 달라졌다면 이전 프로필 사진 파일은 지워서 남지 않게 함
+      if (siteConfig.avatar && siteConfig.avatar !== newRelPath){
+        await removeFileIfExists(assetsDir, siteConfig.avatar.split('/').pop());
+      }
+      await writeFile(assetsDir, `profile-photo${ext}`, file);
+
+      siteConfig.avatar = newRelPath;
+      await saveSiteConfig(siteHandle, siteConfig);
+
+      window.currentAvatarUrl = URL.createObjectURL(file);
+      renderAvatarPreview();
+      setAvatarStatus('프로필 사진이 변경되었습니다.', 'ok');
+    } catch(e){
+      setAvatarStatus('저장에 실패했습니다: ' + (e && e.message ? e.message : e), 'error');
+    }
+  });
+
+  // ---------- 비밀번호 설정/변경 ----------
+  function updatePasswordSectionMode(){
+    const hasPassword = !!siteConfig.passwordHash;
+    currentPasswordField.hidden = !hasPassword;
+    passwordSectionTitle.textContent = hasPassword ? '비밀번호 변경' : '비밀번호 설정';
+    passwordSectionDesc.textContent = hasPassword
+      ? '새 글 쓰기 / 설정 페이지에 들어올 때 필요한 비밀번호입니다.'
+      : '새 글 쓰기 / 설정 페이지에 들어올 때 필요한 비밀번호입니다. 아직 설정되어 있지 않습니다.';
+  }
+
+  passwordForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const hasPassword = !!siteConfig.passwordHash;
+    const current = currentPasswordInput.value;
+    const next = newPasswordInput.value;
+    const confirm = newPasswordConfirmInput.value;
+
+    if (!next || next.length < 4){
+      setPasswordStatus('새 비밀번호는 4자 이상으로 입력해주세요.', 'error');
+      return;
+    }
+    if (next !== confirm){
+      setPasswordStatus('새 비밀번호 확인이 일치하지 않습니다.', 'error');
+      return;
+    }
+    if (hasPassword){
+      const currentHash = await sha256Hex(current);
+      if (currentHash !== siteConfig.passwordHash){
+        setPasswordStatus('현재 비밀번호가 올바르지 않습니다.', 'error');
+        return;
+      }
+    }
+
+    try{
+      setPasswordStatus('저장 중…', '');
+      siteConfig.passwordHash = await sha256Hex(next);
+      await saveSiteConfig(siteHandle, siteConfig);
+      currentPasswordInput.value = '';
+      newPasswordInput.value = '';
+      newPasswordConfirmInput.value = '';
+      updatePasswordSectionMode();
+      setPasswordStatus('비밀번호가 저장되었습니다.', 'ok');
+    } catch(e){
+      setPasswordStatus('저장에 실패했습니다: ' + (e && e.message ? e.message : e), 'error');
+    }
+  });
+
+  // ---------- 폴더 연결 + 비밀번호 확인 흐름 ----------
+  async function afterConnected(handle){
+    siteHandle = handle;
+    editorGate.hidden = true;
+    siteConfig = await loadSiteConfig(handle);
+
+    if (siteConfig.avatar){
+      const url = await readFileAsObjectURLByPath(handle, siteConfig.avatar);
+      if (url) window.currentAvatarUrl = url;
+    }
+    renderAvatarPreview();
+    renderCategoryManageList();
+    updatePasswordSectionMode();
+
+    if (siteConfig.passwordHash && sessionStorage.getItem('blogUnlocked') !== '1'){
+      lockScreen.hidden = false;
+      lockPassword.focus();
+      return;
+    }
+    showSettings();
+  }
+
+  async function onConnectClick(){
+    if (!isFsaSupported()){
+      setGateStatus('이 브라우저는 폴더 연결 기능을 지원하지 않습니다 (Chrome/Edge에서 열어주세요).', 'error');
+      return;
+    }
+    try{
+      setGateStatus('폴더 선택창을 확인해주세요…', '');
+      const handle = await ensureSiteHandle();
+      await afterConnected(handle);
+    } catch(e){
+      setGateStatus('폴더 연결이 취소되었거나 실패했습니다.', 'error');
+    }
+  }
+  connectBtn.addEventListener('click', onConnectClick);
+
+  lockForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const entered = lockPassword.value;
+    lockPassword.value = '';
+    if (!entered){
+      setLockStatus('비밀번호를 입력해주세요.', 'error');
+      return;
+    }
+    setLockStatus('확인 중…', '');
+    const hash = await sha256Hex(entered);
+    if (hash === siteConfig.passwordHash){
+      sessionStorage.setItem('blogUnlocked', '1');
+      showSettings();
+    } else {
+      setLockStatus('비밀번호가 올바르지 않습니다.', 'error');
+    }
+  });
+
+  // 페이지를 열었을 때, 이전에 연결해둔 폴더가 있고 권한이 살아있으면 조용히 재연결
+  (async function tryAutoConnect(){
+    if (!isFsaSupported()) return;
+    const handle = await getSiteFolderHandle({ promptIfNeeded: false });
+    if (!handle) return;
+    await afterConnected(handle);
+  })();
+</script>
+
+</body>
+</html>

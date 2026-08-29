@@ -1,0 +1,866 @@
+/* ==============================================================
+   site.css — 포트폴리오 블로그 공용 스타일시트
+   index.html(홈), write.html(글쓰기), posts/*.html(개별 글 페이지)이
+   모두 이 파일 하나를 불러와 씁니다. 색상/폰트 등을 바꾸고 싶으면
+   이 파일의 :root 변수만 고치면 3곳 모두에 한 번에 반영됩니다.
+   ============================================================== */
+
+/* ==========================================================
+   색상 / 공통 변수
+   ========================================================== */
+:root{
+  --bg: #fafaf8;         /* 전체 배경색 (오프화이트) */
+  --ink: #1c1c1a;        /* 기본 텍스트(검정에 가까운 색) */
+  --muted: #8c8a84;      /* 보조 텍스트(설명, 날짜 등) */
+  --line: #e6e4de;       /* 구분선 색 (진한 편) */
+  --line-soft: #efeee9;  /* 구분선 색 (연한 편) */
+  --accent: #3a3a38;     /* 포인트 색(카테고리 태그 등, 무채색 톤) */
+  --sidebar-w: 240px;    /* 왼쪽 사이드바(aside) 너비: 이 값만 바꾸면 폭이 조절됨 */
+}
+
+*{ box-sizing: border-box; }
+
+html, body{
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Noto Sans KR', sans-serif;
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3{
+  font-family: 'Noto Serif KR', serif;
+  font-weight: 500;
+  margin: 0;
+}
+
+a{ color: inherit; text-decoration: none; }
+ul{ list-style: none; margin: 0; padding: 0; }
+img{ max-width: 100%; display: block; filter: grayscale(100%); }
+
+/* 전체 레이아웃: 왼쪽 사이드바(aside) + 오른쪽 메인(main)을 가로로 배치 (홈 화면에서 사용) */
+.layout{
+  display: flex;
+  align-items: flex-start;
+  min-height: 100vh;
+}
+
+/* ==========================================================
+   사이드바 최소화(토글) 버튼 — 사이드바(aside) "안" 오른쪽 위에 배치되는 3줄 아이콘
+   - .sidebar 는 position:sticky 라서 이미 "위치 기준(positioning context)"이 되므로
+     버튼을 position:absolute 로 넣으면 사이드바 기준 오른쪽 위에 고정됨
+   - body 에 "sidebar-collapsed" 클래스가 붙으면 사이드바가 좁게 접힘(완전히 숨기지 않음)
+     -> 버튼 자체는 계속 보여야 다시 펼칠 수 있기 때문
+   ========================================================== */
+.sidebar-toggle{
+  position: absolute;      /* 사이드바(.sidebar) 안에서 오른쪽 위 고정 */
+  top: 20px;
+  right: 16px;
+  z-index: 5;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+.sidebar-toggle span{
+  display: block;
+  width: 14px;
+  height: 1.5px;
+  background: var(--ink);
+}
+.sidebar-toggle:hover{ border-color: var(--ink); }
+
+/* 사이드바가 접힌 상태: 프로필/검색/카테고리/최근 글은 숨기고
+   버튼 하나만 보이는 좁은 폭으로 축소 (완전히 사라지지 않아야 다시 펼 수 있음) */
+body.sidebar-collapsed .sidebar{
+  width: 60px;
+  padding-left: 12px;
+  padding-right: 12px;
+  overflow: hidden;
+}
+body.sidebar-collapsed .sidebar > *:not(.sidebar-toggle){
+  display: none;
+}
+
+/* ---------- SIDEBAR (왼쪽 프로필 / 검색 / 카테고리 / 최근 글) ---------- */
+.sidebar{
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  min-height: 100vh;
+  position: sticky;
+  top: 0;
+  border-right: 1px solid var(--line);
+  padding: 48px 26px 36px;
+  transition: width .25s ease, padding .25s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+  overflow-y: auto;
+}
+
+.brand{
+  font-family: 'EB Garamond', serif;
+  font-style: italic;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: -8px;
+}
+
+/* 사이드바 상단 "새 글 쓰기" / "설정" 링크를 묶는 줄 */
+.sidebar-links{
+  display: flex;
+  gap: 14px;
+}
+
+/* 사이드바 상단 "새 글 쓰기" / "설정" 링크 (write.html / settings.html로 이동) */
+.write-link{
+  font-size: 11px;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.write-link:hover{ color: var(--ink); }
+
+/* Profile */
+.profile{
+  text-align: center;
+  padding-bottom: 30px;
+  border-bottom: 1px solid var(--line-soft);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.profile-avatar{
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #e9e7e1;
+  border: 1px solid var(--line);
+}
+.profile-avatar img{ width: 100%; height: 100%; object-fit: cover; }
+
+.profile-name{ font-size: 17px; letter-spacing: 0.01em; }
+
+.profile-title{
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.profile-bio{
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin: 0;
+}
+
+.profile-links{
+  display: flex;
+  gap: 14px;
+  margin-top: 4px;
+}
+.profile-links a{
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  border-bottom: 1px solid transparent;
+  padding-bottom: 2px;
+  transition: color .2s, border-color .2s;
+}
+.profile-links a:hover{ color: var(--ink); border-color: var(--ink); }
+
+/* Search */
+.search-box{
+  position: relative;
+}
+.search-box input{
+  width: 100%;
+  padding: 10px 34px 10px 4px;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 13px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color .2s;
+}
+.search-box input::placeholder{ color: #b7b5ae; }
+.search-box input:focus{ border-color: var(--ink); }
+.search-box svg{
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 15px;
+  height: 15px;
+  stroke: var(--muted);
+}
+
+/* Section heading (shared) */
+.side-heading{
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+/* Categories */
+.category-list li{ margin-bottom: 4px; }
+
+.category-total{
+  font-size: 15px;
+  font-family: 'Noto Serif KR', serif;
+  padding: 6px 0;
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.category-sub{
+  padding-left: 4px;
+  border-left: 1px solid var(--line);
+  margin-top: 4px;
+}
+
+.category-sub li a{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 0 7px 16px;
+  font-size: 13px;
+  color: var(--muted);
+  transition: color .2s;
+}
+
+.category-sub li a:hover{ color: var(--ink); }
+
+.category-sub li a .count{
+  font-size: 11px;
+  color: #c2c0b8;
+}
+
+.category-total.active,
+.category-sub li a.active{
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* 홈 화면 사이드바의 "실제 글 불러오기" 폴더 연결 링크/상태 텍스트 */
+.folder-connect{
+  font-size: 11px;
+  color: var(--muted);
+}
+.folder-connect button{
+  font: inherit;
+  color: var(--accent);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.folder-connect button:hover{ color: var(--ink); }
+.folder-connect .status-ok{ color: var(--ink); }
+
+/* Recent posts */
+.recent-list li{
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.recent-list li:last-child{ border-bottom: none; }
+
+.recent-list a{ display: block; }
+
+.recent-title{
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink);
+  margin-bottom: 5px;
+  transition: color .2s;
+}
+.recent-list a:hover .recent-title{ color: var(--accent); }
+
+.recent-date{
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: #b7b5ae;
+}
+
+/* ---------- MAIN (오른쪽 콘텐츠 영역) ---------- */
+.main{
+  flex: 1;           /* 사이드바를 제외한 나머지 공간을 전부 차지 */
+  min-width: 0;
+  padding: 60px 40px 100px;
+}
+
+/* main 안의 실제 콘텐츠 폭을 제한하고 가운데 정렬.
+   -> 사이드바가 숨겨져(main이 넓어져)도 이 max-width 덕분에 콘텐츠는 항상 중앙에 위치 */
+.main-inner{
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+/* 좁은 폭(글쓰기/개별 글 페이지처럼 사이드바가 없는 페이지)용 콘텐츠 컨테이너 */
+.page-inner{
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 60px 40px 100px;
+}
+
+/* 상단 "Total" 타이틀 영역 — 세로 여백을 크게 주고 제목/설명을 가운데 정렬 */
+.main-header{
+  padding: 56px 20px;              /* 영역 자체를 크게: 위아래 여백 확대 */
+  margin-bottom: 48px;
+  border-bottom: 2px solid var(--ink);
+  display: flex;
+  flex-direction: column;          /* 제목 아래 설명이 오도록 세로 배치 */
+  align-items: center;             /* 가로 중앙 정렬 */
+  text-align: center;
+  gap: 12px;
+}
+
+.main-header h1{
+  font-size: 40px;                 /* 영역이 커진 만큼 제목도 확대 */
+}
+
+.main-header p{
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* ==========================================================
+   게시글 그리드 — "폭은 좁고 세로로 긴" 카드가 한 줄에 여러 개(최대 6개)
+   들어가는 레이아웃.
+
+   핵심 아이디어:
+   - 썸네일 사진의 세로 길이는 사진마다 다르게 놔둔다 (가로폭만 통일)
+   - 대신 "한 줄(row)에 같이 있는 카드들의 전체 영역 높이"는 서로 맞춘다
+     -> 사진이 짧은 카드는 아래쪽에 빈 여백이 생겨서 다음 줄 시작선이 맞춰짐
+   CSS Grid의 기본 동작(align-items:stretch)이 한 행에서 가장 큰 카드에
+   맞춰 나머지 카드도 늘려주기 때문에, 사진 높이가 제각각이어도 "행 단위"로는
+   카드 영역이 자동으로 맞춰집니다. 늘어난 만큼 생기는 여백은 카드 안에서
+   margin-top:auto를 쓴 날짜(.card-date)가 아래로 밀려나면서 채웁니다.
+   ========================================================== */
+.grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 40px 20px;
+  /* align-items 기본값(stretch)을 그대로 사용 -> 같은 행의 카드 높이가 자동으로 맞춰짐 */
+}
+
+/* 그리드를 한 칸짜리 레이아웃으로 되돌림 (About 페이지, 검색결과 없음 등
+   "카드 여러 개"가 아니라 "내용 하나"를 보여줄 때 JS에서 이 클래스를 붙임) */
+.grid.grid--single{
+  grid-template-columns: 1fr;
+}
+
+.card{
+  display: flex;
+  flex-direction: column;
+  height: 100%;                /* Grid가 늘려준 "행 높이"만큼 카드가 꽉 채우도록 */
+  padding-top: 18px;
+  border-top: 1px solid var(--line);   /* 게시글 사이 구분선 */
+}
+
+/* 카드 전체(사진+글)를 감싸는 링크 — 실제 글(posts/*.html)로 이동.
+   기본 a 태그 스타일을 지우고 카드처럼 보이게만 함 */
+.card-link{
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+/* 썸네일: 가로 폭만 카드 폭에 맞추고, 세로 높이는 강제하지 않고
+   사진 자체의 원래 비율을 그대로 따르게 함 -> 사진마다 세로 길이가 달라짐 */
+.card-img{
+  width: 100%;
+  overflow: hidden;
+  background: #ececE6;
+  margin-bottom: 14px;
+}
+
+.card-img img{
+  width: 100%;
+  height: auto;                 /* 가로폭만 100%, 높이는 원본 비율대로 */
+  display: block;
+  transition: transform .5s ease;
+}
+.card:hover .card-img img{ transform: scale(1.035); }
+
+.card-tag{
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.card h3{
+  font-size: 14px;
+  line-height: 1.45;
+  margin-bottom: 8px;
+}
+
+.card p{
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+
+/* 카드 안에서 margin-top:auto로 항상 맨 아래에 붙음.
+   -> 같은 행의 다른 카드보다 사진+글이 짧으면, 이 여백이 늘어나면서
+      "행 전체 높이"에 맞춰 카드 아래쪽 빈 공간을 자동으로 채워줌 */
+.card-date{
+  font-size: 10.5px;
+  letter-spacing: 0.03em;
+  color: #b7b5ae;
+  margin-top: auto;
+}
+
+/* About 카테고리를 눌렀을 때 그리드 대신 보여주는 자기소개 카드 (grid--single과 함께 사용) */
+.about-card{
+  text-align: center;
+  padding: 60px 10%;
+  border: 1px solid var(--line);
+}
+.about-card .profile-avatar{ margin: 0 auto 20px; width: 110px; height: 110px; }
+.about-card h2{ font-size: 26px; margin-bottom: 14px; }
+.about-card p{ font-size: 14px; line-height: 1.9; color: var(--muted); max-width: 520px; margin: 0 auto; }
+
+.no-result{
+  text-align: center;
+  padding: 80px 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+[hidden]{ display: none !important; }
+
+/* ==============================================================
+   글쓰기 페이지(write.html) / 개별 글 페이지(posts/*.html) 공용
+   — 사이드바 없이 쓰는 좁은 페이지에서 상단에 들어가는 슬림 바
+   ============================================================== */
+.site-topbar{
+  border-bottom: 1px solid var(--line);
+  padding: 22px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.site-topbar .brand{ margin-bottom: 0; }
+.site-topbar nav a{
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  transition: color .2s;
+}
+.site-topbar nav a:hover{ color: var(--ink); }
+
+/* ---------- 글쓰기 폼(write.html) ---------- */
+.editor-header{
+  text-align: center;
+  margin-bottom: 44px;
+}
+.editor-header h1{ font-size: 30px; margin-bottom: 10px; }
+.editor-header p{ font-size: 13px; color: var(--muted); margin: 0; }
+
+.field{ margin-bottom: 26px; }
+.field label{
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.field input[type="text"],
+.field select,
+.field textarea{
+  width: 100%;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 14px;
+  color: var(--ink);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  padding: 10px 2px;
+  outline: none;
+  transition: border-color .2s;
+}
+.field input[type="text"]{ font-family: 'Noto Serif KR', serif; font-size: 20px; }
+.field input[type="text"]:focus,
+.field select:focus,
+.field textarea:focus{ border-color: var(--ink); }
+
+.field textarea{ resize: vertical; line-height: 1.6; }
+.field.field--desc textarea{ min-height: 56px; }
+
+/* 본문 위 툴바 (이미지 삽입 버튼 등) */
+.md-toolbar{
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.btn-sm{
+  padding: 7px 14px;
+  font-size: 12px;
+}
+.md-toolbar-hint{
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+/* 본문(마크다운) 영역: 왼쪽 입력 / 오른쪽 미리보기 2단 */
+.md-editor{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.md-editor textarea{
+  width: 100%;
+  height: 480px;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  padding: 16px;
+  outline: none;
+  resize: vertical;
+}
+.md-editor textarea:focus{ border-color: var(--ink); }
+
+.md-preview{
+  height: 480px;
+  overflow-y: auto;
+  border: 1px solid var(--line-soft);
+  border-radius: 2px;
+  padding: 16px 20px;
+}
+.md-preview::before{
+  content: "미리보기";
+  display: block;
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+.editor-actions{
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 32px;
+  flex-wrap: wrap;
+}
+
+.btn{
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  padding: 11px 22px;
+  border-radius: 2px;
+  cursor: pointer;
+  border: 1px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  transition: background .2s, color .2s;
+}
+.btn:hover{ background: var(--ink); color: var(--bg); }
+.btn:disabled{
+  opacity: .4;
+  cursor: not-allowed;
+  background: transparent;
+  color: var(--ink);
+}
+
+.btn-primary{
+  background: var(--ink);
+  color: var(--bg);
+}
+.btn-primary:hover{ background: var(--accent); color: var(--bg); }
+.btn-primary:disabled{ background: var(--line); color: var(--muted); }
+
+.editor-status{
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.editor-status.is-error{ color: #a33; }
+.editor-status.is-ok{ color: var(--ink); }
+.editor-status a{ text-decoration: underline; text-underline-offset: 2px; }
+
+.editor-note{
+  font-size: 11.5px;
+  line-height: 1.7;
+  color: var(--muted);
+  border: 1px dashed var(--line);
+  padding: 14px 16px;
+  border-radius: 2px;
+  margin-bottom: 32px;
+}
+
+/* 글쓰기 페이지 하단 "최근 작성한 글" 목록 */
+.editor-recent{ margin-top: 56px; }
+.editor-recent .side-heading{ margin-bottom: 14px; }
+
+/* ---------- 폴더 연결 전 안내 영역 (write.html / settings.html) ---------- */
+.editor-gate{
+  padding: 40px 0;
+  text-align: center;
+}
+.editor-gate .editor-status{ margin-top: 14px; }
+
+/* ---------- 비밀번호 잠금 화면 (write.html / settings.html 공용) ---------- */
+.lock-screen{
+  max-width: 320px;
+  margin: 40px auto;
+  padding: 40px 32px;
+  border: 1px solid var(--line);
+  text-align: center;
+}
+.lock-title{
+  font-family: 'Noto Serif KR', serif;
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+.lock-screen form{
+  display: flex;
+  gap: 10px;
+}
+.lock-screen input[type="password"]{
+  flex: 1;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 14px;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  padding: 8px 2px;
+  outline: none;
+}
+.lock-screen input[type="password"]:focus{ border-color: var(--ink); }
+.lock-status{
+  margin-top: 14px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.lock-status.is-error{ color: #a33; }
+
+/* ---------- 설정 페이지(settings.html) ---------- */
+.settings-section{
+  margin-bottom: 56px;
+  padding-bottom: 48px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.settings-section:last-child{ border-bottom: none; }
+.settings-section h2{
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+.settings-section .settings-desc{
+  font-size: 12.5px;
+  color: var(--muted);
+  margin: 0 0 24px;
+}
+
+/* 프로필 사진 설정 */
+.avatar-setting{
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.avatar-setting .profile-avatar{
+  width: 84px;
+  height: 84px;
+  flex-shrink: 0;
+}
+
+/* 카테고리 관리 목록 */
+.category-manage-list{ margin-bottom: 20px; }
+.category-manage-row{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 14px;
+}
+.category-manage-row:last-child{ border-bottom: none; }
+.category-manage-remove{
+  font: inherit;
+  font-size: 12px;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.category-manage-remove:hover{ color: #a33; }
+.category-manage-remove:disabled{
+  color: #c2c0b8;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+.category-add-row{
+  display: flex;
+  gap: 10px;
+}
+.category-add-row input[type="text"]{
+  flex: 1;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 14px;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  padding: 8px 2px;
+  outline: none;
+}
+.category-add-row input[type="text"]:focus{ border-color: var(--ink); }
+
+/* 비밀번호 변경 폼 */
+.password-form .field{ margin-bottom: 18px; }
+
+@media (max-width: 720px){
+  .md-editor{ grid-template-columns: 1fr; }
+  .md-preview{ height: 260px; }
+}
+
+/* ---------- 개별 글 페이지(posts/*.html) ---------- */
+.post-header{
+  text-align: center;
+  padding-bottom: 32px;
+  margin-bottom: 40px;
+  border-bottom: 2px solid var(--ink);
+}
+.post-header .card-tag{ margin-bottom: 14px; }
+.post-header h1{ font-size: 32px; line-height: 1.35; margin-bottom: 14px; }
+.post-header .post-desc{ font-size: 14px; color: var(--muted); margin-bottom: 10px; }
+.post-header .post-date{ font-size: 11px; letter-spacing: 0.04em; color: #b7b5ae; }
+
+/* 마크다운 렌더링 결과(본문)의 기본 타이포그래피 */
+.post-body{ font-size: 15px; line-height: 1.85; color: var(--ink); }
+.post-body h1,
+.post-body h2,
+.post-body h3{ margin: 40px 0 16px; line-height: 1.4; }
+.post-body h1{ font-size: 24px; }
+.post-body h2{ font-size: 20px; }
+.post-body h3{ font-size: 17px; }
+.post-body p{ margin: 0 0 20px; }
+.post-body ul, .post-body ol{ margin: 0 0 20px; padding-left: 22px; list-style: revert; }
+.post-body li{ margin-bottom: 8px; }
+.post-body blockquote{
+  margin: 0 0 20px;
+  padding: 4px 20px;
+  border-left: 2px solid var(--ink);
+  color: var(--muted);
+  font-style: italic;
+}
+.post-body code{
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 13px;
+  background: var(--line-soft);
+  padding: 2px 5px;
+  border-radius: 2px;
+}
+.post-body pre{
+  background: var(--ink);
+  color: var(--bg);
+  padding: 18px 20px;
+  overflow-x: auto;
+  border-radius: 2px;
+  margin: 0 0 24px;
+}
+.post-body pre code{ background: none; padding: 0; color: inherit; }
+.post-body img{ margin: 24px 0; filter: none; } /* 본문 이미지는 그레이스케일 필터 제외 */
+.post-body hr{ border: none; border-top: 1px solid var(--line); margin: 40px 0; }
+.post-body a{ text-decoration: underline; text-underline-offset: 2px; }
+
+/* 이전 글 / 다음 글 내비게이션 */
+.post-nav{
+  margin-top: 64px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.post-nav .post-nav-item{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px 0;
+}
+.post-nav .post-nav-item.is-next{ text-align: right; align-items: flex-end; }
+.post-nav .post-nav-label{
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.post-nav .post-nav-title{
+  font-size: 14px;
+  line-height: 1.5;
+  transition: color .2s;
+}
+.post-nav a:hover .post-nav-title{ color: var(--accent); }
+.post-nav .post-nav-empty{ color: #c2c0b8; font-size: 13px; }
+
+@media (max-width: 560px){
+  .post-nav{ grid-template-columns: 1fr; }
+  .post-nav .post-nav-item.is-next{ text-align: left; align-items: flex-start; }
+}
+
+/* ---------- RESPONSIVE (홈 화면 사이드바/그리드 공용) ---------- */
+@media (max-width: 980px){
+  .layout{ flex-direction: column; }
+  .sidebar{
+    width: 100%;
+    position: relative;
+    min-height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 28px 40px;
+    padding: 32px 24px;
+  }
+  .profile{ border-bottom: none; padding-bottom: 0; flex: 1 1 200px; }
+  .search-box, .categories, .recent-posts{ flex: 1 1 200px; }
+  .main{ padding: 40px 24px 80px; }
+}
+
+@media (max-width: 720px){
+  .main-header{ padding: 36px 16px; }
+  .main-header h1{ font-size: 26px; }
+  .page-inner{ padding: 40px 20px 80px; }
+  .site-topbar{ padding: 18px 20px; }
+}
