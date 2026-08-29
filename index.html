@@ -26,7 +26,6 @@
       <span></span>
     </button>
 
-    <div class="brand">Portfolio Blog</div>
 
     <!-- 글쓰기 / 설정 페이지로 이동 -->
     <div class="sidebar-links">
@@ -39,11 +38,9 @@
       <div class="profile-avatar">
         <img id="sidebarAvatar" src="" alt="프로필 사진">
       </div>
-      <h2 class="profile-name">홍길동 (이름을 입력하세요)</h2>
-      <p class="profile-title">Product Designer</p>
+      <h2 class="profile-name">Hello, Yeonnnnn!</h2>
+      <p class="profile-title">Yeonnnnn</p>
       <p class="profile-bio">
-        기록하고 만드는 것을 좋아합니다.<br>
-        여기에 짧은 소개 문구를 입력하세요.
       </p>
       <div class="profile-links">
         <a href="#">Instagram</a>
@@ -98,7 +95,7 @@
 
       <div class="main-header">
         <h1 id="pageTitle">Total</h1>
-        <p id="pageDesc">작업물과 생각을 기록하는 공간입니다.</p>
+		  <br>
       </div>
 
       <div class="grid" id="grid">
@@ -131,6 +128,7 @@
   // 게시글 seed로부터 이 게시글 썸네일의 세로 비율을 정함 (같은 seed면 항상 같은 값)
   function pickThumbRatio(seed){
     const n = hashSeed(String(seed));
+    return THUMB_RATIOS[n % THUMB_RATIOS.length];
     return THUMB_RATIOS[n % THUMB_RATIOS.length];
   }
 
@@ -181,15 +179,14 @@
   // 자주 사용하는 DOM 요소를 미리 찾아둠
   const grid = document.getElementById('grid');
   const pageTitle = document.getElementById('pageTitle');
-  const pageDesc = document.getElementById('pageDesc');
   const searchInput = document.getElementById('searchInput');
   const recentList = document.getElementById('recentList');
 
-  // 상단에 보여줄 제목/설명 문구. total/about은 고정 문구, 나머지(카테고리)는 이름을 그대로 씀
+  // 상단에 보여줄 제목. total/about은 고정 문구, 나머지(카테고리)는 이름을 그대로 씀
   function labelFor(filter){
-    if (filter === 'total') return ['Total', '작업물과 생각을 기록하는 공간입니다.'];
-    if (filter === 'about') return ['About', '저에 대한 이야기입니다.'];
-    return [filter, `${filter} 카테고리의 글 모음입니다.`];
+    if (filter === 'total') return 'Total';
+    if (filter === 'about') return 'About';
+    return filter;
   }
 
   let currentFilter = 'total';   // 현재 선택된 카테고리 (total/<카테고리 이름>/about)
@@ -303,9 +300,7 @@
     document.querySelectorAll('.category-sub a').forEach(a => {
       a.classList.toggle('active', a.dataset.filter === filter);
     });
-    const [title, desc] = labelFor(filter);
-    pageTitle.textContent = title;
-    pageDesc.textContent = desc;
+    pageTitle.textContent = labelFor(filter);
     render();
   }
 
