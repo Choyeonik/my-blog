@@ -1,0 +1,9 @@
+{
+  "categories": [
+    "Project",
+    "Study",
+    "Photo"
+  ],
+  "avatar": "assets/profile-photo.jpg",
+  "passwordHash": null
+}
