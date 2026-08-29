@@ -1,0 +1,1110 @@
+<title>Gega Studio Blog</title>
+
+<!--
+  ============================================================
+  Gega Studio Blog — 그리드 레이아웃 블로그 홈 화면
+  ============================================================
+  구성 안내 (수정 시 참고하세요)
+  1. <style> : 색상/폰트/레이아웃을 담당하는 CSS
+     - 최상단 :root 에 있는 "디자인 토큰"(색상 변수) 값만 바꿔도
+       전체 배색이 바뀝니다.
+  2. <body>  : 실제 화면 마크업 (헤더 / 타이틀 / 카드 그리드 / 푸터 / 모달)
+  3. <script>: "글 작성 → 카드 자동 생성" 기능을 담당하는 자바스크립트
+     - 화면 하단부의 "1) 데이터" 부분에서 기본 예시 글 9개를 관리합니다.
+     - 사용자가 모달 폼에 글을 작성해 등록하면 배열 맨 앞에 추가되고,
+       화면은 그 배열을 기준으로 다시 그려집니다(렌더링).
+     - 새로 고침해도 사라지지 않도록 브라우저 localStorage 에 저장합니다.
+  ============================================================
+-->
+
+<!-- Google Fonts: 제목용 Sora(약간 둥근 지오메트릭 산세리프) + 본문/네비용 Inter -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+
+<style>
+  /* ============================================================
+     0. 디자인 토큰 (Design Tokens)
+     ------------------------------------------------------------
+     실제 색상 값은 전부 이 안에서만 정의합니다.
+     라이트 모드는 :root, 다크 모드는 두 군데(시스템 설정 감지 / 강제 지정)에서
+     같은 변수 이름을 다시 정의하는 방식이라, 컴포넌트 CSS에서는
+     "var(--ink)" 처럼 변수만 사용하고 실제 hex 값은 여기서만 바꾸면 됩니다.
+  ============================================================ */
+  :root {
+    /* 배경 & 표면 (따뜻한 종이 느낌의 크림톤) */
+    --bg: #f7f3ea;
+    --surface: #fffdf8;
+    --surface-2: #efe9db;      /* 푸터 상단 스트립처럼 살짝 더 진한 표면 */
+
+    /* 텍스트 */
+    --ink: #201d17;            /* 본문/제목 기본 색 */
+    --ink-soft: #746c5c;       /* 날짜, 설명 등 보조 텍스트 */
+    --ink-faint: #a89f8b;      /* 플레이스홀더, 아주 옅은 텍스트 */
+
+    /* 선/테두리 */
+    --line: #ded6c2;           /* 카드 그리드 헤어라인 */
+    --line-strong: #201d17;    /* 뱃지 테두리처럼 진하게 쓰는 선 */
+
+    /* 버튼/강조 (모노톤 기본 + 포인트 컬러 1개) */
+    --accent: #201d17;         /* 버튼 배경 (라이트에서는 잉크색) */
+    --accent-ink: #fffdf8;     /* 버튼 위 텍스트 */
+    --focus: #5a5ce0;          /* 포커스 링, 링크 호버 등 포인트 컬러 */
+    --danger: #c2492f;         /* 삭제 등 위험 액션 */
+
+    /* 카드 썸네일용 팔레트 (아래 JS의 PLACEHOLDER_PALETTE 와 세트) */
+    --thumb-a: #ff8a65;
+    --thumb-b: #3fb0a3;
+
+    /* 모달 배경 딤 처리 */
+    --overlay: rgba(32, 29, 23, 0.55);
+
+    /* 공통 반경/그림자 */
+    --radius-s: 6px;
+    --radius-m: 14px;
+    --radius-pill: 999px;
+    --shadow-modal: 0 24px 60px rgba(32, 29, 23, 0.28);
+
+    color-scheme: light;
+  }
+
+  /* 시스템 설정이 "다크"이고, 사용자가 명시적으로 라이트를 선택하지 않은 경우 */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17150f;
+      --surface: #1f1c15;
+      --surface-2: #262219;
+      --ink: #f3eee2;
+      --ink-soft: #b3a993;
+      --ink-faint: #756c5a;
+      --line: #3a3527;
+      --line-strong: #f3eee2;
+      --accent: #f3eee2;
+      --accent-ink: #17150f;
+      --focus: #9b9dff;
+      --danger: #ff8567;
+      --thumb-a: #d9633f;
+      --thumb-b: #2f8f84;
+      --overlay: rgba(10, 9, 6, 0.65);
+      color-scheme: dark;
+    }
+  }
+
+  /* 사용자가 앱에서 명시적으로 "다크"를 선택한 경우 (시스템 설정과 무관하게 적용) */
+  :root[data-theme="dark"] {
+    --bg: #17150f;
+    --surface: #1f1c15;
+    --surface-2: #262219;
+    --ink: #f3eee2;
+    --ink-soft: #b3a993;
+    --ink-faint: #756c5a;
+    --line: #3a3527;
+    --line-strong: #f3eee2;
+    --accent: #f3eee2;
+    --accent-ink: #17150f;
+    --focus: #9b9dff;
+    --danger: #ff8567;
+    --thumb-a: #d9633f;
+    --thumb-b: #2f8f84;
+    --overlay: rgba(10, 9, 6, 0.65);
+    color-scheme: dark;
+  }
+
+  /* ============================================================
+     1. 기본 리셋 & 전역 스타일
+  ============================================================ */
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Inter", -apple-system, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3 {
+    font-family: "Sora", "Inter", sans-serif;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  a { color: inherit; }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  /* 키보드 포커스 표시 (접근성) */
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  }
+
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 40px;
+  }
+
+  /* ============================================================
+     2. 헤더 (로고 / 내비게이션 / CTA 버튼)
+  ============================================================ */
+  .site-header {
+    border-bottom: 1px solid var(--line);
+  }
+
+  /*
+    헤더를 3칸 그리드(로고 / 내비게이션 / CTA버튼)로 구성합니다.
+    양쪽 칸을 똑같이 1fr로 잡아두면, 오른쪽 CTA 버튼을 지우거나
+    로고 글자 길이가 바뀌어도 가운데 내비게이션은 항상 정중앙에 고정됩니다.
+    (예전처럼 justify-content: space-between 을 쓰면 양쪽 요소의
+     "너비"에 따라 가운데 내용물이 밀리기 때문에, 버튼을 지우면
+     내비게이션이 중앙에서 벗어나 보였던 것입니다.)
+  */
+  .site-header .wrap {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr; /* 왼쪽/오른쪽 칸 너비를 항상 동일하게 유지 */
+    align-items: center;
+    gap: 24px;
+    padding-top: 26px;
+    padding-bottom: 26px;
+  }
+
+  .logo {
+    justify-self: start;   /* 1번째 칸(왼쪽)에 붙임 */
+    font-family: "Sora", sans-serif;
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  /* 그리드의 2번째 칸(가운데)을 차지하는 <nav> 태그 자체를 중앙 정렬 */
+  .site-header nav {
+    justify-self: center;
+  }
+
+  /* 오른쪽 칸(3번째 칸)에 오는 CTA 버튼. 이 버튼을 통째로 지워도
+     grid-template-columns 의 3번째 1fr 칸은 그대로 자리를 차지하므로
+     가운데 nav 위치는 흔들리지 않습니다. */
+  .site-header .btn-pill {
+    justify-self: end;
+  }
+
+  .nav {
+    display: flex;
+    gap: 28px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .nav a {
+    text-decoration: none;
+    font-size: 14px;
+    color: var(--ink);
+    padding-bottom: 2px;
+    border-bottom: 1px solid transparent;
+  }
+
+  .nav a:hover { border-bottom-color: var(--ink); }
+
+  /* 검정 알약(pill) 버튼 — CTA와 "새 글 작성"에서 공용으로 사용 */
+  .btn-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-pill);
+    padding: 11px 22px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: opacity 0.15s ease;
+  }
+  .btn-pill:hover { opacity: 0.82; }
+
+  /* 테두리만 있는 보조 버튼 (초기화 등) */
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .btn-ghost:hover { color: var(--ink); border-color: var(--ink); }
+
+  @media (max-width: 860px) {
+    .nav { display: none; } /* 좁은 화면에서는 내비게이션 숨김 (필요하면 햄버거 메뉴로 교체) */
+  }
+
+  /* ============================================================
+     3. 브레드크럼 & 페이지 타이틀 영역
+  ============================================================ */
+  .breadcrumb {
+    padding-top: 22px;
+    font-size: 13px;
+    color: var(--ink-faint);
+  }
+  .breadcrumb a { text-decoration: none; color: var(--ink-faint); }
+  .breadcrumb a:hover { color: var(--ink); }
+
+  .page-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding: 14px 0 34px;
+  }
+
+  .page-head h1 {
+    font-size: clamp(30px, 4vw, 40px);
+    font-weight: 700;
+  }
+
+  .page-head-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* ============================================================
+     4. 글 카드 그리드
+     ------------------------------------------------------------
+     표(table)처럼 보이는 헤어라인은 아래 트릭으로 만듭니다:
+       - 그리드 컨테이너   : 위쪽 + 왼쪽 테두리
+       - 카드(.post-card)  : 오른쪽 + 아래쪽 테두리
+     이렇게 하면 카드 개수가 동적으로 늘어나도(글 작성 시) 선이 겹치지 않고
+     항상 표 형태로 깔끔하게 이어집니다.
+  ============================================================ */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid var(--line);
+    border-left: 1px solid var(--line);
+  }
+
+  @media (max-width: 940px) {
+    .grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .post-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 28px;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+    /* 새로 추가된 카드가 살짝 떠오르며 나타나는 연출 */
+    animation: card-in 0.35s ease both;
+  }
+
+  @keyframes card-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .post-meta-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    margin-bottom: 16px;
+  }
+
+  /* 카테고리 뱃지: 흰 배경 + 검정 얇은 테두리의 알약 모양 (레퍼런스와 동일) */
+  .badge {
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-pill);
+    padding: 3px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: var(--surface);
+    white-space: nowrap;
+  }
+
+  /* 썸네일: 실제 이미지가 있으면 <img>, 없으면 CSS 그라디언트 플레이스홀더 */
+  .post-thumb {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--radius-s);
+    overflow: hidden;
+    margin-bottom: 18px;
+    background-color: var(--ink);
+  }
+  .post-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .post-thumb .thumb-mark {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Sora", sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    color: rgba(255,255,255,0.9);
+    text-transform: uppercase;
+    text-shadow: 0 1px 12px rgba(0,0,0,0.25);
+  }
+
+  .post-title {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.35;
+    margin-bottom: 10px;
+  }
+
+  .post-excerpt {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    margin-bottom: 18px;
+    flex-grow: 1;
+    /* 3줄 넘어가면 말줄임 처리 */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .post-more {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    align-self: flex-start;
+  }
+
+  /* 카드 우측 상단 삭제 버튼: 평소엔 숨겨두고 hover/focus 시에만 노출 */
+  .post-delete {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    line-height: 1;
+    opacity: 0;
+    transition: opacity 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+  .post-card:hover .post-delete,
+  .post-card:focus-within .post-delete {
+    opacity: 1;
+  }
+  .post-delete:hover {
+    color: var(--danger);
+    border-color: var(--danger);
+  }
+
+  /* 글이 하나도 없을 때 보여줄 빈 상태 */
+  .empty-state {
+    grid-column: 1 / -1;
+    padding: 70px 20px;
+    text-align: center;
+    color: var(--ink-soft);
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .empty-state p { margin: 0 0 18px; }
+
+  /* ============================================================
+     5. 푸터
+  ============================================================ */
+  .footer-banner {
+    text-align: center;
+    padding: 46px 0;
+    font-family: "Sora", sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.01em;
+  }
+
+  .footer-main {
+    background: var(--surface-2);
+    border-top: 1px solid var(--line);
+  }
+
+  .footer-cols {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr;
+    gap: 32px;
+    padding: 44px 0;
+  }
+  @media (max-width: 700px) {
+    .footer-cols { grid-template-columns: 1fr; }
+  }
+
+  .footer-cols h3 {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 14px;
+  }
+
+  .footer-cols ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+  }
+  .footer-cols a { text-decoration: none; color: var(--ink-soft); }
+  .footer-cols a:hover { color: var(--ink); }
+
+  .footer-bottom {
+    border-top: 1px solid var(--line);
+    padding: 18px 0;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--ink-faint);
+  }
+  @media (max-width: 600px) {
+    .footer-bottom { flex-direction: column; gap: 6px; text-align: center; }
+  }
+
+  /* ============================================================
+     6. "새 글 작성" 모달
+  ============================================================ */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--overlay);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 100;
+    /* JS에서 is-open 클래스를 붙였다 뗐다 하며 열고 닫습니다 */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.18s ease;
+  }
+  .modal-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 520px;
+    max-height: 88vh;
+    overflow-y: auto;
+    background: var(--surface);
+    border-radius: var(--radius-m);
+    box-shadow: var(--shadow-modal);
+    padding: 32px;
+    transform: translateY(10px);
+    transition: transform 0.18s ease;
+  }
+  .modal-overlay.is-open .modal { transform: translateY(0); }
+
+  .modal-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 22px;
+  }
+  .modal-head h2 { font-size: 21px; font-weight: 700; }
+  .modal-head p { margin: 6px 0 0; font-size: 13px; color: var(--ink-soft); }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: var(--ink-soft);
+    line-height: 1;
+    padding: 4px;
+  }
+  .modal-close:hover { color: var(--ink); }
+
+  .field {
+    margin-bottom: 16px;
+  }
+  .field label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--ink-soft);
+  }
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .field input,
+  .field textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-s);
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: 13.5px;
+    color: var(--ink);
+  }
+  .field textarea { resize: vertical; min-height: 76px; }
+  .field input::placeholder,
+  .field textarea::placeholder { color: var(--ink-faint); }
+
+  .field-hint {
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    margin-top: 5px;
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 22px;
+  }
+
+  /* ============================================================
+     7. 토스트 알림 (등록/삭제/초기화 결과 안내 + 실행취소)
+  ============================================================ */
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    transform: translate(-50%, 12px);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--ink);
+    color: var(--bg);
+    border-radius: var(--radius-pill);
+    padding: 12px 12px 12px 20px;
+    font-size: 13px;
+    box-shadow: 0 14px 30px rgba(0,0,0,0.25);
+    z-index: 200;
+    opacity: 0;
+    visibility: hidden;
+
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .toast.is-open {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+  }
+  .toast button {
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--bg) 40%, transparent);
+    color: var(--bg);
+    border-radius: var(--radius-pill);
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+</style>
+
+<!-- ============================================================
+     BODY — 실제 화면 마크업
+============================================================ -->
+
+<header class="site-header">
+  <div class="wrap">
+    <div class="logo">Yeonik</div>
+    <nav aria-label="주요 메뉴">
+      <ul class="nav">
+        <li><a href="#">Home.</a></li>
+        <li><a href="#">Posts.</a></li>
+        <li><a href="#">about.</a></li>
+        <li><a href="#" aria-current="page">Blog.</a></li>
+      </ul>
+    </nav>
+    <a class="btn-pill" href="#">Get Gega Now</a>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <p class="breadcrumb"><a href="#">Home</a> / Blog Grid</p>
+
+    <div class="page-head">
+      <h1>Posts.</h1>
+
+      <!-- 이 두 버튼이 "글 작성" 기능의 진입점입니다 -->
+      <div class="page-head-actions">
+        <button type="button" class="btn-ghost" id="resetBtn">전체 삭제</button>
+        <button type="button" class="btn-pill" id="openModalBtn">
+          <span aria-hidden="true">+</span> 새 글 작성
+        </button>
+      </div>
+    </div>
+
+    <!--
+      글 카드가 실제로 그려지는 곳입니다.
+      이 안의 내용은 전부 JS의 renderGrid() 함수가 채워 넣으므로
+      직접 <div class="post-card">를 여기에 손으로 추가할 필요는 없습니다.
+      (원한다면 정적으로 몇 개 넣어두고 JS에서 이어붙이는 방식으로 바꿔도 됩니다.)
+    -->
+    <section class="grid" id="postGrid" aria-live="polite"></section>
+  </div>
+</main>
+
+<p class="footer-banner">www.DownloadNewThemes.com</p>
+
+<footer class="footer-main">
+  <div class="wrap">
+    <div class="footer-cols">
+      <div>
+        <h3>Gega Theme</h3>
+        <p style="color:var(--ink-soft); font-size:13.5px; max-width:32ch;">
+          일러스트레이터와 아티스트를 위한 미니멀 그리드 블로그 템플릿입니다.
+        </p>
+      </div>
+      <div>
+        <h3>Info</h3>
+        <ul>
+          <li>hello@gegatheme.com</li>
+          <li>Los Angeles, CA 90021</li>
+          <li>United States</li>
+          <li>646-932-3253</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Connect</h3>
+        <ul>
+          <li><a href="#">Facebook</a></li>
+          <li><a href="#">Twitter</a></li>
+          <li><a href="#">Instagram</a></li>
+          <li><a href="#">Youtube</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026, GEGA</span>
+      <span>ALL RIGHTS RESERVED</span>
+      <span>BY NEURONTHEMES</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ============================================================
+     "새 글 작성" 모달 (평소엔 CSS로 숨겨져 있다가 버튼 클릭 시 열림)
+============================================================ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-head">
+      <div>
+        <h2 id="modalTitle">새 글 작성</h2>
+        <p>작성한 글은 목록 맨 앞에 카드로 추가됩니다.</p>
+      </div>
+      <button type="button" class="modal-close" id="closeModalBtn" aria-label="닫기">✕</button>
+    </div>
+
+    <form id="postForm">
+      <div class="field">
+        <label for="fieldTitle">제목 *</label>
+        <input type="text" id="fieldTitle" name="title" placeholder="예: 겨울에 어울리는 색감 조합 10가지" required maxlength="80">
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="fieldCategory">카테고리</label>
+          <input type="text" id="fieldCategory" name="category" placeholder="예: DESIGN" maxlength="16">
+        </div>
+        <div class="field">
+          <label for="fieldDate">날짜</label>
+          <input type="date" id="fieldDate" name="date">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="fieldExcerpt">요약 설명 *</label>
+        <textarea id="fieldExcerpt" name="excerpt" placeholder="카드에 미리보기로 노출될 2~3줄 요약을 적어주세요." required maxlength="220"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="fieldImage">썸네일 이미지 URL (선택)</label>
+        <input type="url" id="fieldImage" name="image" placeholder="https://... (비워두면 자동 생성된 컬러 썸네일이 사용됩니다)">
+        <p class="field-hint">참고: 이 미리보기 화면(Artifact)에서는 외부 이미지가 보안 정책상 차단될 수 있습니다. 실제 사이트에 배포하면 정상적으로 보입니다.</p>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="cancelBtn">취소</button>
+        <button type="submit" class="btn-pill">등록하기</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 등록/삭제/초기화 결과를 알려주는 토스트 -->
+<div class="toast" id="toast" role="status">
+  <span id="toastMessage"></span>
+  <button type="button" id="toastAction" hidden>실행취소</button>
+</div>
+
+<script>
+  /* ============================================================
+     STEP 1. 데이터
+     ------------------------------------------------------------
+     처음 화면을 열었을 때 보여줄 글 목록입니다. 지금은 빈 배열이라
+     "새 글 작성"으로 직접 등록하기 전까지는 카드가 하나도 없습니다.
+
+     각 글 객체의 필드는 아래와 같은 모양입니다 (참고용):
+       id       : 고유 식별자 (삭제할 때 사용)
+       date     : ISO 형식 날짜 문자열 ("YYYY-MM-DD")
+       category : 카드 상단에 뜨는 뱃지 텍스트
+       title    : 제목
+       excerpt  : 카드에 보이는 요약 설명
+       image    : 실제 이미지 URL. 없으면 null → 자동 컬러 썸네일 사용
+
+     만약 코드에 미리 몇 개를 박아두고 시작하고 싶다면, 아래 배열 안에
+     바로 위 모양대로 객체를 추가하면 됩니다. 예:
+       { id: "p1", date: "2026-08-28", category: "DESIGN",
+         title: "제목", excerpt: "요약 설명", image: null }
+  ============================================================ */
+  const STORAGE_KEY = "gega-blog-posts-v1";
+
+  const INITIAL_POSTS = [];
+
+  // 지금 화면에 그려지는 글 목록 (메모리상의 "현재 상태")
+  let posts = loadPosts();
+
+  /* ============================================================
+     STEP 2. 저장 / 불러오기 (localStorage)
+     ------------------------------------------------------------
+     새로고침해도 사용자가 작성한 글이 남아있도록
+     이 브라우저(이 화면)에만 저장해두는 용도입니다.
+     여러 사람이 함께 보는 진짜 블로그로 만들려면 이 부분을
+     서버 API 호출(fetch)로 교체하면 됩니다.
+  ============================================================ */
+  function loadPosts() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch (err) {
+      console.warn("저장된 글을 불러오지 못했습니다. 빈 목록으로 시작합니다.", err);
+    }
+    return INITIAL_POSTS.map((p) => ({ ...p }));
+  }
+
+  function savePosts() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+    } catch (err) {
+      console.warn("글을 저장하지 못했습니다.", err);
+    }
+  }
+
+  /* ============================================================
+     STEP 3. 화면에 그리기 (렌더링)
+  ============================================================ */
+  const gridEl = document.getElementById("postGrid");
+
+  // 날짜 문자열("2026-01-04") -> "January 4, 2026" 형태로 변환
+  function formatDate(isoString) {
+    const d = new Date(isoString + "T00:00:00");
+    if (Number.isNaN(d.getTime())) return isoString;
+    return d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  }
+
+  // 문자열을 숫자로 바꾸는 아주 단순한 해시 함수
+  // (같은 제목/카테고리는 항상 같은 색 조합의 썸네일을 갖도록 하기 위함)
+  function hashString(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = (hash << 5) - hash + str.charCodeAt(i);
+      hash |= 0;
+    }
+    return Math.abs(hash);
+  }
+
+  // 이미지가 없는 글의 썸네일을 대신할 컬러 그라디언트를 만들어주는 함수
+  // → 팔레트 색상 2개를 골라 원형 그라디언트 2개 + 대각선 배경을 조합합니다.
+  const PLACEHOLDER_PALETTE = [
+    ["#ff8a65", "#3fb0a3"],
+    ["#f2a6c0", "#4c5fd5"],
+    ["#e8b84b", "#2b2a28"],
+    ["#8bd3c7", "#c2492f"],
+    ["#a78bfa", "#f4efe3"],
+    ["#6ba368", "#f6c453"],
+  ];
+
+  function buildPlaceholderStyle(seedText) {
+    const idx = hashString(seedText) % PLACEHOLDER_PALETTE.length;
+    const [colorA, colorB] = PLACEHOLDER_PALETTE[idx];
+    return (
+      `radial-gradient(circle at 22% 28%, ${colorA} 0%, transparent 55%), ` +
+      `radial-gradient(circle at 82% 75%, ${colorB} 0%, transparent 58%), ` +
+      `linear-gradient(135deg, ${colorA}33, ${colorB}55)`
+    );
+  }
+
+  // 글 한 개 → <article class="post-card"> DOM 요소로 변환
+  function createCardElement(post) {
+    const card = document.createElement("article");
+    card.className = "post-card";
+
+    // 상단: 날짜 + 카테고리 뱃지
+    const metaRow = document.createElement("div");
+    metaRow.className = "post-meta-row";
+    metaRow.innerHTML = `
+      <span>${formatDate(post.date)}</span>
+      <span class="badge">${escapeHtml(post.category || "ETC")}</span>
+    `;
+
+    // 썸네일: image 값이 있으면 <img>, 없으면 컬러 플레이스홀더
+    const thumb = document.createElement("div");
+    thumb.className = "post-thumb";
+    if (post.image) {
+      thumb.innerHTML = `<img src="${escapeHtml(post.image)}" alt="${escapeHtml(post.title)} 썸네일" loading="lazy">`;
+    } else {
+      thumb.style.background = buildPlaceholderStyle(post.title + post.category);
+      thumb.innerHTML = `<div class="thumb-mark">${escapeHtml((post.category || "GEGA").slice(0, 2))}</div>`;
+    }
+
+    const title = document.createElement("h2");
+    title.className = "post-title";
+    title.textContent = post.title;
+
+    const excerpt = document.createElement("p");
+    excerpt.className = "post-excerpt";
+    excerpt.textContent = post.excerpt;
+
+    // 실제 상세 페이지로 연결하려면 이 href="#"를 글 상세 URL로 바꿔주세요.
+    const more = document.createElement("a");
+    more.className = "post-more";
+    more.href = "#";
+    more.textContent = "Read More";
+    more.addEventListener("click", (e) => e.preventDefault());
+
+    // 삭제 버튼 (호버 시에만 보임)
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "post-delete";
+    deleteBtn.setAttribute("aria-label", `${post.title} 삭제`);
+    deleteBtn.textContent = "✕";
+    deleteBtn.addEventListener("click", () => deletePost(post.id));
+
+    card.append(metaRow, thumb, title, excerpt, more, deleteBtn);
+    return card;
+  }
+
+  // 사용자 입력값이 그대로 HTML로 해석되지 않도록 이스케이프 처리
+  function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str ?? "";
+    return div.innerHTML;
+  }
+
+  // posts 배열 전체를 기준으로 그리드를 다시 그림
+  // → 글을 추가/삭제/초기화할 때마다 이 함수 한 번만 호출하면 화면이 동기화됩니다.
+  function renderGrid() {
+    gridEl.innerHTML = "";
+
+    if (posts.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.innerHTML = `
+        <p>아직 작성된 글이 없어요.</p>
+        <button type="button" class="btn-pill" id="emptyStateBtn">+ 첫 글 작성하기</button>
+      `;
+      gridEl.appendChild(empty);
+      document.getElementById("emptyStateBtn").addEventListener("click", openModal);
+      return;
+    }
+
+    const fragment = document.createDocumentFragment();
+    posts.forEach((post) => fragment.appendChild(createCardElement(post)));
+    gridEl.appendChild(fragment);
+  }
+
+  /* ============================================================
+     STEP 4. 글 작성 → 카드 추가
+  ============================================================ */
+  const modalOverlay = document.getElementById("modalOverlay");
+  const postForm = document.getElementById("postForm");
+  const fieldDate = document.getElementById("fieldDate");
+
+  function openModal() {
+    // 날짜 입력칸을 오늘 날짜로 기본 세팅
+    fieldDate.value = new Date().toISOString().slice(0, 10);
+    modalOverlay.classList.add("is-open");
+    document.getElementById("fieldTitle").focus();
+  }
+
+  function closeModal() {
+    modalOverlay.classList.remove("is-open");
+    postForm.reset();
+  }
+
+  document.getElementById("openModalBtn").addEventListener("click", openModal);
+  document.getElementById("closeModalBtn").addEventListener("click", closeModal);
+  document.getElementById("cancelBtn").addEventListener("click", closeModal);
+
+  // 모달 바깥(어두운 배경) 클릭 시 닫기
+  modalOverlay.addEventListener("click", (e) => {
+    if (e.target === modalOverlay) closeModal();
+  });
+  // Esc 키로 닫기
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modalOverlay.classList.contains("is-open")) closeModal();
+  });
+
+  postForm.addEventListener("submit", (e) => {
+    e.preventDefault(); // 폼의 기본 새로고침 동작 막기
+
+    const formData = new FormData(postForm);
+    const newPost = {
+      id: "p" + Date.now(),                        // 간단한 고유 id 생성
+      title: formData.get("title").trim(),
+      category: (formData.get("category").trim() || "ETC").toUpperCase(),
+      date: formData.get("date") || new Date().toISOString().slice(0, 10),
+      excerpt: formData.get("excerpt").trim(),
+      image: formData.get("image").trim() || null,
+    };
+
+    // ▼ 바로 이 두 줄이 "글 작성 → 박스 하나 생성"의 핵심입니다.
+    posts.unshift(newPost); // 배열 맨 앞에 추가 (최신 글이 먼저 보이도록)
+    savePosts();
+    renderGrid();
+
+    closeModal();
+    showToast("게시글이 등록되었습니다.");
+  });
+
+  /* ============================================================
+     STEP 5. 글 삭제 (실행취소 지원)
+  ============================================================ */
+  function deletePost(id) {
+    const index = posts.findIndex((p) => p.id === id);
+    if (index === -1) return;
+
+    const [removed] = posts.splice(index, 1);
+    savePosts();
+    renderGrid();
+
+    showToast("게시글이 삭제되었습니다.", () => {
+      // 실행취소: 원래 있던 자리로 되돌림
+      posts.splice(index, 0, removed);
+      savePosts();
+      renderGrid();
+    });
+  }
+
+  /* ============================================================
+     STEP 6. 전체 삭제 (실수 방지를 위해 두 번 클릭해야 실행)
+     ------------------------------------------------------------
+     예전에는 "예시 9개로 되돌리기" 버튼이었지만, 이제 기본 상태가
+     빈 목록이므로 "지금까지 작성한 글을 한 번에 모두 지우는" 버튼으로
+     바꿨습니다. 실수로 지워도 토스트의 "실행취소"로 복구할 수 있습니다.
+  ============================================================ */
+  const resetBtn = document.getElementById("resetBtn");
+  const RESET_BTN_LABEL = "전체 삭제";
+  let resetArmed = false; // 실수 클릭 방지용 "두 번 눌러 확인" 상태
+
+  resetBtn.addEventListener("click", () => {
+    if (posts.length === 0) return; // 지울 글이 없으면 아무 동작도 하지 않음
+
+    if (!resetArmed) {
+      resetArmed = true;
+      resetBtn.textContent = "정말 모두 지울까요? (다시 클릭)";
+      setTimeout(() => {
+        resetArmed = false;
+        resetBtn.textContent = RESET_BTN_LABEL;
+      }, 3000);
+      return;
+    }
+
+    const previous = posts;
+    posts = [];
+    savePosts();
+    renderGrid();
+    resetArmed = false;
+    resetBtn.textContent = RESET_BTN_LABEL;
+
+    showToast("모든 게시글이 삭제되었습니다.", () => {
+      posts = previous;
+      savePosts();
+      renderGrid();
+    });
+  });
+
+  /* ============================================================
+     STEP 7. 토스트 알림
+  ============================================================ */
+  const toastEl = document.getElementById("toast");
+  const toastMessageEl = document.getElementById("toastMessage");
+  const toastActionEl = document.getElementById("toastAction");
+  let toastTimer = null;
+
+  function showToast(message, onUndo) {
+    clearTimeout(toastTimer);
+    toastMessageEl.textContent = message;
+
+    if (onUndo) {
+      toastActionEl.hidden = false;
+      toastActionEl.onclick = () => {
+        onUndo();
+        hideToast();
+      };
+    } else {
+      toastActionEl.hidden = true;
+      toastActionEl.onclick = null;
+    }
+
+    toastEl.classList.add("is-open");
+    toastTimer = setTimeout(hideToast, 5000);
+  }
+
+  function hideToast() {
+    toastEl.classList.remove("is-open");
+  }
+
+  /* ============================================================
+     STEP 8. 최초 실행
+  ============================================================ */
+  renderGrid();
+</script>
