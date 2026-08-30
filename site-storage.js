@@ -248,6 +248,15 @@ function postRelPath(entry){
   return folder.length ? folder.join('/') + '/' + entry.filename : entry.filename;
 }
 
+// postRelPath 같은 상대 경로를 실제 href/src 속성 값으로 안전하게 쓸 수 있도록
+// "/"로 나눈 각 구간을 URL 인코딩. 파일/폴더 이름에는 대괄호·한글·공백이 자유롭게 들어갈 수
+// 있는데, 대괄호(예: "[2026-08-26]-...")가 인코딩 없이 그대로 file:// 링크 경로에 들어가면
+// 크롬이 파일을 못 찾아 이미지가 깨지거나 링크가 열리지 않는 경우가 있어 반드시 인코딩해서 씀.
+// (postRelPath 자체는 사람이 읽는 안내 문구에도 쓰이므로 인코딩하지 않은 원래 문자열을 반환함)
+function encodePathForUrl(relPath){
+  return String(relPath || '').split('/').map(encodeURIComponent).join('/');
+}
+
 // 비밀번호를 그대로 저장하지 않고 SHA-256 해시로 변환해서 저장/비교합니다.
 // ⚠️ 참고: 이 사이트는 서버 없이 정적 파일로만 동작하므로, 이 검사는 페이지 소스를
 //    볼 수 있는 사람에게는 완전한 보안이 되지 못합니다. "아무나 실수로 못 건드리게"
@@ -325,7 +334,7 @@ function buildSidebarHtml({ categories, manifest, toRoot, toPosts }){
     .slice(0, 5)
     .map(p => `
       <li>
-        <a href="${toPosts}${postRelPath(p)}">
+        <a href="${toPosts}${encodePathForUrl(postRelPath(p))}">
           <div class="recent-title">${escapeHtml(p.title)}</div>
           <div class="recent-date">${p.date}</div>
         </a>
@@ -406,7 +415,7 @@ function buildPostHtml({ title, category, description, bodyHtml, date, prev, nex
   const fixedBodyHtml = depth > 0 ? bodyHtml.replace(/src="assets\//g, `src="${toPosts}assets/`) : bodyHtml;
 
   // item(prev/next)이 있는 위치까지, 지금 이 글의 위치를 기준으로 한 상대 경로
-  const relLinkTo = (item) => toPosts + postRelPath(item);
+  const relLinkTo = (item) => toPosts + encodePathForUrl(postRelPath(item));
 
   const navItem = (item, label, cls) => item
     ? `<a class="post-nav-item ${cls}" href="${relLinkTo(item)}">
