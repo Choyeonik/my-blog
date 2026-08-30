@@ -167,6 +167,12 @@ async function writeFile(dirHandle, name, fileOrBlob){
   await writable.close();
 }
 
+// 폴더 안의 파일을 삭제(있으면). 없어도 에러 없이 조용히 넘어감
+// (글 수정 중 카테고리가 바뀌어 저장 폴더가 달라졌을 때, 예전 폴더에 남는 파일을 지우는 용도)
+async function removeFileIfExists(dirHandle, name){
+  try{ await dirHandle.removeEntry(name); } catch(e){ /* 이미 없으면 무시 */ }
+}
+
 /* ---------- 사이트 설정(site-config.json): 카테고리 / 비밀번호 ---------- */
 // 카테고리는 { name, subcategories: [문자열...] } 형태의 목록입니다.
 // name은 필터링 값이자 화면에 보이는 이름 그 자체이고, subcategories는 그 아래
@@ -224,6 +230,16 @@ function categoryFolderParts(categories, categoryName){
   return [categoryName];
 }
 
+// filter로 선택된 카테고리(상위든 하위든)에 해당하는 게시글의 category 값 목록을 반환.
+// (index.html의 사이드바 필터, 개별 글 페이지 사이드바의 카테고리 글 수 계산에 공용으로 사용)
+// - 상위 카테고리를 고르면 그 상위 이름 + 모든 하위 카테고리 이름을 합쳐서(=하위 글까지 포함) 반환
+// - 하위 카테고리를 고르면 그 하위 이름 하나만 반환
+function categoryNamesForFilter(categories, filter){
+  const parent = categories.find(c => c.name === filter);
+  if (parent) return [parent.name, ...parent.subcategories];
+  return [filter];
+}
+
 // manifest 항목(또는 그와 같은 모양의 객체)의 folder(폴더 경로 배열)+filename으로부터
 // posts 폴더 기준 상대 경로 문자열을 만듦 (예: "Study/Lecture/2026-08-30-title.html")
 // folder가 없으면(예전 글) posts 바로 아래에 있는 것으로 취급
@@ -278,11 +294,106 @@ function renderMarkdown(md){
   return `<p>${escapeHtml(md || '').replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>')}</p>`;
 }
 
+/* ---------- 개별 글 페이지 사이드바(홈 화면 aside와 같은 구성: 프로필/검색/카테고리/최근 글) ---------- */
+// categories = site-config.json의 카테고리 목록, manifest = posts/manifest.json 전체 배열
+// toRoot = 이 글 파일 -> 사이트 루트(index.html 등), toPosts = 이 글 파일 -> posts 폴더 자체
+// 검색/카테고리는 이 페이지 자체에 상태가 없으므로, index.html로 이동하면서
+// ?filter=이름 / ?q=검색어 형태로 조건을 넘기고 index.html이 그 값을 읽어 반영함
+function buildSidebarHtml({ categories, manifest, toRoot, toPosts }){
+  const posts = Array.isArray(manifest) ? manifest : [];
+  const counts = {};
+  posts.forEach(p => { counts[p.category] = (counts[p.category] || 0) + 1; });
+
+  const categoryItemsHtml = categories.map(cat => {
+    const catCount = categoryNamesForFilter(categories, cat.name)
+      .reduce((sum, name) => sum + (counts[name] || 0), 0);
+    const subHtml = cat.subcategories.length ? `
+        <ul class="category-sub-nested">
+          ${cat.subcategories.map(sc => `
+            <li><a href="${toRoot}index.html?filter=${encodeURIComponent(sc)}">${escapeHtml(sc)} <span class="count">${counts[sc] || 0}</span></a></li>
+          `).join('')}
+        </ul>` : '';
+    return `
+      <li>
+        <a href="${toRoot}index.html?filter=${encodeURIComponent(cat.name)}">${escapeHtml(cat.name)} <span class="count">${catCount}</span></a>
+        ${subHtml}
+      </li>`;
+  }).join('') + `<li><a href="${toRoot}index.html?filter=about">About</a></li>`;
+
+  const recentHtml = [...posts]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 5)
+    .map(p => `
+      <li>
+        <a href="${toPosts}${postRelPath(p)}">
+          <div class="recent-title">${escapeHtml(p.title)}</div>
+          <div class="recent-date">${p.date}</div>
+        </a>
+      </li>
+    `).join('');
+
+  return `<aside class="sidebar">
+
+    <button id="sidebarToggle" class="sidebar-toggle" type="button" aria-label="사이드바 접기/펼치기">
+      <span></span><span></span><span></span>
+    </button>
+
+    <div class="sidebar-links">
+      <a href="${toRoot}write.html" class="write-link">새 글 쓰기 →</a>
+      <a href="${toRoot}settings.html" class="write-link">설정 →</a>
+    </div>
+
+    <section class="profile">
+      <div class="profile-avatar"><img src="${toRoot}assets/profile-photo.jpg" alt="프로필 사진"></div>
+      <h2 class="profile-name">Hello, Yeonnnn!</h2>
+      <p class="profile-title">Yeonnnn</p>
+      <p class="profile-bio"></p>
+      <div class="profile-links">
+        <a href="https://instagram.com/whyeonik" target="_blank" rel="noopener">Instagram</a>
+        <a href="mailto:zging0151@gmail.com">Email</a>
+        <a href="https://github.com/Choyeonik" target="_blank" rel="noopener">Github</a>
+      </div>
+    </section>
+
+    <section class="search-box">
+      <form action="${toRoot}index.html" method="get">
+        <input type="text" name="q" placeholder="검색어를 입력하세요">
+        <button type="submit" aria-label="검색">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
+      </form>
+    </section>
+
+    <section class="categories">
+      <div class="side-heading">Category</div>
+      <ul class="category-list">
+        <li>
+          <a class="category-total" href="${toRoot}index.html">
+            <span>Total</span>
+            <span class="count">${posts.length}</span>
+          </a>
+          <ul class="category-sub">${categoryItemsHtml}</ul>
+        </li>
+      </ul>
+    </section>
+
+    <section class="recent-posts">
+      <div class="side-heading">최근 글</div>
+      <ul class="recent-list">${recentHtml}</ul>
+    </section>
+
+  </aside>`;
+}
+
 /* ---------- 개별 글 페이지(posts/카테고리/.../xxx.html) 전체 HTML 생성 ---------- */
 // prev = 이전 글(더 과거, {title, filename, folder} 또는 null), next = 다음 글(더 최신, 또는 null)
 // folder = 이 글 자신이 들어있는, posts 폴더 기준 하위 폴더 경로 배열 (예: ["Study","Lecture"])
 //          (예전처럼 posts 바로 아래에 저장되는 글은 빈 배열/생략)
-function buildPostHtml({ title, category, description, bodyHtml, date, prev, next, folder }){
+// categories/manifest = 홈 화면과 같은 사이드바(카테고리/최근 글)를 그리기 위해 함께 전달
+function buildPostHtml({ title, category, description, bodyHtml, date, prev, next, folder, categories, manifest }){
   // category는 설정 페이지에서 관리하는 카테고리 이름 문자열을 그대로 씀(예: "Project", "여행기록")
   const catLabel = category;
 
@@ -307,6 +418,8 @@ function buildPostHtml({ title, category, description, bodyHtml, date, prev, nex
          <span class="post-nav-empty">없음</span>
        </div>`;
 
+  const sidebarHtml = buildSidebarHtml({ categories: categories || [], manifest: manifest || [], toRoot, toPosts });
+
   return `<!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -320,13 +433,10 @@ function buildPostHtml({ title, category, description, bodyHtml, date, prev, nex
 </head>
 <body>
 
-<header class="site-topbar">
-  <div class="brand">Portfolio Blog</div>
-  <nav><a href="${toRoot}index.html">← 목록으로</a></nav>
-</header>
+<div class="layout">
+${sidebarHtml}
 
-<main>
-  <div class="page-inner">
+  <main class="page-inner">
 
     <div class="post-header">
       <div class="card-tag">${catLabel}</div>
@@ -344,8 +454,15 @@ ${fixedBodyHtml}
       ${navItem(next, '다음 글', 'is-next')}
     </nav>
 
-  </div>
-</main>
+  </main>
+
+</div>
+
+<script>
+  document.getElementById('sidebarToggle').addEventListener('click', () => {
+    document.body.classList.toggle('sidebar-collapsed');
+  });
+</script>
 
 </body>
 </html>
