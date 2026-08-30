@@ -482,7 +482,12 @@
         const encodedPath = `assets/${encodeURIComponent(lockedSlug)}/${encodeURIComponent(name)}`;
         inserts.push(`![${alt}](${encodedPath})`);
       }
-      insertAtCursor(fieldBody, inserts.join('\n') + '\n');
+      // 커서 바로 앞이 빈 줄이 아니면(예: 직전 줄이 <br> 같은 raw HTML인 경우) 마크다운 문법상
+      // 앞 내용과 한 덩어리로 묶여서 이미지가 그림으로 바뀌지 않고 글자로 남는 경우가 있음.
+      // 항상 빈 줄로 띄워서 삽입해 이런 문제를 원천적으로 막음
+      const before = fieldBody.value.slice(0, fieldBody.selectionStart);
+      const needsBlankLine = before.length > 0 && !/\n[ \t]*\n[ \t]*$/.test(before);
+      insertAtCursor(fieldBody, (needsBlankLine ? '\n\n' : '') + inserts.join('\n') + '\n');
       updatePreview();
       updatePublishState();
       setStatus(`이미지 ${files.length}개가 추가되었습니다.`, 'ok');
