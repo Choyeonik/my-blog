@@ -210,6 +210,28 @@ async function saveSiteConfig(siteHandle, config){
   await writeJSON(siteHandle, 'site-config.json', config);
 }
 
+/* ---------- 카테고리별 폴더 경로 ---------- */
+// 글에 붙은 카테고리 이름(상위든 하위든) 하나로부터, posts 폴더 기준으로 그 글을
+// 저장할 하위 폴더 경로를 배열로 계산.
+// - 상위 카테고리 이름이면: 그 이름 하나만 폴더로 씀 (예: "Study" -> ["Study"])
+// - 하위 카테고리 이름이면: 상위/하위 두 단계 폴더로 씀 (예: "Lecture" -> ["Study","Lecture"])
+// - (카테고리가 나중에 삭제되는 등) 목록에서 못 찾으면 이름 그대로 한 단계 폴더로 씀
+function categoryFolderParts(categories, categoryName){
+  const parent = categories.find(c => c.name === categoryName);
+  if (parent) return [parent.name];
+  const owner = categories.find(c => c.subcategories.includes(categoryName));
+  if (owner) return [owner.name, categoryName];
+  return [categoryName];
+}
+
+// manifest 항목(또는 그와 같은 모양의 객체)의 folder(폴더 경로 배열)+filename으로부터
+// posts 폴더 기준 상대 경로 문자열을 만듦 (예: "Study/Lecture/2026-08-30-title.html")
+// folder가 없으면(예전 글) posts 바로 아래에 있는 것으로 취급
+function postRelPath(entry){
+  const folder = Array.isArray(entry.folder) ? entry.folder : [];
+  return folder.length ? folder.join('/') + '/' + entry.filename : entry.filename;
+}
+
 // 비밀번호를 그대로 저장하지 않고 SHA-256 해시로 변환해서 저장/비교합니다.
 // ⚠️ 참고: 이 사이트는 서버 없이 정적 파일로만 동작하므로, 이 검사는 페이지 소스를
 //    볼 수 있는 사람에게는 완전한 보안이 되지 못합니다. "아무나 실수로 못 건드리게"
@@ -256,14 +278,27 @@ function renderMarkdown(md){
   return `<p>${escapeHtml(md || '').replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>')}</p>`;
 }
 
-/* ---------- 개별 글 페이지(posts/xxx.html) 전체 HTML 생성 ---------- */
-// prev = 이전 글(더 과거, {title, filename} 또는 null), next = 다음 글(더 최신, 또는 null)
-function buildPostHtml({ title, category, description, bodyHtml, date, prev, next }){
+/* ---------- 개별 글 페이지(posts/카테고리/.../xxx.html) 전체 HTML 생성 ---------- */
+// prev = 이전 글(더 과거, {title, filename, folder} 또는 null), next = 다음 글(더 최신, 또는 null)
+// folder = 이 글 자신이 들어있는, posts 폴더 기준 하위 폴더 경로 배열 (예: ["Study","Lecture"])
+//          (예전처럼 posts 바로 아래에 저장되는 글은 빈 배열/생략)
+function buildPostHtml({ title, category, description, bodyHtml, date, prev, next, folder }){
   // category는 설정 페이지에서 관리하는 카테고리 이름 문자열을 그대로 씀(예: "Project", "여행기록")
   const catLabel = category;
 
+  const depth = Array.isArray(folder) ? folder.length : 0;
+  const toRoot = '../'.repeat(depth + 1);   // 이 글 파일 -> 사이트 루트(index.html, site.css)
+  const toPosts = '../'.repeat(depth);      // 이 글 파일 -> posts 폴더 자체(다른 카테고리 글로 이동할 때 기준)
+
+  // 본문 마크다운 안의 이미지 경로("assets/슬러그/파일명")는 posts 폴더 기준으로 적혀 있으므로,
+  // 실제 글 파일이 카테고리 하위 폴더에 있을 때는 그만큼 앞에 "../"를 붙여줘야 함
+  const fixedBodyHtml = depth > 0 ? bodyHtml.replace(/src="assets\//g, `src="${toPosts}assets/`) : bodyHtml;
+
+  // item(prev/next)이 있는 위치까지, 지금 이 글의 위치를 기준으로 한 상대 경로
+  const relLinkTo = (item) => toPosts + postRelPath(item);
+
   const navItem = (item, label, cls) => item
-    ? `<a class="post-nav-item ${cls}" href="${item.filename}">
+    ? `<a class="post-nav-item ${cls}" href="${relLinkTo(item)}">
          <span class="post-nav-label">${label}</span>
          <span class="post-nav-title">${escapeHtml(item.title)}</span>
        </a>`
@@ -281,13 +316,13 @@ function buildPostHtml({ title, category, description, bodyHtml, date, prev, nex
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500;700&family=EB+Garamond:ital@0;1&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../site.css">
+<link rel="stylesheet" href="${toRoot}site.css">
 </head>
 <body>
 
 <header class="site-topbar">
   <div class="brand">Portfolio Blog</div>
-  <nav><a href="../index.html">← 목록으로</a></nav>
+  <nav><a href="${toRoot}index.html">← 목록으로</a></nav>
 </header>
 
 <main>
@@ -301,7 +336,7 @@ function buildPostHtml({ title, category, description, bodyHtml, date, prev, nex
     </div>
 
     <article class="post-body">
-${bodyHtml}
+${fixedBodyHtml}
     </article>
 
     <nav class="post-nav">

@@ -234,7 +234,7 @@
     const recent = [...posts].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 5);
     recentList.innerHTML = recent.map(p => `
       <li>
-        <a href="${p.filename ? 'posts/' + p.filename : '#'}">
+        <a href="${p.filename ? 'posts/' + postRelPath(p) : '#'}">
           <div class="recent-title">${p.title}</div>
           <div class="recent-date">${p.date}</div>
         </a>
@@ -246,7 +246,7 @@
   // 실제 글(filename 있음)은 posts/파일명.html로 이동하는 링크로 감싸고,
   // 샘플 글(filename 없음)은 클릭해도 이동하지 않도록 함
   function cardHTML(p){
-    const href = p.filename ? 'posts/' + p.filename : '#';
+    const href = p.filename ? 'posts/' + postRelPath(p) : '#';
     return `
       <article class="card" data-category="${p.category}" data-title="${p.title.toLowerCase()}">
         <a class="card-link" href="${href}">
@@ -360,7 +360,8 @@
       excerpt: entry.description || '',
       date: String(entry.date || '').replace(/-/g, '.'),
       seed: entry.slug || entry.filename,
-      filename: entry.filename
+      filename: entry.filename,
+      folder: entry.folder || []   // posts 폴더 기준 카테고리 하위 폴더 경로 (없으면 posts 바로 아래)
     };
   }
 
