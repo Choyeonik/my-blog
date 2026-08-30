@@ -22,7 +22,7 @@
 
     <div class="editor-header">
       <h1>설정</h1>
-      <p>프로필 사진과 카테고리 목록, 비밀번호를 관리합니다. 변경 사항은 작업 폴더에 바로 저장됩니다.</p>
+      <p>카테고리 목록과 비밀번호를 관리합니다. 변경 사항은 작업 폴더에 바로 저장됩니다.</p>
     </div>
 
     <!-- 이 기능의 동작 조건/한계를 미리 안내 -->
@@ -53,31 +53,18 @@
     <!-- 3단계: 잠금 해제 후에만 보이는 실제 설정 화면 -->
     <div id="settingsContent" hidden>
 
-      <!-- 프로필 사진 -->
-      <section class="settings-section">
-        <h2>프로필 사진</h2>
-        <p class="settings-desc">홈 화면 사이드바와 About 카드에 보여줄 프로필 사진입니다.</p>
-        <div class="avatar-setting">
-          <div class="profile-avatar"><img id="avatarPreview" src="" alt="프로필 사진"></div>
-          <div>
-            <button type="button" class="btn btn-sm" id="changeAvatarBtn">사진 변경</button>
-            <input type="file" id="avatarFileInput" accept="image/*" hidden>
-            <p class="editor-status" id="avatarStatus"></p>
-          </div>
-        </div>
-      </section>
-
       <!-- 카테고리 관리 -->
       <section class="settings-section">
         <h2>카테고리 관리</h2>
         <p class="settings-desc">
           여기서 추가/삭제한 카테고리가 홈 화면 사이드바와 새 글 쓰기의 카테고리 선택 목록에 그대로 적용됩니다.
+          각 카테고리 아래에 하위 카테고리도 하나 더 만들 수 있습니다(예: Study 아래 Lecture).
           카테고리를 삭제해도 이미 작성된 글은 지워지지 않지만, 사이드바에서 그 카테고리로 필터링할 수는
           없게 됩니다.
         </p>
         <div class="category-manage-list" id="categoryManageList"></div>
         <form class="category-add-row" id="categoryAddForm">
-          <input type="text" id="newCategoryInput" placeholder="새 카테고리 이름" autocomplete="off">
+          <input type="text" id="newCategoryInput" placeholder="새 상위 카테고리 이름" autocomplete="off">
           <button type="submit" class="btn btn-sm">추가</button>
         </form>
         <p class="editor-status" id="categoryStatus"></p>
@@ -125,11 +112,6 @@
   const lockStatus = document.getElementById('lockStatus');
   const settingsContent = document.getElementById('settingsContent');
 
-  const avatarPreview = document.getElementById('avatarPreview');
-  const changeAvatarBtn = document.getElementById('changeAvatarBtn');
-  const avatarFileInput = document.getElementById('avatarFileInput');
-  const avatarStatus = document.getElementById('avatarStatus');
-
   const categoryManageList = document.getElementById('categoryManageList');
   const categoryAddForm = document.getElementById('categoryAddForm');
   const newCategoryInput = document.getElementById('newCategoryInput');
@@ -145,7 +127,7 @@
   const passwordStatus = document.getElementById('passwordStatus');
 
   let siteHandle = null;
-  let siteConfig = null;   // { categories, avatar, passwordHash }
+  let siteConfig = null;   // { categories, passwordHash }
 
   function setGateStatus(text, kind){
     gateStatus.textContent = text;
@@ -154,10 +136,6 @@
   function setLockStatus(text, kind){
     lockStatus.textContent = text;
     lockStatus.className = 'lock-status' + (kind ? ' is-' + kind : '');
-  }
-  function setAvatarStatus(text, kind){
-    avatarStatus.textContent = text;
-    avatarStatus.className = 'editor-status' + (kind ? ' is-' + kind : '');
   }
   function setCategoryStatus(text, kind){
     categoryStatus.textContent = text;
@@ -182,48 +160,93 @@
     settingsContent.hidden = false;
   }
 
-  function renderAvatarPreview(){
-    avatarPreview.src = window.currentAvatarUrl || avatarDataUri('portfolio-profile', 200);
-  }
-
-  // 인라인 SVG 플레이스홀더 아바타 생성 (index.html의 함수와 동일한 방식)
-  function hashSeed(str){
-    let h = 0;
-    for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
-    return h;
-  }
-  function avatarDataUri(seed, size){
-    const n = hashSeed(String(seed));
-    const bg = 222 + (n % 10);
-    const fg = 170 + (n % 12);
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">`
-      + `<rect width="100" height="100" fill="rgb(${bg},${bg},${bg-4})"/>`
-      + `<circle cx="50" cy="38" r="18" fill="rgb(${fg},${fg},${fg})"/>`
-      + `<path d="M14 92c4-24 20-36 36-36s32 12 36 36" fill="rgb(${fg},${fg},${fg})"/>`
-      + `</svg>`;
-    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+  // 카테고리 이름은 상위/하위 구분 없이 전체에서 유일해야 함
+  // (글의 category 값이 상위든 하위든 이름 하나로만 저장되기 때문에, 이름이 겹치면
+  //  어느 카테고리로 필터링한 건지 구분할 수 없게 됨)
+  function categoryNameExists(name){
+    return siteConfig.categories.some(c => c.name === name || c.subcategories.includes(name));
   }
 
   function renderCategoryManageList(){
-    const canRemove = siteConfig.categories.length > 1;
+    const canRemoveTop = siteConfig.categories.length > 1;
     categoryManageList.innerHTML = siteConfig.categories.map(cat => `
-      <div class="category-manage-row">
-        <span>${escapeHtml(cat)}</span>
-        <button type="button" class="category-manage-remove" data-category="${escapeHtml(cat)}" ${canRemove ? '' : 'disabled'}>삭제</button>
+      <div class="category-manage-group">
+        <div class="category-manage-row category-manage-row--parent">
+          <span>${escapeHtml(cat.name)}</span>
+          <button type="button" class="category-manage-remove" data-category="${escapeHtml(cat.name)}" ${canRemoveTop ? '' : 'disabled'}>삭제</button>
+        </div>
+        <div class="category-manage-sublist">
+          ${cat.subcategories.map(sc => `
+            <div class="category-manage-row category-manage-row--sub">
+              <span>${escapeHtml(sc)}</span>
+              <button type="button" class="category-manage-remove-sub" data-parent="${escapeHtml(cat.name)}" data-subcategory="${escapeHtml(sc)}">삭제</button>
+            </div>
+          `).join('')}
+          <form class="category-add-row category-add-sub-row" data-parent="${escapeHtml(cat.name)}">
+            <input type="text" class="new-subcategory-input" placeholder="'${escapeHtml(cat.name)}' 하위 카테고리 이름" autocomplete="off">
+            <button type="submit" class="btn btn-sm">추가</button>
+          </form>
+        </div>
       </div>
     `).join('');
+
     categoryManageList.querySelectorAll('.category-manage-remove').forEach(btn => {
       btn.addEventListener('click', () => onRemoveCategory(btn.dataset.category));
     });
+    categoryManageList.querySelectorAll('.category-manage-remove-sub').forEach(btn => {
+      btn.addEventListener('click', () => onRemoveSubcategory(btn.dataset.parent, btn.dataset.subcategory));
+    });
+    categoryManageList.querySelectorAll('.category-add-sub-row').forEach(form => {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const input = form.querySelector('.new-subcategory-input');
+        onAddSubcategory(form.dataset.parent, input.value.trim());
+        input.value = '';
+      });
+    });
   }
 
-  async function onRemoveCategory(cat){
+  async function onRemoveCategory(name){
     if (siteConfig.categories.length <= 1) return;
-    siteConfig.categories = siteConfig.categories.filter(c => c !== cat);
+    siteConfig.categories = siteConfig.categories.filter(c => c.name !== name);
     try{
       await saveSiteConfig(siteHandle, siteConfig);
       renderCategoryManageList();
-      setCategoryStatus(`"${cat}" 카테고리를 삭제했습니다.`, 'ok');
+      setCategoryStatus(`"${name}" 카테고리를 삭제했습니다.`, 'ok');
+    } catch(e){
+      setCategoryStatus('저장에 실패했습니다: ' + (e && e.message ? e.message : e), 'error');
+    }
+  }
+
+  async function onRemoveSubcategory(parentName, subName){
+    const parent = siteConfig.categories.find(c => c.name === parentName);
+    if (!parent) return;
+    parent.subcategories = parent.subcategories.filter(s => s !== subName);
+    try{
+      await saveSiteConfig(siteHandle, siteConfig);
+      renderCategoryManageList();
+      setCategoryStatus(`"${subName}" 하위 카테고리를 삭제했습니다.`, 'ok');
+    } catch(e){
+      setCategoryStatus('저장에 실패했습니다: ' + (e && e.message ? e.message : e), 'error');
+    }
+  }
+
+  async function onAddSubcategory(parentName, name){
+    if (!name){
+      setCategoryStatus('하위 카테고리 이름을 입력해주세요.', 'error');
+      return;
+    }
+    if (categoryNameExists(name)){
+      setCategoryStatus('이미 있는 카테고리 이름입니다.', 'error');
+      return;
+    }
+    const parent = siteConfig.categories.find(c => c.name === parentName);
+    if (!parent) return;
+    parent.subcategories.push(name);
+    try{
+      await saveSiteConfig(siteHandle, siteConfig);
+      renderCategoryManageList();
+      setCategoryStatus(`"${parentName}" 아래에 "${name}" 하위 카테고리를 추가했습니다.`, 'ok');
     } catch(e){
       setCategoryStatus('저장에 실패했습니다: ' + (e && e.message ? e.message : e), 'error');
     }
@@ -236,11 +259,11 @@
       setCategoryStatus('카테고리 이름을 입력해주세요.', 'error');
       return;
     }
-    if (siteConfig.categories.includes(name)){
+    if (categoryNameExists(name)){
       setCategoryStatus('이미 있는 카테고리 이름입니다.', 'error');
       return;
     }
-    siteConfig.categories.push(name);
+    siteConfig.categories.push({ name, subcategories: [] });
     try{
       await saveSiteConfig(siteHandle, siteConfig);
       newCategoryInput.value = '';
@@ -248,37 +271,6 @@
       setCategoryStatus(`"${name}" 카테고리를 추가했습니다.`, 'ok');
     } catch(e){
       setCategoryStatus('저장에 실패했습니다: ' + (e && e.message ? e.message : e), 'error');
-    }
-  });
-
-  // ---------- 프로필 사진 ----------
-  changeAvatarBtn.addEventListener('click', () => avatarFileInput.click());
-
-  avatarFileInput.addEventListener('change', async () => {
-    const file = avatarFileInput.files && avatarFileInput.files[0];
-    avatarFileInput.value = '';
-    if (!file) return;
-
-    try{
-      setAvatarStatus('저장 중…', '');
-      const assetsDir = await getNestedDirHandle(siteHandle, ['assets'], { create: true });
-      const ext = (file.name.match(/\.[^.]+$/) || ['.jpg'])[0].toLowerCase();
-      const newRelPath = `assets/profile-photo${ext}`;
-
-      // 확장자가 바뀌어 파일명이 달라졌다면 이전 프로필 사진 파일은 지워서 남지 않게 함
-      if (siteConfig.avatar && siteConfig.avatar !== newRelPath){
-        await removeFileIfExists(assetsDir, siteConfig.avatar.split('/').pop());
-      }
-      await writeFile(assetsDir, `profile-photo${ext}`, file);
-
-      siteConfig.avatar = newRelPath;
-      await saveSiteConfig(siteHandle, siteConfig);
-
-      window.currentAvatarUrl = URL.createObjectURL(file);
-      renderAvatarPreview();
-      setAvatarStatus('프로필 사진이 변경되었습니다.', 'ok');
-    } catch(e){
-      setAvatarStatus('저장에 실패했습니다: ' + (e && e.message ? e.message : e), 'error');
     }
   });
 
@@ -335,11 +327,6 @@
     editorGate.hidden = true;
     siteConfig = await loadSiteConfig(handle);
 
-    if (siteConfig.avatar){
-      const url = await readFileAsObjectURLByPath(handle, siteConfig.avatar);
-      if (url) window.currentAvatarUrl = url;
-    }
-    renderAvatarPreview();
     renderCategoryManageList();
     updatePasswordSectionMode();
 

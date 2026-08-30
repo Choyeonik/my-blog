@@ -36,7 +36,7 @@
     <!-- 나의 프로필 -->
     <section class="profile">
       <div class="profile-avatar">
-        <img id="sidebarAvatar" src="" alt="프로필 사진">
+        <img id="sidebarAvatar" src="assets/profile-photo.jpg" alt="프로필 사진">
       </div>
       <h2 class="profile-name">Hello, Yeonnnn!</h2>
       <p class="profile-title">Yeonnnn</p>
@@ -155,26 +155,13 @@
     return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
   }
 
-  function avatarDataUri(seed, size){
-    const n = hashSeed(String(seed));
-    const bg = 222 + (n % 10);
-    const fg = 170 + (n % 12);
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100">`
-      + `<rect width="100" height="100" fill="rgb(${bg},${bg},${bg-4})"/>`
-      + `<circle cx="50" cy="38" r="18" fill="rgb(${fg},${fg},${fg})"/>`
-      + `<path d="M14 92c4-24 20-36 36-36s32 12 36 36" fill="rgb(${fg},${fg},${fg})"/>`
-      + `</svg>`;
-    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
-  }
-
   // 실제로 화면에 렌더링되는 게시글 목록. 폴더 연결 전이거나 아직 쓴 글이 없으면 빈 배열이고,
   // 폴더 연결에 성공하면 posts/manifest.json에서 읽은 real posts(실제 글)로 교체됩니다.
   let posts = [];
   let usingRealPosts = false;   // 실제 posts 폴더를 읽어서 쓰고 있는지 여부
 
-  // 카테고리 목록/프로필 사진 — site-config.json(설정 페이지에서 관리)을 불러오기 전엔 기본값 사용
+  // 카테고리 목록 — site-config.json(설정 페이지에서 관리)을 불러오기 전엔 기본값 사용
   let categories = DEFAULT_CATEGORIES.slice();
-  let avatarUrl = null;
 
   // 자주 사용하는 DOM 요소를 미리 찾아둠
   const grid = document.getElementById('grid');
@@ -189,26 +176,48 @@
     return filter;
   }
 
-  let currentFilter = 'total';   // 현재 선택된 카테고리 (total/<카테고리 이름>/about)
+  let currentFilter = 'total';   // 현재 선택된 카테고리 (total/<카테고리 이름>/<하위 카테고리 이름>/about)
+
+  // filter로 선택된 카테고리(상위든 하위든)에 해당하는 게시글의 category 값 목록을 반환.
+  // - 상위 카테고리를 선택하면 그 상위 이름 + 모든 하위 카테고리 이름을 합쳐서(=하위 글까지 포함) 보여줌
+  // - 하위 카테고리를 선택하면 그 하위 이름 하나만 정확히 보여줌
+  function categoryNamesForFilter(filter){
+    const parent = categories.find(c => c.name === filter);
+    if (parent) return [parent.name, ...parent.subcategories];
+    return [filter];
+  }
 
   // 사이드바 카테고리 옆에 표시되는 게시글 개수를 posts 배열 기준으로 계산해서 채움
   function updateCounts(){
     const counts = {};
     posts.forEach(p => { counts[p.category] = (counts[p.category] || 0) + 1; });
     document.getElementById('totalCount').textContent = posts.length;
-    document.querySelectorAll('.category-sub a').forEach(a => {
+    document.querySelectorAll('.category-sub a[data-filter]').forEach(a => {
       const f = a.dataset.filter;
+      if (f === 'about') return;
       const countEl = a.querySelector('.count');
-      if (countEl) countEl.textContent = counts[f] || 0;
+      if (!countEl) return;
+      const total = categoryNamesForFilter(f).reduce((sum, name) => sum + (counts[name] || 0), 0);
+      countEl.textContent = total;
     });
   }
 
   // 사이드바의 카테고리 목록(Total 아래, About 위)을 categories 배열 기준으로 다시 그림
+  // (하위 카테고리가 있으면 그 아래 한 단계 더 들여써서 표시)
   // + 각 항목에 클릭 이벤트를 다시 연결함 (설정에서 카테고리가 바뀌면 이 함수를 다시 호출)
   function renderCategorySidebar(){
     const sub = document.getElementById('categorySubList');
     sub.innerHTML = categories.map(cat => `
-      <li><a href="#" data-filter="${escapeHtml(cat)}">${escapeHtml(cat)} <span class="count">0</span></a></li>
+      <li>
+        <a href="#" data-filter="${escapeHtml(cat.name)}">${escapeHtml(cat.name)} <span class="count">0</span></a>
+        ${cat.subcategories.length ? `
+          <ul class="category-sub-nested">
+            ${cat.subcategories.map(sc => `
+              <li><a href="#" data-filter="${escapeHtml(sc)}">${escapeHtml(sc)} <span class="count">0</span></a></li>
+            `).join('')}
+          </ul>
+        ` : ''}
+      </li>
     `).join('') + `<li><a href="#" data-filter="about">About</a></li>`;
     sub.querySelectorAll('a').forEach(a => {
       a.addEventListener('click', (e) => {
@@ -255,7 +264,7 @@
   function aboutCardHTML(){
     return `
       <div class="about-card">
-        <div class="profile-avatar"><img src="${avatarUrl || avatarDataUri('portfolio-profile', 200)}" alt="프로필 사진"></div>
+        <div class="profile-avatar"><img src="assets/profile-photo.jpg" alt="프로필 사진"></div>
         <h2>Yeonnnn</h2>
         <p>
           안녕하세요. Yeonnnn입니다. <br>개발을 공부하고 있는 부트캠프 수강생입니다. 이 곳은 부트캠프에서 무엇을 배웠는지,
@@ -282,7 +291,11 @@
       return;
     }
 
-    let filtered = posts.filter(p => currentFilter === 'total' || p.category === currentFilter);
+    let filtered = posts;
+    if (currentFilter !== 'total'){
+      const names = categoryNamesForFilter(currentFilter);
+      filtered = posts.filter(p => names.includes(p.category));
+    }
     if (query) filtered = filtered.filter(p => p.title.toLowerCase().includes(query));
 
     if (filtered.length === 0){
@@ -324,12 +337,6 @@
     document.body.classList.toggle('sidebar-collapsed');
   });
 
-  // 프로필 사진: 폴더 연결 후 실제 사진(avatarUrl)이 있으면 그걸, 없으면 생성된 플레이스홀더를 사용
-  function applyAvatar(){
-    document.getElementById('sidebarAvatar').src = avatarUrl || avatarDataUri('portfolio-profile', 200);
-  }
-  applyAvatar();
-
   renderCategorySidebar();   // DEFAULT_CATEGORIES 기준으로 카테고리 목록 최초 렌더링
 
   // ==========================================================
@@ -357,17 +364,11 @@
     };
   }
 
-  // 폴더 핸들을 받아 site-config.json(카테고리 목록, 프로필 사진)을 읽고 화면에 반영
+  // 폴더 핸들을 받아 site-config.json(카테고리 목록)을 읽고 화면에 반영
   async function applySiteConfig(siteHandle){
     const config = await loadSiteConfig(siteHandle);
     categories = config.categories;
-    if (config.avatar){
-      const url = await readFileAsObjectURLByPath(siteHandle, config.avatar);
-      if (url) avatarUrl = url;
-    }
     renderCategorySidebar();
-    applyAvatar();
-    if (currentFilter === 'about') render();   // About 카드가 보이는 중이면 사진도 새로 반영
   }
 
   // 폴더 핸들을 받아 posts/manifest.json을 읽고, 성공하면 화면 데이터를 실제 글로 교체

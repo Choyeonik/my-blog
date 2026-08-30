@@ -169,8 +169,17 @@
   }
 
   // 카테고리 <select>를 site-config.json의 카테고리 목록으로 채움
+  // 하위 카테고리가 있는 항목은 optgroup으로 묶고, 상위 카테고리 자체도 글을 쓸 수 있도록
+  // optgroup 안에 "상위 카테고리 이름"과 동일한 값의 옵션을 하나 넣어둠
   function populateCategorySelect(categories){
-    fieldCategory.innerHTML = categories.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+    fieldCategory.innerHTML = categories.map(cat => {
+      const parentOption = `<option value="${escapeHtml(cat.name)}">${escapeHtml(cat.name)}</option>`;
+      if (!cat.subcategories.length) return parentOption;
+      const subOptions = cat.subcategories
+        .map(sc => `<option value="${escapeHtml(sc)}">　└ ${escapeHtml(sc)}</option>`)
+        .join('');
+      return `<optgroup label="${escapeHtml(cat.name)}">${parentOption}${subOptions}</optgroup>`;
+    }).join('');
   }
 
   // ---------- 작업 폴더 연결 ----------
