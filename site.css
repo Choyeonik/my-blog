@@ -455,6 +455,7 @@ body.sidebar-collapsed .sidebar > *:not(.sidebar-toggle){
   height: auto;                 /* 가로폭만 100%, 높이는 원본 비율대로 */
   display: block;
   transition: transform .5s ease;
+  filter: none;                 /* 썸네일 사진은 그레이스케일 필터 제외(원본 색 그대로) */
 }
 .card:hover .card-img img{ transform: scale(1.035); }
 
