@@ -323,12 +323,17 @@
       const postsDir = await getPostsDirHandle(handle, { create: true });
       const assetsDir = await getNestedDirHandle(postsDir, ['assets', lockedSlug], { create: true });
 
+      // 마크다운 이미지 문법 ![alt](경로)의 경로 부분은 공백/괄호가 그대로 들어가면
+      // (CommonMark 규칙상) 링크로 인식되지 않고 그냥 글자로 남아버림.
+      // 슬러그/파일명에 공백·한글·괄호가 들어가도 항상 안전하도록 각 경로 조각을 인코딩해서 넣음
+      // (실제 저장되는 폴더/파일명 자체는 원래 이름 그대로 유지됨 — 마크다운 표기만 인코딩)
       const inserts = [];
       for (const file of files){
         const name = await uniqueFileName(assetsDir, file.name);
         await writeFile(assetsDir, name, file);
         const alt = file.name.replace(/\.[^.]+$/, '');
-        inserts.push(`![${alt}](assets/${lockedSlug}/${name})`);
+        const encodedPath = `assets/${encodeURIComponent(lockedSlug)}/${encodeURIComponent(name)}`;
+        inserts.push(`![${alt}](${encodedPath})`);
       }
       insertAtCursor(fieldBody, inserts.join('\n') + '\n');
       updatePreview();
