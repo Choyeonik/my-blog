@@ -274,7 +274,7 @@
       const recent = [...manifest].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 5);
       editorRecentList.innerHTML = recent.map(p => `
         <li class="recent-item-row">
-          <a href="posts/${postRelPath(p)}" target="_blank" rel="noopener">
+          <a href="posts/${encodePathForUrl(postRelPath(p))}" target="_blank" rel="noopener">
             <div class="recent-title">${escapeHtml(p.title)}</div>
             <div class="recent-date">${p.date}</div>
           </a>

@@ -225,7 +225,7 @@
     const recent = [...posts].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 5);
     recentList.innerHTML = recent.map(p => `
       <li>
-        <a href="${p.filename ? 'posts/' + postRelPath(p) : '#'}">
+        <a href="${p.filename ? 'posts/' + encodePathForUrl(postRelPath(p)) : '#'}">
           <div class="recent-title">${p.title}</div>
           <div class="recent-date">${p.date}</div>
         </a>
@@ -237,8 +237,8 @@
   // 실제 글(filename 있음)은 posts/파일명.html로 이동하는 링크로 감싸고,
   // 샘플 글(filename 없음)은 클릭해도 이동하지 않도록 함
   function cardHTML(p){
-    const href = p.filename ? 'posts/' + postRelPath(p) : '#';
-    const thumbSrc = p.thumbnail ? 'posts/' + p.thumbnail : placeholderDataUri(p.seed);
+    const href = p.filename ? 'posts/' + encodePathForUrl(postRelPath(p)) : '#';
+    const thumbSrc = p.thumbnail ? 'posts/' + encodePathForUrl(p.thumbnail) : placeholderDataUri(p.seed);
     return `
       <article class="card" data-category="${p.category}" data-title="${p.title.toLowerCase()}">
         <a class="card-link" href="${href}">
