@@ -204,7 +204,7 @@
       const recent = [...manifest].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 5);
       editorRecentList.innerHTML = recent.map(p => `
         <li>
-          <a href="posts/${p.filename}" target="_blank" rel="noopener">
+          <a href="posts/${postRelPath(p)}" target="_blank" rel="noopener">
             <div class="recent-title">${escapeHtml(p.title)}</div>
             <div class="recent-date">${p.date}</div>
           </a>
@@ -373,30 +373,39 @@
         n++;
       }
 
-      manifest.push({ slug, filename, title, category, description, date, markdown });
+      // 카테고리(상위/하위 모두)에 맞는 폴더 경로를 이 글 생성 시점에 한 번 정해서 저장해둠
+      // (나중에 그 카테고리가 삭제/변경되어도 이미 저장된 글의 위치는 그대로 유지하기 위함)
+      const folder = categoryFolderParts(siteConfig.categories, category);
+      manifest.push({ slug, filename, folder, title, category, description, date, markdown });
 
       // 발행일(오래된 글 -> 최신 글) 순으로 정렬해야 "이전 글=더 과거/다음 글=더 최신"이 맞음
       manifest.sort((a, b) => a.date.localeCompare(b.date) || a.filename.localeCompare(b.filename));
 
       // 글 전체를 다시 생성 (prev/next가 모든 글에서 정확하도록)
+      // + 카테고리 폴더 구조로 저장 (예: posts/Study/Lecture/2026-08-30-제목.html)
       for (let i = 0; i < manifest.length; i++){
         const p = manifest[i];
-        const prev = i > 0 ? { title: manifest[i-1].title, filename: manifest[i-1].filename } : null;
-        const next = i < manifest.length - 1 ? { title: manifest[i+1].title, filename: manifest[i+1].filename } : null;
+        const pFolder = p.folder || [];   // 예전에 저장된 글은 folder가 없어서 posts 바로 아래 취급
+        const prev = i > 0 ? { title: manifest[i-1].title, filename: manifest[i-1].filename, folder: manifest[i-1].folder || [] } : null;
+        const next = i < manifest.length - 1 ? { title: manifest[i+1].title, filename: manifest[i+1].filename, folder: manifest[i+1].folder || [] } : null;
         const html = buildPostHtml({
           title: p.title,
           category: p.category,
           description: p.description,
           bodyHtml: renderMarkdown(p.markdown),
           date: p.date,
-          prev, next
+          prev, next,
+          folder: pFolder
         });
-        await writeText(postsDir, p.filename, html);
+        const targetDir = pFolder.length
+          ? await getNestedDirHandle(postsDir, pFolder, { create: true })
+          : postsDir;
+        await writeText(targetDir, p.filename, html);
       }
 
       await writeJSON(postsDir, 'manifest.json', manifest);
 
-      setStatus(`게시 완료! → posts/${filename}`, 'ok');
+      setStatus(`게시 완료! → posts/${postRelPath({ folder, filename })}`, 'ok');
       await refreshRecentList();
 
       // 다음 글 작성을 위해 폼 비우기
