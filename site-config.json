@@ -1,8 +1,19 @@
 {
   "categories": [
-    { "name": "Project", "subcategories": [] },
-    { "name": "Study", "subcategories": [] },
-    { "name": "Photo", "subcategories": [] }
+    {
+      "name": "Project",
+      "subcategories": []
+    },
+    {
+      "name": "Study",
+      "subcategories": [
+        "배운 것"
+      ]
+    },
+    {
+      "name": "Photo",
+      "subcategories": []
+    }
   ],
   "passwordHash": null
 }
