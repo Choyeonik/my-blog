@@ -13,7 +13,6 @@
 <body>
 
 <header class="site-topbar">
-  <div class="brand">Portfolio Blog</div>
   <nav><a href="index.html">← 홈으로</a></nav>
 </header>
 
@@ -67,6 +66,22 @@
           <select id="fieldCategory"></select>
         </div>
 
+        <!-- 썸네일 사진 (홈 화면 카드/최근 글 목록에 보여줄 사진, 선택 사항) -->
+        <div class="field">
+          <label>썸네일 사진 (선택)</label>
+          <div class="thumb-setting">
+            <div class="thumb-preview" id="thumbPreviewWrap" hidden>
+              <img id="thumbPreview" alt="썸네일 미리보기">
+            </div>
+            <div class="thumb-setting-actions">
+              <button type="button" class="btn btn-sm" id="chooseThumbBtn">사진 선택</button>
+              <button type="button" class="btn btn-sm" id="removeThumbBtn" hidden>제거</button>
+              <input type="file" id="thumbFileInput" accept="image/*" hidden>
+              <p class="md-toolbar-hint">선택하지 않으면 홈 화면에 자동 생성된 무늬가 대신 표시됩니다.</p>
+            </div>
+          </div>
+        </div>
+
         <!-- 설명 -->
         <div class="field field--desc">
           <label for="fieldDesc">설명</label>
@@ -89,13 +104,14 @@
 
         <div class="editor-actions">
           <button type="submit" class="btn btn-primary" id="publishBtn" disabled>게시하기</button>
+          <button type="button" class="btn btn-sm" id="cancelEditBtn" hidden>수정 취소</button>
         </div>
 
         <p class="editor-status" id="statusMsg"></p>
 
       </form>
 
-      <!-- 최근 작성한 글 (manifest.json 기준으로 채워짐) -->
+      <!-- 최근 작성한 글 (manifest.json 기준으로 채워짐). "수정" 버튼으로 내용을 불러와 고칠 수 있음 -->
       <section class="editor-recent" id="editorRecent" hidden>
         <div class="side-heading">최근 작성한 글</div>
         <ul class="recent-list" id="editorRecentList"></ul>
@@ -123,6 +139,12 @@
   const editorRecentList = document.getElementById('editorRecentList');
   const postForm = document.getElementById('postForm');
 
+  const chooseThumbBtn = document.getElementById('chooseThumbBtn');
+  const removeThumbBtn = document.getElementById('removeThumbBtn');
+  const thumbFileInput = document.getElementById('thumbFileInput');
+  const thumbPreviewWrap = document.getElementById('thumbPreviewWrap');
+  const thumbPreview = document.getElementById('thumbPreview');
+
   const editorGate = document.getElementById('editorGate');
   const gateStatus = document.getElementById('gateStatus');
   const connectBtn = document.getElementById('connectBtn');
@@ -139,6 +161,54 @@
   // 한 번 정해지면 이후 제목을 바꿔도 같은 폴더를 계속 씀(이미 삽입된 이미지 경로가 안 깨지도록).
   // 게시 시에도 이 slug를 그대로 파일명에 사용해 이미지 폴더와 글 slug가 항상 일치하게 함.
   let lockedSlug = null;
+
+  // null이면 "새 글 쓰기" 모드. 수정 중인 글의 manifest 항목(수정 버튼을 눌렀을 때 채워짐)이면
+  // "수정" 모드로 동작 — 게시 시 새 글을 추가하는 대신 이 filename의 항목을 그대로 덮어씀
+  // (slug/filename/date는 다른 글의 링크가 깨지지 않도록 그대로 유지)
+  let editingEntry = null;
+  const cancelEditBtn = document.getElementById('cancelEditBtn');
+
+  // 썸네일 사진 상태: thumbFile은 새로 고른(아직 저장 전) 파일, thumbRelPath는 지금 이 글에
+  // 이미 저장돼 있는 썸네일 경로(수정 모드에서 불러온 값), removeThumbRequested는 "제거"를 눌렀는지
+  let thumbFile = null;
+  let thumbRelPath = null;
+  let removeThumbRequested = false;
+
+  function showThumbPreview(url){
+    thumbPreview.src = url;
+    thumbPreviewWrap.hidden = false;
+    removeThumbBtn.hidden = false;
+  }
+  function hideThumbPreview(){
+    thumbPreview.src = '';
+    thumbPreviewWrap.hidden = true;
+    removeThumbBtn.hidden = true;
+  }
+
+  chooseThumbBtn.addEventListener('click', () => {
+    if (!fieldTitle.value.trim()){
+      setStatus('썸네일을 넣기 전에 제목을 먼저 입력해주세요.', 'error');
+      fieldTitle.focus();
+      return;
+    }
+    thumbFileInput.click();
+  });
+
+  thumbFileInput.addEventListener('change', () => {
+    const file = thumbFileInput.files && thumbFileInput.files[0];
+    thumbFileInput.value = '';
+    if (!file) return;
+    if (!lockedSlug) lockedSlug = slugify(fieldTitle.value.trim());
+    thumbFile = file;
+    removeThumbRequested = false;
+    showThumbPreview(URL.createObjectURL(file));
+  });
+
+  removeThumbBtn.addEventListener('click', () => {
+    thumbFile = null;
+    removeThumbRequested = true;
+    hideThumbPreview();
+  });
 
   // ---------- 본문 마크다운 실시간 미리보기 ----------
   function updatePreview(){
@@ -203,16 +273,93 @@
       }
       const recent = [...manifest].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 5);
       editorRecentList.innerHTML = recent.map(p => `
-        <li>
+        <li class="recent-item-row">
           <a href="posts/${postRelPath(p)}" target="_blank" rel="noopener">
             <div class="recent-title">${escapeHtml(p.title)}</div>
             <div class="recent-date">${p.date}</div>
           </a>
+          <button type="button" class="recent-edit-btn" data-filename="${escapeHtml(p.filename)}">수정</button>
         </li>
       `).join('');
+      editorRecentList.querySelectorAll('.recent-edit-btn').forEach(btn => {
+        btn.addEventListener('click', () => startEdit(btn.dataset.filename));
+      });
       editorRecent.hidden = false;
     } catch(e){
       editorRecent.hidden = true;
+    }
+  }
+
+  // 수정 모드 여부에 따라 게시 버튼 문구/수정 취소 버튼 표시를 맞춤
+  function updateEditModeUI(){
+    publishBtn.textContent = editingEntry ? '수정 완료' : '게시하기';
+    cancelEditBtn.hidden = !editingEntry;
+  }
+
+  // 폼을 비우고 "새 글 쓰기" 상태로 되돌림 (게시 성공 후, 또는 수정 취소 시 사용)
+  function resetForm(){
+    editingEntry = null;
+    lockedSlug = null;
+    thumbFile = null;
+    thumbRelPath = null;
+    removeThumbRequested = false;
+    hideThumbPreview();
+    fieldTitle.value = '';
+    fieldDesc.value = '';
+    fieldBody.value = '';
+    updatePreview();
+    updatePublishState();
+    updateEditModeUI();
+  }
+  cancelEditBtn.addEventListener('click', () => {
+    resetForm();
+    setStatus('수정을 취소했습니다.', '');
+  });
+
+  // "최근 작성한 글"의 수정 버튼을 눌렀을 때: 그 글의 내용을 폼에 채워 넣고 수정 모드로 전환
+  async function startEdit(filename){
+    try{
+      const postsDir = await getPostsDirHandle(siteHandle, { create: false });
+      const manifest = await readJSON(postsDir, 'manifest.json');
+      const entry = Array.isArray(manifest) && manifest.find(p => p.filename === filename);
+      if (!entry){
+        setStatus('수정할 글을 찾을 수 없습니다.', 'error');
+        return;
+      }
+      editingEntry = entry;
+      lockedSlug = entry.slug;
+      fieldTitle.value = entry.title;
+      fieldCategory.value = entry.category;
+      fieldDesc.value = entry.description;
+      fieldBody.value = entry.markdown;
+
+      // 이미 저장된 썸네일이 있으면 미리보기로 불러옴
+      thumbFile = null;
+      removeThumbRequested = false;
+      thumbRelPath = entry.thumbnail || null;
+      if (thumbRelPath){
+        try{
+          const parts = thumbRelPath.split('/');
+          const name = parts.pop();
+          let dir = postsDir;
+          for (const part of parts) dir = await dir.getDirectoryHandle(part);
+          const fileHandle = await dir.getFileHandle(name);
+          const file = await fileHandle.getFile();
+          showThumbPreview(URL.createObjectURL(file));
+        } catch(e){
+          hideThumbPreview();
+        }
+      } else {
+        hideThumbPreview();
+      }
+
+      updatePreview();
+      updatePublishState();
+      updateEditModeUI();
+      setStatus(`"${entry.title}" 글을 수정하고 있습니다.`, '');
+      fieldTitle.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch(e){
+      setStatus('글을 불러오지 못했습니다: ' + (e && e.message ? e.message : e), 'error');
     }
   }
 
@@ -355,33 +502,74 @@
     const markdown = fieldBody.value;
     if (!title || !description || !markdown.trim()) return;
 
+    const isEditing = !!editingEntry;
     publishBtn.disabled = true;
     try{
-      setStatus('저장 중…', '');
+      setStatus(isEditing ? '수정 저장 중…' : '저장 중…', '');
       const handle = await ensureSiteHandle();
       const postsDir = await getPostsDirHandle(handle, { create: true });
 
       let manifest = await readJSON(postsDir, 'manifest.json');
       if (!Array.isArray(manifest)) manifest = [];
 
-      // slug/파일명이 겹치지 않도록 번호를 붙여 고유하게 만듦
-      // (이미지를 이미 넣었다면 그때 정해진 lockedSlug를 그대로 써서 이미지 폴더 경로와 일치시킴)
-      const date = todayISODate();
-      const baseSlug = lockedSlug || slugify(title);
-      let slug = baseSlug;
-      let filename = `${date}-${slug}.html`;
-      let n = 2;
-      const existingFilenames = new Set(manifest.map(p => p.filename));
-      while (existingFilenames.has(filename)){
-        slug = `${baseSlug}-${n}`;
-        filename = `${date}-${slug}.html`;
-        n++;
+      let targetEntry;
+      let oldFolder = null;   // 수정 중 카테고리가 바뀌면, 예전 폴더에 남는 파일을 지우기 위해 기억해둠
+
+      if (isEditing){
+        targetEntry = manifest.find(p => p.filename === editingEntry.filename);
+        if (!targetEntry){
+          setStatus('수정할 글을 찾을 수 없습니다(그 사이에 삭제되었을 수 있습니다).', 'error');
+          publishBtn.disabled = false;
+          return;
+        }
+        oldFolder = targetEntry.folder || [];
+        // slug/filename/date는 그대로 유지해서 다른 글의 이전/다음 글 링크나
+        // 외부에 공유된 주소가 깨지지 않도록 함. 내용만 갱신.
+        targetEntry.title = title;
+        targetEntry.category = category;
+        targetEntry.description = description;
+        targetEntry.markdown = markdown;
+        targetEntry.folder = categoryFolderParts(siteConfig.categories, category);
+      } else {
+        // slug/파일명이 겹치지 않도록 번호를 붙여 고유하게 만듦
+        // (이미지를 이미 넣었다면 그때 정해진 lockedSlug를 그대로 써서 이미지 폴더 경로와 일치시킴)
+        const date = todayISODate();
+        const baseSlug = lockedSlug || slugify(title);
+        let slug = baseSlug;
+        let filename = `${date}-${slug}.html`;
+        let n = 2;
+        const existingFilenames = new Set(manifest.map(p => p.filename));
+        while (existingFilenames.has(filename)){
+          slug = `${baseSlug}-${n}`;
+          filename = `${date}-${slug}.html`;
+          n++;
+        }
+        // 카테고리(상위/하위 모두)에 맞는 폴더 경로를 이 글 생성 시점에 한 번 정해서 저장해둠
+        // (나중에 그 카테고리가 삭제/변경되어도 이미 저장된 글의 위치는 그대로 유지하기 위함)
+        const folder = categoryFolderParts(siteConfig.categories, category);
+        targetEntry = { slug, filename, folder, title, category, description, date, markdown };
+        manifest.push(targetEntry);
       }
 
-      // 카테고리(상위/하위 모두)에 맞는 폴더 경로를 이 글 생성 시점에 한 번 정해서 저장해둠
-      // (나중에 그 카테고리가 삭제/변경되어도 이미 저장된 글의 위치는 그대로 유지하기 위함)
-      const folder = categoryFolderParts(siteConfig.categories, category);
-      manifest.push({ slug, filename, folder, title, category, description, date, markdown });
+      // 썸네일 사진 저장/삭제: 새로 고른 사진이 있으면 저장, "제거"를 눌렀으면 기존 파일을 지움
+      if (thumbFile){
+        const assetsDir = await getNestedDirHandle(postsDir, ['assets', lockedSlug], { create: true });
+        const ext = (thumbFile.name.match(/\.[^.]+$/) || ['.jpg'])[0].toLowerCase();
+        const name = `thumbnail${ext}`;
+        // 확장자가 바뀌어 예전 썸네일과 파일명이 달라졌다면 예전 파일은 지워서 남지 않게 함
+        if (targetEntry.thumbnail){
+          const prevName = targetEntry.thumbnail.split('/').pop();
+          if (prevName !== name) await removeFileIfExists(assetsDir, prevName);
+        }
+        await writeFile(assetsDir, name, thumbFile);
+        targetEntry.thumbnail = `assets/${lockedSlug}/${name}`;
+      } else if (removeThumbRequested && targetEntry.thumbnail){
+        const parts = targetEntry.thumbnail.split('/');
+        const name = parts.pop();
+        const dir = await getNestedDirHandle(postsDir, parts, { create: false }).catch(() => null);
+        if (dir) await removeFileIfExists(dir, name);
+        targetEntry.thumbnail = null;
+      }
 
       // 발행일(오래된 글 -> 최신 글) 순으로 정렬해야 "이전 글=더 과거/다음 글=더 최신"이 맞음
       manifest.sort((a, b) => a.date.localeCompare(b.date) || a.filename.localeCompare(b.filename));
@@ -400,7 +588,9 @@
           bodyHtml: renderMarkdown(p.markdown),
           date: p.date,
           prev, next,
-          folder: pFolder
+          folder: pFolder,
+          categories: siteConfig.categories,
+          manifest
         });
         const targetDir = pFolder.length
           ? await getNestedDirHandle(postsDir, pFolder, { create: true })
@@ -408,17 +598,19 @@
         await writeText(targetDir, p.filename, html);
       }
 
+      // 수정 중 카테고리가 바뀌어 저장 폴더가 달라졌다면, 예전 폴더에 남아있는 파일은 지움
+      if (isEditing && JSON.stringify(oldFolder) !== JSON.stringify(targetEntry.folder)){
+        const oldDir = oldFolder.length
+          ? await getNestedDirHandle(postsDir, oldFolder, { create: false }).catch(() => null)
+          : postsDir;
+        if (oldDir) await removeFileIfExists(oldDir, targetEntry.filename);
+      }
+
       await writeJSON(postsDir, 'manifest.json', manifest);
 
-      setStatus(`게시 완료! → posts/${postRelPath({ folder, filename })}`, 'ok');
+      setStatus(isEditing ? '수정 완료!' : `게시 완료! → posts/${postRelPath(targetEntry)}`, 'ok');
       await refreshRecentList();
-
-      // 다음 글 작성을 위해 폼 비우기
-      fieldTitle.value = '';
-      fieldDesc.value = '';
-      fieldBody.value = '';
-      lockedSlug = null;
-      updatePreview();
+      resetForm();
     } catch(e){
       setStatus('저장에 실패했습니다: ' + (e && e.message ? e.message : e), 'error');
     } finally {

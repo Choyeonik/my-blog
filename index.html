@@ -178,15 +178,6 @@
 
   let currentFilter = 'total';   // 현재 선택된 카테고리 (total/<카테고리 이름>/<하위 카테고리 이름>/about)
 
-  // filter로 선택된 카테고리(상위든 하위든)에 해당하는 게시글의 category 값 목록을 반환.
-  // - 상위 카테고리를 선택하면 그 상위 이름 + 모든 하위 카테고리 이름을 합쳐서(=하위 글까지 포함) 보여줌
-  // - 하위 카테고리를 선택하면 그 하위 이름 하나만 정확히 보여줌
-  function categoryNamesForFilter(filter){
-    const parent = categories.find(c => c.name === filter);
-    if (parent) return [parent.name, ...parent.subcategories];
-    return [filter];
-  }
-
   // 사이드바 카테고리 옆에 표시되는 게시글 개수를 posts 배열 기준으로 계산해서 채움
   function updateCounts(){
     const counts = {};
@@ -197,7 +188,7 @@
       if (f === 'about') return;
       const countEl = a.querySelector('.count');
       if (!countEl) return;
-      const total = categoryNamesForFilter(f).reduce((sum, name) => sum + (counts[name] || 0), 0);
+      const total = categoryNamesForFilter(categories, f).reduce((sum, name) => sum + (counts[name] || 0), 0);
       countEl.textContent = total;
     });
   }
@@ -247,10 +238,11 @@
   // 샘플 글(filename 없음)은 클릭해도 이동하지 않도록 함
   function cardHTML(p){
     const href = p.filename ? 'posts/' + postRelPath(p) : '#';
+    const thumbSrc = p.thumbnail ? 'posts/' + p.thumbnail : placeholderDataUri(p.seed);
     return `
       <article class="card" data-category="${p.category}" data-title="${p.title.toLowerCase()}">
         <a class="card-link" href="${href}">
-          <div class="card-img"><img src="${placeholderDataUri(p.seed)}" alt="${p.title}" loading="lazy"></div>
+          <div class="card-img"><img src="${thumbSrc}" alt="${p.title}" loading="lazy"></div>
           <div class="card-tag">${p.category}</div>
           <h3>${p.title}</h3>
           <p>${p.excerpt}</p>
@@ -293,7 +285,7 @@
 
     let filtered = posts;
     if (currentFilter !== 'total'){
-      const names = categoryNamesForFilter(currentFilter);
+      const names = categoryNamesForFilter(categories, currentFilter);
       filtered = posts.filter(p => names.includes(p.category));
     }
     if (query) filtered = filtered.filter(p => p.title.toLowerCase().includes(query));
@@ -361,7 +353,8 @@
       date: String(entry.date || '').replace(/-/g, '.'),
       seed: entry.slug || entry.filename,
       filename: entry.filename,
-      folder: entry.folder || []   // posts 폴더 기준 카테고리 하위 폴더 경로 (없으면 posts 바로 아래)
+      folder: entry.folder || [],   // posts 폴더 기준 카테고리 하위 폴더 경로 (없으면 posts 바로 아래)
+      thumbnail: entry.thumbnail || null   // posts 폴더 기준 썸네일 사진 경로 (없으면 무늬 플레이스홀더 사용)
     };
   }
 
@@ -427,11 +420,22 @@
     setFolderStatus(loaded ? '실제 글 연동됨' : '폴더 연결됨 (아직 저장된 글 없음)', true);
   }
 
+  // 개별 글 페이지의 사이드바(카테고리/검색)에서 index.html?filter=... 또는 ?q=...로
+  // 넘어왔을 때, 그 조건을 그대로 반영해서 보여줌
+  function applyUrlParams(){
+    const params = new URLSearchParams(location.search);
+    const filter = params.get('filter');
+    const q = params.get('q');
+    if (q) searchInput.value = q;
+    if (filter) setActive(filter);       // setActive 안에서 render()까지 호출됨
+    else if (q) render();
+  }
+
   // ---------- 초기 실행 ----------
   updateCounts();   // 사이드바 카테고리 옆 숫자(개수) 채우기
   renderRecent();   // "최근 글" 리스트 채우기
   render();         // 메인 그리드에 게시글 카드 렌더링
-  tryAutoConnect(); // 이전에 연결한 폴더가 있으면 조용히 실제 글로 교체 시도
+  tryAutoConnect().finally(applyUrlParams);   // 실제 글/카테고리를 불러온 뒤에 URL의 필터/검색어를 적용
 </script>
 
 </body>

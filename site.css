@@ -213,6 +213,22 @@ body.sidebar-collapsed .sidebar > *:not(.sidebar-toggle){
   height: 15px;
   stroke: var(--muted);
 }
+/* 개별 글 페이지의 검색창은 <form>으로 실제 제출되므로, 아이콘을 클릭 가능한 제출 버튼으로 감싼 것 */
+.search-box form{ position: relative; }
+.search-box button{
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 15px;
+  height: 15px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  line-height: 0;
+}
+.search-box button svg{ position: static; transform: none; }
 
 /* Section heading (shared) */
 .side-heading{
@@ -314,6 +330,27 @@ body.sidebar-collapsed .sidebar > *:not(.sidebar-toggle){
   color: #b7b5ae;
 }
 
+/* 글쓰기 화면의 "최근 작성한 글" 목록 항목(제목/날짜 + 수정 버튼을 가로로 배치) */
+.recent-item-row{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.recent-item-row a{ flex: 1; min-width: 0; }
+.recent-edit-btn{
+  font: inherit;
+  font-size: 11px;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  flex-shrink: 0;
+}
+.recent-edit-btn:hover{ color: var(--ink); }
+
 /* ---------- MAIN (오른쪽 콘텐츠 영역) ---------- */
 .main{
   flex: 1;           /* 사이드바를 제외한 나머지 공간을 전부 차지 */
@@ -328,11 +365,15 @@ body.sidebar-collapsed .sidebar > *:not(.sidebar-toggle){
   margin: 0 auto;
 }
 
-/* 좁은 폭(글쓰기/개별 글 페이지처럼 사이드바가 없는 페이지)용 콘텐츠 컨테이너 */
+/* 좁은 폭(글쓰기/설정 페이지)이거나, 사이드바 옆의 좁은 본문(개별 글 페이지)으로 쓰는 컨테이너.
+   flex:1/min-width:0은 .layout(사이드바+본문) 안에서 쓰일 때만 의미가 있고,
+   .layout 없이 단독으로 <main>에 쓰일 때는 아무 영향이 없음 */
 .page-inner{
   max-width: 760px;
   margin: 0 auto;
   padding: 60px 40px 100px;
+  flex: 1;
+  min-width: 0;
 }
 
 /* 상단 "Total" 타이틀 영역 — 세로 여백을 크게 주고 제목/설명을 가운데 정렬 */
@@ -477,9 +518,8 @@ body.sidebar-collapsed .sidebar > *:not(.sidebar-toggle){
   padding: 22px 40px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
 }
-.site-topbar .brand{ margin-bottom: 0; }
 .site-topbar nav a{
   font-size: 12px;
   letter-spacing: 0.04em;
@@ -543,6 +583,29 @@ body.sidebar-collapsed .sidebar > *:not(.sidebar-toggle){
 .md-toolbar-hint{
   font-size: 11.5px;
   color: var(--muted);
+}
+
+/* 썸네일 사진 선택 (write.html) */
+.thumb-setting{
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.thumb-preview{
+  width: 96px;
+  height: 96px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #e9e7e1;
+  border: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.thumb-preview img{ width: 100%; height: 100%; object-fit: cover; filter: none; }
+.thumb-setting-actions{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 /* 본문(마크다운) 영역: 왼쪽 입력 / 오른쪽 미리보기 2단 */
@@ -795,6 +858,19 @@ body.sidebar-collapsed .sidebar > *:not(.sidebar-toggle){
   color: var(--muted);
   font-style: italic;
 }
+.post-body table{
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 24px;
+  font-size: 14px;
+}
+.post-body th,
+.post-body td{
+  border: 1px solid var(--line);
+  padding: 8px 12px;
+  text-align: left;
+}
+.post-body th{ background: var(--line-soft); font-weight: 500; }
 .post-body code{
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   font-size: 13px;
