@@ -167,44 +167,41 @@ async function writeFile(dirHandle, name, fileOrBlob){
   await writable.close();
 }
 
-/* ---------- 경로로 파일 읽기 / 파일 삭제 ---------- */
-// "assets/profile-photo.jpg" 같은 상대 경로를 siteHandle 기준으로 따라가서
-// 파일을 읽고, 화면에 <img src="...">로 바로 쓸 수 있는 objectURL로 변환
-async function readFileAsObjectURLByPath(siteHandle, relPath){
-  if (!relPath) return null;
-  try{
-    const parts = relPath.split('/');
-    const filename = parts.pop();
-    let dir = siteHandle;
-    for (const part of parts) dir = await dir.getDirectoryHandle(part);
-    const fileHandle = await dir.getFileHandle(filename);
-    const file = await fileHandle.getFile();
-    return URL.createObjectURL(file);
-  } catch(e){
-    return null;   // 파일이 없거나 삭제된 경우
-  }
-}
-
-// 폴더 안의 파일을 삭제(있으면). 없어도 에러 없이 조용히 넘어감
-// (프로필 사진을 다른 확장자 파일로 교체할 때 이전 파일을 지우는 용도)
-async function removeFileIfExists(dirHandle, name){
-  try{ await dirHandle.removeEntry(name); } catch(e){ /* 이미 없으면 무시 */ }
-}
-
-/* ---------- 사이트 설정(site-config.json): 카테고리 / 프로필 사진 / 비밀번호 ---------- */
-// 카테고리는 필터링 값이자 화면에 보이는 이름 그 자체인 문자열 목록입니다.
+/* ---------- 사이트 설정(site-config.json): 카테고리 / 비밀번호 ---------- */
+// 카테고리는 { name, subcategories: [문자열...] } 형태의 목록입니다.
+// name은 필터링 값이자 화면에 보이는 이름 그 자체이고, subcategories는 그 아래
+// 한 단계 더 있는 하위 카테고리 이름들(마찬가지로 필터링 값 겸 표시 이름)입니다.
 // (설정 페이지에서 추가/삭제하며, write.html의 카테고리 선택 목록도 이 값을 그대로 씀)
-const DEFAULT_CATEGORIES = ['Project', 'Study', 'Photo'];
+const DEFAULT_CATEGORIES = [
+  { name: 'Project', subcategories: [] },
+  { name: 'Study', subcategories: [] },
+  { name: 'Photo', subcategories: [] }
+];
+
+// 예전 버전(문자열 배열)과 현재 버전({name, subcategories} 배열) 모두 지원하기 위해
+// 저장된 값을 항상 { name, subcategories } 배열 형태로 맞춰서 반환
+function normalizeCategories(raw){
+  if (!Array.isArray(raw) || raw.length === 0){
+    return DEFAULT_CATEGORIES.map(c => ({ name: c.name, subcategories: [] }));
+  }
+  return raw
+    .map(item => {
+      if (typeof item === 'string') return { name: item, subcategories: [] };
+      const name = item && typeof item.name === 'string' ? item.name : '';
+      const subcategories = item && Array.isArray(item.subcategories)
+        ? item.subcategories.filter(s => typeof s === 'string' && s)
+        : [];
+      return { name, subcategories };
+    })
+    .filter(c => c.name);
+}
 
 // 폴더 연결 전이거나 site-config.json이 아직 없을 때 쓰는 기본값을 채워서 반환
 async function loadSiteConfig(siteHandle){
   const config = await readJSON(siteHandle, 'site-config.json');
-  if (!config) return { categories: DEFAULT_CATEGORIES.slice(), avatar: null, passwordHash: null };
+  if (!config) return { categories: normalizeCategories(null), passwordHash: null };
   return {
-    categories: Array.isArray(config.categories) && config.categories.length
-      ? config.categories
-      : DEFAULT_CATEGORIES.slice(),
-    avatar: config.avatar || null,
+    categories: normalizeCategories(config.categories),
     passwordHash: config.passwordHash || null
   };
 }

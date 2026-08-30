@@ -1,9 +1,8 @@
 {
   "categories": [
-    "Project",
-    "Study",
-    "Photo"
+    { "name": "Project", "subcategories": [] },
+    { "name": "Study", "subcategories": [] },
+    { "name": "Photo", "subcategories": [] }
   ],
-  "avatar": "assets/profile-photo.jpg",
   "passwordHash": null
 }
