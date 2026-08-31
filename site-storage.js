@@ -296,9 +296,10 @@ function escapeHtml(str){
 }
 
 // marked.js가 로드돼 있으면 그걸로 마크다운 렌더링, 없으면 최소한의 대체(줄바꿈만 <br>) 처리
+// breaks: true 옵션으로 (표준 마크다운과 달리) 줄 끝에 스페이스 2번 없이 엔터 한 번만 쳐도 줄바꿈되게 함
 function renderMarkdown(md){
   if (window.marked && typeof window.marked.parse === 'function'){
-    return window.marked.parse(md || '');
+    return window.marked.parse(md || '', { breaks: true });
   }
   return `<p>${escapeHtml(md || '').replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>')}</p>`;
 }

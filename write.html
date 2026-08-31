@@ -94,6 +94,12 @@
           <div class="md-toolbar">
             <button type="button" class="btn btn-sm" id="insertImageBtn">이미지 삽입</button>
             <input type="file" id="imageFileInput" accept="image/*" multiple hidden>
+            <div class="font-size-control">
+              <span class="md-toolbar-hint">글자 크기</span>
+              <button type="button" class="btn btn-sm" id="fontDecBtn" aria-label="글자 작게">가-</button>
+              <span class="font-size-label" id="fontSizeLabel"></span>
+              <button type="button" class="btn btn-sm" id="fontIncBtn" aria-label="글자 크게">가+</button>
+            </div>
             <span class="md-toolbar-hint">사진은 posts/assets/글제목 폴더에 저장되고, 본문에 자동으로 삽입됩니다.</span>
           </div>
           <div class="md-editor">
@@ -216,6 +222,40 @@
   }
   fieldBody.addEventListener('input', updatePreview);
   updatePreview();
+
+  // ---------- 본문 입력창 글자 크기 조절 (브라우저에 저장되어 다음 방문에도 유지됨) ----------
+  const FONT_SIZE_KEY = 'writeEditorFontSize';
+  const FONT_SIZE_MIN = 12;
+  const FONT_SIZE_MAX = 22;
+  const FONT_SIZE_DEFAULT = 13;
+
+  const fontDecBtn = document.getElementById('fontDecBtn');
+  const fontIncBtn = document.getElementById('fontIncBtn');
+  const fontSizeLabel = document.getElementById('fontSizeLabel');
+
+  function applyFontSize(size){
+    fieldBody.style.fontSize = size + 'px';
+    fontSizeLabel.textContent = size + 'px';
+    fontDecBtn.disabled = size <= FONT_SIZE_MIN;
+    fontIncBtn.disabled = size >= FONT_SIZE_MAX;
+    try{ localStorage.setItem(FONT_SIZE_KEY, String(size)); } catch(e){}
+  }
+
+  (function initFontSize(){
+    let saved = FONT_SIZE_DEFAULT;
+    try{
+      const stored = parseInt(localStorage.getItem(FONT_SIZE_KEY), 10);
+      if (Number.isFinite(stored)) saved = Math.min(FONT_SIZE_MAX, Math.max(FONT_SIZE_MIN, stored));
+    } catch(e){}
+    applyFontSize(saved);
+  })();
+
+  fontDecBtn.addEventListener('click', () => {
+    applyFontSize(Math.max(FONT_SIZE_MIN, parseInt(fieldBody.style.fontSize, 10) - 1));
+  });
+  fontIncBtn.addEventListener('click', () => {
+    applyFontSize(Math.min(FONT_SIZE_MAX, parseInt(fieldBody.style.fontSize, 10) + 1));
+  });
 
   // 필수 입력값이 모두 채워졌는지 체크해서 "게시하기" 버튼 활성/비활성 전환
   function updatePublishState(){
