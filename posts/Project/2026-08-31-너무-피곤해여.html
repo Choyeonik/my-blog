@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>너무 피곤해여 — Portfolio Blog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500;700&family=EB+Garamond:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../site.css">
+</head>
+<body>
+
+<div class="layout">
+<aside class="sidebar">
+
+    <button id="sidebarToggle" class="sidebar-toggle" type="button" aria-label="사이드바 접기/펼치기">
+      <span></span><span></span><span></span>
+    </button>
+
+    <div class="sidebar-links">
+      <a href="../../write.html" class="write-link">새 글 쓰기 →</a>
+      <a href="../../settings.html" class="write-link">설정 →</a>
+    </div>
+
+    <section class="profile">
+      <div class="profile-avatar"><img src="../../assets/profile-photo.jpg" alt="프로필 사진"></div>
+      <h2 class="profile-name">Hello, Yeonnnn!</h2>
+      <p class="profile-title">Yeonnnn</p>
+      <p class="profile-bio"></p>
+      <div class="profile-links">
+        <a href="https://instagram.com/whyeonik" target="_blank" rel="noopener">Instagram</a>
+        <a href="mailto:zging0151@gmail.com">Email</a>
+        <a href="https://github.com/Choyeonik" target="_blank" rel="noopener">Github</a>
+      </div>
+    </section>
+
+    <section class="search-box">
+      <form action="../../index.html" method="get">
+        <input type="text" name="q" placeholder="검색어를 입력하세요">
+        <button type="submit" aria-label="검색">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
+      </form>
+    </section>
+
+    <section class="categories">
+      <div class="side-heading">Category</div>
+      <ul class="category-list">
+        <li>
+          <a class="category-total" href="../../index.html">
+            <span>Total</span>
+            <span class="count">2</span>
+          </a>
+          <ul class="category-sub">
+      <li>
+        <a href="../../index.html?filter=Project">Project <span class="count">1</span></a>
+
+      </li>
+      <li>
+        <a href="../../index.html?filter=Study">Study <span class="count">1</span></a>
+
+        <ul class="category-sub-nested">
+
+            <li><a href="../../index.html?filter=%EB%B0%B0%EC%9A%B4%20%EA%B2%83">배운 것 <span class="count">1</span></a></li>
+          
+        </ul>
+      </li>
+      <li>
+        <a href="../../index.html?filter=Photo">Photo <span class="count">0</span></a>
+        
+      </li><li><a href="../../index.html?filter=about">About</a></li></ul>
+        </li>
+      </ul>
+    </section>
+
+    <section class="recent-posts">
+      <div class="side-heading">최근 글</div>
+      <ul class="recent-list">
+      <li>
+        <a href="../Project/2026-08-31-%EB%84%88%EB%AC%B4-%ED%94%BC%EA%B3%A4%ED%95%B4%EC%97%AC.html">
+          <div class="recent-title">너무 피곤해여</div>
+          <div class="recent-date">2026-08-31</div>
+        </a>
+      </li>
+    
+      <li>
+        <a href="../Study/%EB%B0%B0%EC%9A%B4%20%EA%B2%83/2026-08-30-%5B2026-08-26%5D-Git-%EA%B8%B0%EB%B3%B8-%EA%B0%9C%EB%85%90-%EB%B0%8F-%EC%8B%A4%EC%8A%B5.html">
+          <div class="recent-title">[2026-08-26] Git 기본 개념 및 실습</div>
+          <div class="recent-date">2026-08-30</div>
+        </a>
+      </li>
+    </ul>
+    </section>
+
+  </aside>
+
+  <main class="page-inner">
+
+    <div class="post-header">
+      <div class="card-tag">Project</div>
+      <h1>너무 피곤해여</h1>
+      <p class="post-desc">눈물이 흘러요</p>
+      <div class="post-date">2026-08-31</div>
+    </div>
+
+    <article class="post-body">
+<h1 id="아침-5시-50분에-일어났어여ㅠ">아침 5시 50분에 일어났어여ㅠ</h1>
+<p>눈이 너무 따가워요.
+눈감으면 눈물이 또르륵...</p>
+
+    </article>
+
+    <nav class="post-nav">
+      <a class="post-nav-item " href="../Study/%EB%B0%B0%EC%9A%B4%20%EA%B2%83/2026-08-30-%5B2026-08-26%5D-Git-%EA%B8%B0%EB%B3%B8-%EA%B0%9C%EB%85%90-%EB%B0%8F-%EC%8B%A4%EC%8A%B5.html">
+         <span class="post-nav-label">이전 글</span>
+         <span class="post-nav-title">[2026-08-26] Git 기본 개념 및 실습</span>
+       </a>
+      <div class="post-nav-item is-next">
+         <span class="post-nav-label">다음 글</span>
+         <span class="post-nav-empty">없음</span>
+       </div>
+    </nav>
+
+  </main>
+
+</div>
+
+<script>
+  document.getElementById('sidebarToggle').addEventListener('click', () => {
+    document.body.classList.toggle('sidebar-collapsed');
+  });
+</script>
+
+</body>
+</html>
