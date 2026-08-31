@@ -453,12 +453,15 @@ ${sidebarHtml}
       <h1>${escapeHtml(title)}</h1>
       <p class="post-desc">${escapeHtml(description)}</p>
       <div class="post-date">${date}</div>
-      <a class="post-edit-link" href="${toRoot}write.html?edit=${encodeURIComponent(filename)}">수정하기 →</a>
     </div>
 
     <article class="post-body">
 ${fixedBodyHtml}
     </article>
+
+    <div class="post-edit-bar">
+      <a class="post-edit-link" href="${toRoot}write.html?edit=${encodeURIComponent(filename)}">수정하기 →</a>
+    </div>
 
     <nav class="post-nav">
       ${navItem(prev, '이전 글', '')}

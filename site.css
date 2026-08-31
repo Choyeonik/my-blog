@@ -852,15 +852,6 @@ body.sidebar-collapsed .sidebar > *:not(.sidebar-toggle){
 .post-header h1{ font-size: 32px; line-height: 1.35; margin-bottom: 14px; }
 .post-header .post-desc{ font-size: 14px; color: var(--muted); margin-bottom: 10px; }
 .post-header .post-date{ font-size: 11px; letter-spacing: 0.04em; color: #b7b5ae; }
-.post-header .post-edit-link{
-  display: inline-block;
-  margin-top: 10px;
-  font-size: 11px;
-  color: var(--accent);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-.post-header .post-edit-link:hover{ color: var(--ink); }
 
 /* 마크다운 렌더링 결과(본문)의 기본 타이포그래피 */
 .post-body{ font-size: 15px; line-height: 1.85; color: var(--ink); }
@@ -912,6 +903,16 @@ body.sidebar-collapsed .sidebar > *:not(.sidebar-toggle){
 .post-body img{ margin: 24px 0; filter: none; } /* 본문 이미지는 그레이스케일 필터 제외 */
 .post-body hr{ border: none; border-top: 1px solid var(--line); margin: 40px 0; }
 .post-body a{ text-decoration: underline; text-underline-offset: 2px; }
+
+/* 게시글 수정 링크 (이전 글/다음 글 내비게이션 바로 위) */
+.post-edit-bar{ margin-top: 40px; text-align: right; }
+.post-edit-bar .post-edit-link{
+  font-size: 11px;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.post-edit-bar .post-edit-link:hover{ color: var(--ink); }
 
 /* 이전 글 / 다음 글 내비게이션 */
 .post-nav{
