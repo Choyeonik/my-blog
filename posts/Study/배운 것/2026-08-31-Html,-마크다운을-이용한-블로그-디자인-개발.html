@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>점프 투 블로그 개발 및 디자인 — Portfolio Blog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500;700&family=EB+Garamond:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+
+<div class="layout">
+<aside class="sidebar">
+
+    <button id="sidebarToggle" class="sidebar-toggle" type="button" aria-label="사이드바 접기/펼치기">
+      <span></span><span></span><span></span>
+    </button>
+
+    <div class="sidebar-links">
+      <a href="../../../write.html" class="write-link">새 글 쓰기 →</a>
+      <a href="../../../settings.html" class="write-link">설정 →</a>
+    </div>
+
+    <section class="profile">
+      <div class="profile-avatar"><img src="../../../assets/profile-photo.jpg" alt="프로필 사진"></div>
+      <h2 class="profile-name">Hello, Yeonnnn!</h2>
+      <p class="profile-title">Yeonnnn</p>
+      <p class="profile-bio"></p>
+      <div class="profile-links">
+        <a href="https://instagram.com/whyeonik" target="_blank" rel="noopener">Instagram</a>
+        <a href="mailto:zging0151@gmail.com">Email</a>
+        <a href="https://github.com/Choyeonik" target="_blank" rel="noopener">Github</a>
+      </div>
+    </section>
+
+    <section class="search-box">
+      <form action="../../../index.html" method="get">
+        <input type="text" name="q" placeholder="검색어를 입력하세요">
+        <button type="submit" aria-label="검색">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
+      </form>
+    </section>
+
+    <section class="categories">
+      <div class="side-heading">Category</div>
+      <ul class="category-list">
+        <li>
+          <a class="category-total" href="../../../index.html">
+            <span>Total</span>
+            <span class="count">4</span>
+          </a>
+          <ul class="category-sub">
+      <li>
+        <a href="../../../index.html?filter=Project">Project <span class="count">1</span></a>
+        
+      </li>
+      <li>
+        <a href="../../../index.html?filter=Study">Study <span class="count">3</span></a>
+        
+        <ul class="category-sub-nested">
+          
+            <li><a href="../../../index.html?filter=%EB%B0%B0%EC%9A%B4%20%EA%B2%83">배운 것 <span class="count">3</span></a></li>
+          
+        </ul>
+      </li>
+      <li>
+        <a href="../../../index.html?filter=Photo">Photo <span class="count">0</span></a>
+        
+      </li><li><a href="../../../index.html?filter=about">About</a></li></ul>
+        </li>
+      </ul>
+    </section>
+
+    <section class="recent-posts">
+      <div class="side-heading">최근 글</div>
+      <ul class="recent-list">
+      <li>
+        <a href="../../Project/2026-08-31-%EB%84%88%EB%AC%B4-%ED%94%BC%EA%B3%A4%ED%95%B4%EC%97%AC.html">
+          <div class="recent-title">너무 피곤해여</div>
+          <div class="recent-date">2026-08-31</div>
+        </a>
+      </li>
+    
+      <li>
+        <a href="../../Study/%EB%B0%B0%EC%9A%B4%20%EA%B2%83/2026-08-31-%ED%81%B4%EB%A1%9C%EB%93%9C-%EC%BD%94%EB%93%9C-%EC%84%A4%EC%B9%98%EC%99%80-%EB%84%A4-%EA%B0%80%EC%A7%80-%EB%AA%A8%EB%93%9C%2C-%EC%8A%A4%ED%82%AC-%EC%A0%95%EB%A6%AC.html">
+          <div class="recent-title">클로드 코드 설치와 네 가지 모드, 스킬 정리</div>
+          <div class="recent-date">2026-08-31</div>
+        </a>
+      </li>
+    
+      <li>
+        <a href="../../Study/%EB%B0%B0%EC%9A%B4%20%EA%B2%83/2026-08-31-Html%2C-%EB%A7%88%ED%81%AC%EB%8B%A4%EC%9A%B4%EC%9D%84-%EC%9D%B4%EC%9A%A9%ED%95%9C-%EB%B8%94%EB%A1%9C%EA%B7%B8-%EB%94%94%EC%9E%90%EC%9D%B8-%EA%B0%9C%EB%B0%9C.html">
+          <div class="recent-title">점프 투 블로그 개발 및 디자인</div>
+          <div class="recent-date">2026-08-31</div>
+        </a>
+      </li>
+    
+      <li>
+        <a href="../../Study/%EB%B0%B0%EC%9A%B4%20%EA%B2%83/2026-08-30-%5B2026-08-26%5D-Git-%EA%B8%B0%EB%B3%B8-%EA%B0%9C%EB%85%90-%EB%B0%8F-%EC%8B%A4%EC%8A%B5.html">
+          <div class="recent-title">[2026-08-26] Git 기본 개념 및 실습</div>
+          <div class="recent-date">2026-08-30</div>
+        </a>
+      </li>
+    </ul>
+    </section>
+
+  </aside>
+
+  <main class="page-inner">
+
+    <div class="post-header">
+      <div class="card-tag">배운 것</div>
+      <h1>점프 투 블로그 개발 및 디자인</h1>
+      <p class="post-desc">AI와 함께하는 맨 땅의 헤딩, 개발 블로그를 처음부터 어떻게 만들고 디자인하였는지 적어보았습니다. 중간중간 건너 뛴 부분도 있지만 최대한 담아보았습니다.</p>
+      <div class="post-date">2026-08-31</div>
+    </div>
+
+    <article class="post-body">
+<p>이번 포스팅은 처음부터 시작한 블로그 개발 과정을 써보려 한다.</p>
+<hr>
+<h1 id="기본적인-구상">기본적인 구상</h1>
+<p>왼쪽에는 프로필과 카테고리 메뉴를 선택할 수 있는 Aside Bar가 있으며, 나머지 중앙 영역은 Main 영역으로 구상하였다.</p>
+<hr>
+<h2 id="aside-영역">Aside 영역</h2>
+<p>Aside 영역에는 프로필과 카테고리, 최근 작성된 글이 보이도록 구상하였다.</p>
+<p>프로필 영역에는 프로필 사진과 이메일, 깃허브 같은 정보가 나타났으면 했다.</p>
+<p>카테고리는 상위 카테고리와 하위 카테고리가 계층 구조로 연결되어 있고, 글이 작성될 때마다 카테고리별로 게시글 수가 몇 개인지 나타나도록 구상했다.</p>
+<hr>
+<h2 id="main-영역">Main 영역</h2>
+<p>홈 화면의 Main 영역은 위쪽에 카테고리 제목이 크게 적혀 있고, 아래로 게시글이 내림차순으로 정렬되어 왼쪽 위가 최신 글이 되도록 구상했다.</p>
+<p>게시글 영역인 <em>card-link</em>는 썸네일 사진이 나타나고, 그 아래로 카테고리와 제목, 설명이 적히도록 하였다.</p>
+<p>card-link 영역은 가로 너비를 모든 게시물이 동일하도록 설정하였다. 썸네일 사진은 원본 비율을 반영하여 나타나지만, 전체적인 세로 높이는 모든 게시물이 동일하도록 맞췄다.</p>
+<hr>
+<p>AI 클로드 코드에게 나의 구상 계획과 레퍼런스 사진 한 장을 보내 전체적인 틀을 잡아보았다.</p>
+<p><img src="../../assets/Html%2C-%EB%A7%88%ED%81%AC%EB%8B%A4%EC%9A%B4%EC%9D%84-%EC%9D%B4%EC%9A%A9%ED%95%9C-%EB%B8%94%EB%A1%9C%EA%B7%B8-%EB%94%94%EC%9E%90%EC%9D%B8-%EA%B0%9C%EB%B0%9C/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202026-08-31%20164601.png" alt="블로그 현재 최종 디자인"></p>
+<p>개발 당시 스크린샷을 못 찍은 게 한이다.</p>
+<hr>
+<h3 id="dreamweaver">Dreamweaver</h3>
+<p>Html로 만들어진 웹사이트는 Adobe Dreamweaver를 통해 확인하며 수정하였다.</p>
+<p>Dreamweaver 내에서 Html을 라이브로 불러와, 수정하고 싶은 영역의 코드를 고치면 실시간으로 반영된다.</p>
+<p>전체적인 틀은 클로드를 이용해 만들고, 디테일한 글 내용, 글씨 크기 및 폰트, 버튼 위치, 영역별 색상은 Dreamweaver에서 Html을 수정하며 다듬었다.</p>
+<hr>
+<h2 id="글쓰기-페이지와-설정-페이지-생성">글쓰기 페이지와 설정 페이지 생성</h2>
+<p>글쓰기를 보다 편리하게 하기 위해 글쓰기 페이지도 만들었다.</p>
+<p><img src="../../assets/Html%2C-%EB%A7%88%ED%81%AC%EB%8B%A4%EC%9A%B4%EC%9D%84-%EC%9D%B4%EC%9A%A9%ED%95%9C-%EB%B8%94%EB%A1%9C%EA%B7%B8-%EB%94%94%EC%9E%90%EC%9D%B8-%EA%B0%9C%EB%B0%9C/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202026-08-31%20165147.png" alt="글쓰기 페이지 폴더 연결 전 모습"></p>
+<p>글쓰기 페이지는 .Git 폴더가 있는 작업 폴더에 접근할 수 있도록 만들어놓았다. 로컬에서만 폴더 접근이 가능하기 때문에, 글 작성은 나만 할 수 있게 된 셈이다.</p>
+<hr>
+<p><img src="../../assets/Html%2C-%EB%A7%88%ED%81%AC%EB%8B%A4%EC%9A%B4%EC%9D%84-%EC%9D%B4%EC%9A%A9%ED%95%9C-%EB%B8%94%EB%A1%9C%EA%B7%B8-%EB%94%94%EC%9E%90%EC%9D%B8-%EA%B0%9C%EB%B0%9C/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202026-08-31%20165522.png" alt="글쓰기 페이지 접속 모습"></p>
+<p>폴더를 연결해 접근할 수 있게 되면 글을 작성할 수 있다.</p>
+<p>제목과 카테고리를 선택할 수 있고, 썸네일 사진과 <em>card-link</em> 영역에 간단히 나타날 설명도 작성할 수 있다.</p>
+<p>본문은 마크다운 문법이 적용되며, 코드 작성 시 오른쪽 분할 영역에 미리보기가 떠서 바로 확인할 수 있다.</p>
+<hr>
+<h2 id="수정된-부분">수정된 부분</h2>
+<h3 id="마크다운-문법-및-디자인">마크다운 문법 및 디자인</h3>
+<p>본문을 작성했을 때, 몇몇 마크다운 문법이 적용되지 않는 점과 가독성이 떨어지는 부분이 나타났다.</p>
+<p>표의 경우 테두리가 보이지 않고 자간도 좁아 구분이 잘 안 되던 부분을 클로드를 통해 수정하였다.</p>
+<h3 id="썸네일-사진이-안-나오는-오류-수정">썸네일 사진이 안 나오는 오류 수정</h3>
+<p>썸네일 사진을 등록했을 때 적용되지 않는 오류가 발생했다. 클로드를 통해 수정하였다.</p>
+<h3 id="썸네일-사진의-색감-오류">썸네일 사진의 색감 오류</h3>
+<p>레퍼런스 사진이 흑백의 미니멀 디자인이어서, AI가 만들어 줄 때 그 색감까지 반영되었다. 원치 않는 디자인이었기에 썸네일 사진은 원본 색감 그대로 나타나도록 수정하였다.</p>
+<h3 id="카테고리-관리를-위한-설정-페이지-추가">카테고리 관리를 위한 설정 페이지 추가</h3>
+<p>게시물을 작성하면서 카테고리 추가·삭제와 하위 카테고리 관리를 버튼으로 편리하게 만들어야겠다는 생각이 들었다.</p>
+<p>카테고리 관리를 위한 설정 페이지를 추가하였다.</p>
+<p><img src="../../assets/Html%2C-%EB%A7%88%ED%81%AC%EB%8B%A4%EC%9A%B4%EC%9D%84-%EC%9D%B4%EC%9A%A9%ED%95%9C-%EB%B8%94%EB%A1%9C%EA%B7%B8-%EB%94%94%EC%9E%90%EC%9D%B8-%EA%B0%9C%EB%B0%9C/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202026-08-31%20170805.png" alt="설정 페이지 추가"></p>
+<h3 id="다른-기기에서-접속-시-게시물이-반영이-안-됨">다른 기기에서 접속 시 게시물이 반영이 안 됨</h3>
+<p>다른 기기에서 접속하면 게시물이 없음으로 뜨고, 새로고침을 해야만 게시물이 보이는 오류가 발생하였다.</p>
+<p>자동으로 한 번 새로고침 되도록 오류를 수정하였다.</p>
+<h3 id="aside-bar-숨김-모드-추가">Aside Bar 숨김 모드 추가</h3>
+<p>깔끔한 디자인을 위해 Aside 영역을 최소화하는 기능을 추가하였다. 햄버거 모양의 최소화 버튼을 Aside Bar 오른쪽 위에 추가했고, 누르면 밀리는 애니메이션과 함께 최소화된다.</p>
+<hr>
+<h2 id="내용-작성">내용 작성</h2>
+<p>AI가 만들어 준 웹페이지는 모든 글이 테스트 및 예시용으로 작성되어 있어, Dreamweaver를 이용해 내용을 실제 내용으로 바꿔주었다. 프로필 이름과 설명, About 페이지의 소개 내용, Head 영역 텍스트들을 수정하였다. 프로필 사진의 경우 바꿀 일이 없을 것 같아 index.html에 고정으로 작성하였다.</p>
+<p><img src="../../assets/Html%2C-%EB%A7%88%ED%81%AC%EB%8B%A4%EC%9A%B4%EC%9D%84-%EC%9D%B4%EC%9A%A9%ED%95%9C-%EB%B8%94%EB%A1%9C%EA%B7%B8-%EB%94%94%EC%9E%90%EC%9D%B8-%EA%B0%9C%EB%B0%9C/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202026-08-31%20171249.png" alt="About 페이지 내용 수정본"></p>
+<hr>
+<h2 id="게시글을-올려보았다">게시글을 올려보았다</h2>
+<p><img src="../../assets/Html%2C-%EB%A7%88%ED%81%AC%EB%8B%A4%EC%9A%B4%EC%9D%84-%EC%9D%B4%EC%9A%A9%ED%95%9C-%EB%B8%94%EB%A1%9C%EA%B7%B8-%EB%94%94%EC%9E%90%EC%9D%B8-%EA%B0%9C%EB%B0%9C/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202026-08-31%20171918.png" alt="업로드 된 게시물"></p>
+<p>처음에는 사진이 보이지 않고 코드 글자가 그대로 나오는 오류가 있었다. 클로드를 통해 수정한 뒤, 이후 관리를 위해 카테고리 아래에 생성되는 게시물 폴더마다 assets 폴더를 만들고 그 경로에 사진이 저장되도록 하였다.</p>
+<hr>
+<h1 id="어려웠던-점">어려웠던 점</h1>
+<p>Dreamweaver 프로그램을 이용해 디자인적인 부분은 생각보다 수월하게 진행하였다. 그러나 기능적인 부분, 특히 게시물 작성 기능에서 생각보다 오류가 많아 수정하는 데 애를 먹었다.</p>
+<h3 id="생각도-못한-수정하기-기능">생각도 못한 수정하기 기능</h3>
+<p>처음에는 수정 기능이 없어 게시글을 작성한 뒤에는 고칠 수가 없었다. 클로드를 이용해 게시글마다 아래쪽에 수정하기 버튼을 만들었으며, 이 버튼을 누르면 기존 내용을 그대로 불러와 글쓰기 페이지로 이동해 수정할 수 있게 되었다.</p>
+<h3 id="사진이-자꾸만-깨지는-오류">사진이 자꾸만 깨지는 오류</h3>
+<p>게시물을 올릴 때마다 사진이 계속 깨져서 여러 번 수정을 반복하였다.</p>
+<hr>
+<p>다음에는 블로그 안에서 직접 실행되는 무언가를 만들어보려 한다.</p>
+<p>상당히 어려울 것 같지만...</p>
+
+    </article>
+
+    <div class="post-edit-bar">
+      <a class="post-edit-link" href="../../../write.html?edit=2026-08-31-Html%2C-%EB%A7%88%ED%81%AC%EB%8B%A4%EC%9A%B4%EC%9D%84-%EC%9D%B4%EC%9A%A9%ED%95%9C-%EB%B8%94%EB%A1%9C%EA%B7%B8-%EB%94%94%EC%9E%90%EC%9D%B8-%EA%B0%9C%EB%B0%9C.html">수정하기 →</a>
+    </div>
+
+    <nav class="post-nav">
+      <a class="post-nav-item " href="../../Study/%EB%B0%B0%EC%9A%B4%20%EA%B2%83/2026-08-31-%ED%81%B4%EB%A1%9C%EB%93%9C-%EC%BD%94%EB%93%9C-%EC%84%A4%EC%B9%98%EC%99%80-%EB%84%A4-%EA%B0%80%EC%A7%80-%EB%AA%A8%EB%93%9C%2C-%EC%8A%A4%ED%82%AC-%EC%A0%95%EB%A6%AC.html">
+         <span class="post-nav-label">이전 글</span>
+         <span class="post-nav-title">클로드 코드 설치와 네 가지 모드, 스킬 정리</span>
+       </a>
+      <div class="post-nav-item is-next">
+         <span class="post-nav-label">다음 글</span>
+         <span class="post-nav-empty">없음</span>
+       </div>
+    </nav>
+
+  </main>
+
+</div>
+
+<script>
+  document.getElementById('sidebarToggle').addEventListener('click', () => {
+    document.body.classList.toggle('sidebar-collapsed');
+  });
+</script>
+
+</body>
+</html>
