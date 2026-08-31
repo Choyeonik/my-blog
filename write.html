@@ -407,6 +407,18 @@
   function showEditor(){
     lockScreen.hidden = true;
     editorContent.hidden = false;
+    maybeStartEditFromUrl();
+  }
+
+  // 게시글 페이지의 "수정하기" 링크(write.html?edit=파일명)로 들어온 경우,
+  // 편집기가 보이자마자 그 글의 수정 모드로 자동 진입시킴 (한 번만 실행)
+  let editFromUrlHandled = false;
+  function maybeStartEditFromUrl(){
+    if (editFromUrlHandled) return;
+    const filename = new URLSearchParams(location.search).get('edit');
+    if (!filename) return;
+    editFromUrlHandled = true;
+    startEdit(filename);
   }
 
   // 폴더 연결 직후 공통으로 수행할 일: 설정 로드 + 카테고리 목록 채우기 + 비밀번호 확인 여부 판단
@@ -635,7 +647,8 @@
           prev, next,
           folder: pFolder,
           categories: siteConfig.categories,
-          manifest
+          manifest,
+          filename: p.filename
         });
         const targetDir = pFolder.length
           ? await getNestedDirHandle(postsDir, pFolder, { create: true })

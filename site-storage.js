@@ -403,7 +403,7 @@ function buildSidebarHtml({ categories, manifest, toRoot, toPosts }){
 // folder = 이 글 자신이 들어있는, posts 폴더 기준 하위 폴더 경로 배열 (예: ["Study","Lecture"])
 //          (예전처럼 posts 바로 아래에 저장되는 글은 빈 배열/생략)
 // categories/manifest = 홈 화면과 같은 사이드바(카테고리/최근 글)를 그리기 위해 함께 전달
-function buildPostHtml({ title, category, description, bodyHtml, date, prev, next, folder, categories, manifest }){
+function buildPostHtml({ title, category, description, bodyHtml, date, prev, next, folder, categories, manifest, filename }){
   // category는 설정 페이지에서 관리하는 카테고리 이름 문자열을 그대로 씀(예: "Project", "여행기록")
   const catLabel = category;
 
@@ -453,6 +453,7 @@ ${sidebarHtml}
       <h1>${escapeHtml(title)}</h1>
       <p class="post-desc">${escapeHtml(description)}</p>
       <div class="post-date">${date}</div>
+      <a class="post-edit-link" href="${toRoot}write.html?edit=${encodeURIComponent(filename)}">수정하기 →</a>
     </div>
 
     <article class="post-body">
