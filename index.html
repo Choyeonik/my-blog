@@ -290,6 +290,9 @@
     }
     if (query) filtered = filtered.filter(p => p.title.toLowerCase().includes(query));
 
+    // 최신 글이 화면 왼쪽(그리드 맨 앞)에 오도록 날짜 내림차순으로 정렬
+    filtered = [...filtered].sort((a, b) => b.date.localeCompare(a.date));
+
     if (filtered.length === 0){
       grid.classList.add('grid--single');
       const message = query || currentFilter !== 'total'
