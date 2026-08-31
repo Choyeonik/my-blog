@@ -388,6 +388,40 @@
     if (btn) btn.addEventListener('click', onConnectFolderClick);
   }
 
+  // 서버(GitHub Pages 등)에 올라간 posts/manifest.json, site-config.json을
+  // 그냥 fetch로 읽어와 보여줌. 폴더 연결(File System Access API)과 달리 IndexedDB에
+  // 아무것도 저장돼있지 않은 "다른 사람의 브라우저/기기"에서도 항상 동작하므로,
+  // 링크를 통해 방문하는 모든 사람에게 실제 글이 보이게 하는 기본 경로로 사용합니다.
+  // file://로 직접 열었을 때는 브라우저가 로컬 파일 fetch를 막아서 실패하는데,
+  // 그 경우를 대비해 이후 tryAutoConnect()(폴더 연결)로 자연히 넘어갑니다.
+  async function loadPostsViaFetch(){
+    try{
+      const res = await fetch('posts/manifest.json', { cache: 'no-store' });
+      if (!res.ok) return false;
+      const manifest = await res.json();
+      if (!Array.isArray(manifest) || manifest.length === 0) return false;
+
+      posts = manifest.map(manifestEntryToPost);
+      usingRealPosts = true;
+
+      try{
+        const configRes = await fetch('site-config.json', { cache: 'no-store' });
+        if (configRes.ok){
+          const config = await configRes.json();
+          categories = normalizeCategories(config.categories);
+          renderCategorySidebar();
+        }
+      } catch(e){ /* 설정 파일이 없어도 글 목록은 그대로 보여줌 */ }
+
+      updateCounts();
+      renderRecent();
+      render();
+      return true;
+    } catch(e){
+      return false;
+    }
+  }
+
   // "폴더 연결해서 실제 글 불러오기" 버튼 클릭 시: 폴더 선택창을 띄우고, 선택되면 바로 글 목록 교체
   async function onConnectFolderClick(){
     if (!isFsaSupported()){
@@ -431,11 +465,24 @@
     else if (q) render();
   }
 
+  // 페이지를 열 때 글을 불러오는 진입점.
+  // 1) 먼저 fetch로 posts/manifest.json을 읽어봅니다 — GitHub Pages 등 서버로 접속한
+  //    경우라면(=다른 PC/모바일에서 링크로 들어온 방문자 포함) 이걸로 바로 성공합니다.
+  // 2) fetch가 실패하면(예: file://로 직접 열어본 경우) 폴더 연결 방식으로 넘어갑니다.
+  async function loadPosts(){
+    const loadedViaFetch = await loadPostsViaFetch();
+    if (loadedViaFetch){
+      setFolderStatus('실제 글 연동됨', true);
+      return;
+    }
+    await tryAutoConnect();
+  }
+
   // ---------- 초기 실행 ----------
   updateCounts();   // 사이드바 카테고리 옆 숫자(개수) 채우기
   renderRecent();   // "최근 글" 리스트 채우기
   render();         // 메인 그리드에 게시글 카드 렌더링
-  tryAutoConnect().finally(applyUrlParams);   // 실제 글/카테고리를 불러온 뒤에 URL의 필터/검색어를 적용
+  loadPosts().finally(applyUrlParams);   // 실제 글/카테고리를 불러온 뒤에 URL의 필터/검색어를 적용
 </script>
 
 </body>
