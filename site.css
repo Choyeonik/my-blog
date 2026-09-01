@@ -695,6 +695,12 @@ body.sidebar-collapsed .sidebar > *:not(.sidebar-toggle){
 .btn-primary:hover{ background: var(--accent); color: var(--bg); }
 .btn-primary:disabled{ background: var(--line); color: var(--muted); }
 
+.btn-danger{
+  border-color: #b3261e;
+  color: #b3261e;
+}
+.btn-danger:hover{ background: #b3261e; color: #fff; }
+
 .editor-status{
   font-size: 12.5px;
   color: var(--muted);

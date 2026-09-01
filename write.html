@@ -111,6 +111,7 @@
         <div class="editor-actions">
           <button type="submit" class="btn btn-primary" id="publishBtn" disabled>게시하기</button>
           <button type="button" class="btn btn-sm" id="cancelEditBtn" hidden>수정 취소</button>
+          <button type="button" class="btn btn-sm btn-danger" id="deletePostBtn" hidden>삭제</button>
         </div>
 
         <p class="editor-status" id="statusMsg"></p>
@@ -173,6 +174,7 @@
   // (slug/filename/date는 다른 글의 링크가 깨지지 않도록 그대로 유지)
   let editingEntry = null;
   const cancelEditBtn = document.getElementById('cancelEditBtn');
+  const deletePostBtn = document.getElementById('deletePostBtn');
 
   // 썸네일 사진 상태: thumbFile은 새로 고른(아직 저장 전) 파일, thumbRelPath는 지금 이 글에
   // 이미 저장돼 있는 썸네일 경로(수정 모드에서 불러온 값), removeThumbRequested는 "제거"를 눌렀는지
@@ -334,6 +336,7 @@
   function updateEditModeUI(){
     publishBtn.textContent = editingEntry ? '수정 완료' : '게시하기';
     cancelEditBtn.hidden = !editingEntry;
+    deletePostBtn.hidden = !editingEntry;
   }
 
   // 폼을 비우고 "새 글 쓰기" 상태로 되돌림 (게시 성공 후, 또는 수정 취소 시 사용)
@@ -548,6 +551,67 @@
     }
   });
 
+  // manifest에 남아있는 글들의 페이지를 전부 다시 생성 (prev/next가 모든 글에서 정확하도록)
+  // + 카테고리 폴더 구조로 저장 (예: posts/Study/Lecture/2026-08-30-제목.html)
+  // 게시/수정뿐 아니라 삭제(= manifest에서 항목 제거) 후에도 이웃 글들의 이전/다음 글 링크를
+  // 다시 맞추기 위해 같은 로직을 공용 함수로 뺐습니다.
+  async function regenerateAllPostFiles(manifest, postsDir){
+    for (let i = 0; i < manifest.length; i++){
+      const p = manifest[i];
+      const pFolder = p.folder || [];   // 예전에 저장된 글은 folder가 없어서 posts 바로 아래 취급
+      const prev = i > 0 ? { title: manifest[i-1].title, filename: manifest[i-1].filename, folder: manifest[i-1].folder || [] } : null;
+      const next = i < manifest.length - 1 ? { title: manifest[i+1].title, filename: manifest[i+1].filename, folder: manifest[i+1].folder || [] } : null;
+      const html = buildPostHtml({
+        title: p.title,
+        category: p.category,
+        description: p.description,
+        bodyHtml: renderMarkdown(p.markdown),
+        date: p.date,
+        prev, next,
+        folder: pFolder,
+        categories: siteConfig.categories,
+        manifest,
+        filename: p.filename
+      });
+      const targetDir = pFolder.length
+        ? await getNestedDirHandle(postsDir, pFolder, { create: true })
+        : postsDir;
+      await writeText(targetDir, p.filename, html);
+    }
+  }
+
+  // ---------- 삭제: manifest에서만 항목을 빼서 홈 화면/목록에서 사라지게 함 ----------
+  // 실수로 잘못 삭제했을 때를 대비해, 실제 글 파일(.html)과 이미지(assets 폴더)는
+  // 로컬 posts 폴더에 그대로 남겨둡니다. (지우고 싶으면 폴더에서 직접 지우면 됨)
+  deletePostBtn.addEventListener('click', async () => {
+    if (!editingEntry) return;
+    const ok = confirm(`"${editingEntry.title}" 글을 홈 화면에서 삭제할까요?\n(로컬 폴더의 파일은 지워지지 않고 그대로 남습니다.)`);
+    if (!ok) return;
+
+    deletePostBtn.disabled = true;
+    try{
+      setStatus('삭제 중…', '');
+      const handle = await ensureSiteHandle();
+      const postsDir = await getPostsDirHandle(handle, { create: true });
+
+      let manifest = await readJSON(postsDir, 'manifest.json');
+      if (!Array.isArray(manifest)) manifest = [];
+      const targetFilename = editingEntry.filename;
+      manifest = manifest.filter(p => p.filename !== targetFilename);
+
+      await regenerateAllPostFiles(manifest, postsDir);
+      await writeJSON(postsDir, 'manifest.json', manifest);
+
+      setStatus('삭제 완료! (파일은 posts 폴더에 그대로 남아있습니다)', 'ok');
+      await refreshRecentList();
+      resetForm();
+    } catch(e){
+      setStatus('삭제에 실패했습니다: ' + (e && e.message ? e.message : e), 'error');
+    } finally {
+      deletePostBtn.disabled = false;
+    }
+  });
+
   // ---------- 게시하기: manifest 갱신 + 모든 글 재생성 + 저장 ----------
   // 매번 "모든 글"을 다시 생성하는 이유: 새 글이 추가되면 그 글의 앞/뒤에 있던
   // 기존 글들의 "이전 글/다음 글" 링크도 함께 바뀌어야 하기 때문입니다.
@@ -633,28 +697,7 @@
 
       // 글 전체를 다시 생성 (prev/next가 모든 글에서 정확하도록)
       // + 카테고리 폴더 구조로 저장 (예: posts/Study/Lecture/2026-08-30-제목.html)
-      for (let i = 0; i < manifest.length; i++){
-        const p = manifest[i];
-        const pFolder = p.folder || [];   // 예전에 저장된 글은 folder가 없어서 posts 바로 아래 취급
-        const prev = i > 0 ? { title: manifest[i-1].title, filename: manifest[i-1].filename, folder: manifest[i-1].folder || [] } : null;
-        const next = i < manifest.length - 1 ? { title: manifest[i+1].title, filename: manifest[i+1].filename, folder: manifest[i+1].folder || [] } : null;
-        const html = buildPostHtml({
-          title: p.title,
-          category: p.category,
-          description: p.description,
-          bodyHtml: renderMarkdown(p.markdown),
-          date: p.date,
-          prev, next,
-          folder: pFolder,
-          categories: siteConfig.categories,
-          manifest,
-          filename: p.filename
-        });
-        const targetDir = pFolder.length
-          ? await getNestedDirHandle(postsDir, pFolder, { create: true })
-          : postsDir;
-        await writeText(targetDir, p.filename, html);
-      }
+      await regenerateAllPostFiles(manifest, postsDir);
 
       // 수정 중 카테고리가 바뀌어 저장 폴더가 달라졌다면, 예전 폴더에 남아있는 파일은 지움
       if (isEditing && JSON.stringify(oldFolder) !== JSON.stringify(targetEntry.folder)){
