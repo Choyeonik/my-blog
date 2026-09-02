@@ -59,6 +59,8 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   flex-direction: column;
   gap: 50px;
   overflow-y: auto;
+  transition: transform .5s cubic-bezier(.34, 1.56, .64, 1);   /* 스크롤 시 튕겨서 돌아오는 모션(sidebar-motion.js가 transform을 조작) */
+  will-change: transform;
 }
 
 /* 사이드바 맨 위 블로그 제목 (레퍼런스의 "fleet" 로고 자리) */
@@ -253,10 +255,12 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
 }
 .category-sub-nested li a{ padding: 5px 0 5px 12px; font-size: 12px; }
 
-/* 홈 화면 사이드바의 "실제 글 불러오기" 폴더 연결 링크/상태 텍스트 */
+/* 홈 화면 사이드바의 "실제 글 불러오기" 폴더 연결 링크/상태 텍스트
+   -> 기능(자동 fetch 연동)은 유지하되, 화면에는 표시하지 않음 */
 .folder-connect{
   font-size: 11px;
   color: var(--muted);
+  display: none;
 }
 .folder-connect button{
   font: inherit;
@@ -327,7 +331,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
    -> 사이드바가 숨겨져(main이 넓어져)도 이 max-width 덕분에 콘텐츠는 항상 중앙에 위치 */
 .main-inner{
   max-width: 800px;
-  margin: 0 auto 0 400px;
+  margin: 0 auto 0 150px;
 }
 
 /* 좁은 폭(글쓰기/설정 페이지)이거나, 사이드바 옆의 좁은 본문(개별 글 페이지)으로 쓰는 컨테이너.

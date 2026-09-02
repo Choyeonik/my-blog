@@ -443,6 +443,7 @@ ${fixedBodyHtml}
 
 </div>
 
+<script src="${toRoot}sidebar-motion.js"></script>
 </body>
 </html>
 `;
