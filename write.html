@@ -60,10 +60,13 @@
           <input type="text" id="fieldTitle" placeholder="글 제목을 입력하세요" autocomplete="off">
         </div>
 
-        <!-- 카테고리 선택 (설정 페이지에서 관리하는 카테고리 목록으로 채워짐) -->
+        <!-- 카테고리 선택 (설정 페이지에서 관리하는 카테고리 목록으로 채워짐)
+             수정 모드에서 여기서 다른 카테고리를 고르고 저장하면, 그 글이 실제로 그 카테고리
+             폴더로 이동합니다(카테고리 이동 기능) -->
         <div class="field">
           <label for="fieldCategory">카테고리 선택</label>
           <select id="fieldCategory"></select>
+          <p class="md-toolbar-hint" id="categoryMoveHint" hidden>다른 카테고리를 선택하고 저장하면 이 글이 그 카테고리로 이동합니다.</p>
         </div>
 
         <!-- 썸네일 사진 (홈 화면 카드/최근 글 목록에 보여줄 사진, 선택 사항) -->
@@ -151,6 +154,8 @@
   const thumbFileInput = document.getElementById('thumbFileInput');
   const thumbPreviewWrap = document.getElementById('thumbPreviewWrap');
   const thumbPreview = document.getElementById('thumbPreview');
+
+  const categoryMoveHint = document.getElementById('categoryMoveHint');
 
   const editorGate = document.getElementById('editorGate');
   const gateStatus = document.getElementById('gateStatus');
@@ -337,6 +342,7 @@
     publishBtn.textContent = editingEntry ? '수정 완료' : '게시하기';
     cancelEditBtn.hidden = !editingEntry;
     deletePostBtn.hidden = !editingEntry;
+    categoryMoveHint.hidden = !editingEntry;   // 새 글 쓰기 모드에서는 "카테고리 이동" 안내가 의미 없으므로 숨김
   }
 
   // 폼을 비우고 "새 글 쓰기" 상태로 되돌림 (게시 성공 후, 또는 수정 취소 시 사용)

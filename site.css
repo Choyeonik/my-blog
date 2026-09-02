@@ -47,76 +47,28 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   min-height: 100vh;
 }
 
-/* ==========================================================
-   사이드바 최소화(토글) 버튼 — 사이드바(aside) "안" 오른쪽 위에 배치되는 3줄 아이콘
-   - .sidebar 는 position:sticky 라서 이미 "위치 기준(positioning context)"이 되므로
-     버튼을 position:absolute 로 넣으면 사이드바 기준 오른쪽 위에 고정됨
-   - body 에 "sidebar-collapsed" 클래스가 붙으면 사이드바가 좁게 접힘(완전히 숨기지 않음)
-     -> 버튼 자체는 계속 보여야 다시 펼칠 수 있기 때문
-   ========================================================== */
-.sidebar-toggle{
-  position: absolute;      /* 사이드바(.sidebar) 안에서 오른쪽 위 고정 */
-  top: 20px;
-  right: 16px;
-  z-index: 5;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  background: transparent;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  cursor: pointer;
-  padding: 0;
-  flex-shrink: 0;
-}
-.sidebar-toggle span{
-  display: block;
-  width: 14px;
-  height: 1.5px;
-  background: var(--ink);
-}
-.sidebar-toggle:hover{ border-color: var(--ink); }
-
-/* 사이드바가 접힌 상태: 프로필/검색/카테고리/최근 글은 숨기고
-   버튼 하나만 보이는 좁은 폭으로 축소 (완전히 사라지지 않아야 다시 펼 수 있음) */
-body.sidebar-collapsed .sidebar{
-  width: 60px;
-  padding-left: 12px;
-  padding-right: 12px;
-  overflow: hidden;
-}
-body.sidebar-collapsed .sidebar > *:not(.sidebar-toggle){
-  display: none;
-}
-
-/* ---------- SIDEBAR (왼쪽 프로필 / 검색 / 카테고리 / 최근 글) ---------- */
+/* ---------- SIDEBAR (왼쪽 블로그 제목 / 카테고리) ---------- */
 .sidebar{
   width: var(--sidebar-w);
   flex-shrink: 0;
   min-height: 100vh;
   position: sticky;
   top: 0;
-  border-right: 1px solid var(--line);
-  padding: 48px 26px 36px;
-  transition: width .25s ease, padding .25s ease;
+  padding: 15px 26px 36px;
   display: flex;
   flex-direction: column;
-  gap: 36px;
+  gap: 50px;
   overflow-y: auto;
 }
 
+/* 사이드바 맨 위 블로그 제목 (레퍼런스의 "fleet" 로고 자리) */
 .brand{
   font-family: 'EB Garamond', serif;
   font-style: italic;
-  font-size: 12px;
-  letter-spacing: 0.12em;
-  color: var(--muted);
-  text-transform: uppercase;
-  margin-bottom: -8px;
+  font-size: 22px;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  margin-bottom: 40px;
 }
 
 /* 사이드바 상단 "새 글 쓰기" / "설정" 링크를 묶는 줄 */
@@ -240,20 +192,28 @@ body.sidebar-collapsed .sidebar > *:not(.sidebar-toggle){
 }
 
 /* Categories */
+.category-list{ counter-reset: catnum; }   /* Total부터 About까지 순서대로 번호를 매기기 위한 카운터 시작점 */
 .category-list li{ margin-bottom: 4px; }
 
 .category-total{
-  font-size: 15px;
-  font-family: 'Noto Serif KR', serif;
+  font-size: 13px;
   padding: 6px 0;
   display: flex;
   justify-content: space-between;
   cursor: pointer;
+  counter-increment: catnum;
+}
+
+/* 카테고리 이름 앞에 붙는 순서 번호(1, 2, 3...) — .cat-name으로 감싼 이름 텍스트 앞에만 붙어서
+   count(글 개수) 배지와의 좌우 정렬(justify-content: space-between)에는 영향을 주지 않음 */
+.cat-name::before{
+  content: counter(catnum) '  ';
+  color: var(--muted);
+  font-weight: 400;
 }
 
 .category-sub{
-  padding-left: 4px;
-  border-left: 1px solid var(--line);
+  padding-left: 0;
   margin-top: 4px;
 }
 
@@ -261,11 +221,15 @@ body.sidebar-collapsed .sidebar > *:not(.sidebar-toggle){
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 7px 0 7px 16px;
+  padding: 7px 0;
   font-size: 13px;
   color: var(--muted);
   transition: color .2s;
 }
+
+/* 상위 카테고리(하위 카테고리 목록의 직계 항목)에만 번호를 매김.
+   category-sub-nested(하위 카테고리) 안의 a는 여기 걸리지 않아 번호가 붙지 않음 */
+.category-sub > li > a{ counter-increment: catnum; }
 
 .category-sub li a:hover{ color: var(--ink); }
 
@@ -277,13 +241,14 @@ body.sidebar-collapsed .sidebar > *:not(.sidebar-toggle){
 .category-total.active,
 .category-sub li a.active{
   color: var(--ink);
-  font-weight: 500;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 /* 하위 카테고리(상위 카테고리 한 단계 아래로 한 번 더 들여쓴 목록) */
 .category-sub-nested{
   padding-left: 12px;
-  border-left: 1px solid var(--line);
   margin: 2px 0 2px 4px;
 }
 .category-sub-nested li a{ padding: 5px 0 5px 12px; font-size: 12px; }
@@ -355,14 +320,14 @@ body.sidebar-collapsed .sidebar > *:not(.sidebar-toggle){
 .main{
   flex: 1;           /* 사이드바를 제외한 나머지 공간을 전부 차지 */
   min-width: 0;
-  padding: 60px 40px 100px;
+  padding: 70px 40px 100px;
 }
 
 /* main 안의 실제 콘텐츠 폭을 제한하고 가운데 정렬.
    -> 사이드바가 숨겨져(main이 넓어져)도 이 max-width 덕분에 콘텐츠는 항상 중앙에 위치 */
 .main-inner{
-  max-width: 1180px;
-  margin: 0 auto;
+  max-width: 800px;
+  margin: 0 auto 0 100px;
 }
 
 /* 좁은 폭(글쓰기/설정 페이지)이거나, 사이드바 옆의 좁은 본문(개별 글 페이지)으로 쓰는 컨테이너.
@@ -371,25 +336,59 @@ body.sidebar-collapsed .sidebar > *:not(.sidebar-toggle){
 .page-inner{
   max-width: 760px;
   margin: 0 auto;
-  padding: 60px 40px 100px;
+  padding: 70px 40px 100px;
   flex: 1;
   min-width: 0;
 }
 
-/* 상단 "Total" 타이틀 영역 — 세로 여백을 크게 주고 제목/설명을 가운데 정렬 */
-.main-header{
-  padding: 56px 20px;              /* 영역 자체를 크게: 위아래 여백 확대 */
-  margin-bottom: 48px;
-  border-bottom: 2px solid var(--ink);
+/* 메인 영역 오른쪽 위 검색창 줄 */
+.main-topbar{
   display: flex;
-  flex-direction: column;          /* 제목 아래 설명이 오도록 세로 배치 */
-  align-items: center;             /* 가로 중앙 정렬 */
-  text-align: center;
-  gap: 12px;
+  justify-content: flex-end;
+  margin-bottom: 28px;
+  position: relative;   /* 이 줄 추가 */
+  top: -130px;            /* 이 줄 추가 — 값을 키울수록 더 위로 올라감 */
+}
+.main-topbar .search-box{
+  width: 220px;
 }
 
-.main-header h1{
-  font-size: 40px;                 /* 영역이 커진 만큼 제목도 확대 */
+/* 상단 히어로 영역 — "번호 + 현재 카테고리" 작은 라벨 위에 큰 제목이 오는 구조 (레퍼런스 참고) */
+.main-header{
+  padding: 0 0 56px;
+  margin-bottom: 48px;
+  display: flex;
+  flex-direction: column;          /* 라벨 아래 큰 제목이 오도록 세로 배치 */
+  align-items: flex-start;         /* 왼쪽 정렬 */
+  text-align: left;
+  gap: 18px;
+}
+
+/* 라벨: "1  Study" 처럼 번호 + 현재 선택된 카테고리 이름 */
+.hero-label{
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.hero-label .hero-num{
+  color: var(--muted);
+}
+
+.hero-label em{
+  font-style: italic;
+  font-family: 'Noto Serif KR', serif;
+  color: var(--ink);
+}
+
+/* 큰 제목 — 카테고리와 무관하게 직접 적어 넣는 사이트 대표 문구 */
+.hero-title{
+  font-size: 44px;
+  line-height: 1.28;
+  font-weight: 500;
+  max-width: 640px;
 }
 
 .main-header p{
@@ -399,23 +398,13 @@ body.sidebar-collapsed .sidebar > *:not(.sidebar-toggle){
 }
 
 /* ==========================================================
-   게시글 그리드 — "폭은 좁고 세로로 긴" 카드가 한 줄에 여러 개(최대 6개)
-   들어가는 레이아웃.
-
-   핵심 아이디어:
-   - 썸네일 사진의 세로 길이는 사진마다 다르게 놔둔다 (가로폭만 통일)
-   - 대신 "한 줄(row)에 같이 있는 카드들의 전체 영역 높이"는 서로 맞춘다
-     -> 사진이 짧은 카드는 아래쪽에 빈 여백이 생겨서 다음 줄 시작선이 맞춰짐
-   CSS Grid의 기본 동작(align-items:stretch)이 한 행에서 가장 큰 카드에
-   맞춰 나머지 카드도 늘려주기 때문에, 사진 높이가 제각각이어도 "행 단위"로는
-   카드 영역이 자동으로 맞춰집니다. 늘어난 만큼 생기는 여백은 카드 안에서
-   margin-top:auto를 쓴 날짜(.card-date)가 아래로 밀려나면서 채웁니다.
+   게시글 그리드 — 레퍼런스처럼 "썸네일(왼쪽) + 글 정보(오른쪽)"를 한 세트로 하는
+   카드가 한 줄에 2개씩 들어가는 레이아웃.
    ========================================================== */
 .grid{
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-  gap: 40px 20px;
-  /* align-items 기본값(stretch)을 그대로 사용 -> 같은 행의 카드 높이가 자동으로 맞춰짐 */
+  grid-template-columns: repeat(2, 1fr);
+  gap: 56px 0px;
 }
 
 /* 그리드를 한 칸짜리 레이아웃으로 되돌림 (About 페이지, 검색결과 없음 등
@@ -424,30 +413,29 @@ body.sidebar-collapsed .sidebar > *:not(.sidebar-toggle){
   grid-template-columns: 1fr;
 }
 
-.card{
-  display: flex;
-  flex-direction: column;
-  height: 100%;                /* Grid가 늘려준 "행 높이"만큼 카드가 꽉 채우도록 */
-  padding-top: 18px;
-  border-top: 1px solid var(--line);   /* 게시글 사이 구분선 */
+/* 화면이 좁아지면 카드 한 줄에 1개씩 */
+@media (max-width: 720px){
+  .grid{ grid-template-columns: 1fr; }
 }
 
 /* 카드 전체(사진+글)를 감싸는 링크 — 실제 글(posts/*.html)로 이동.
-   기본 a 태그 스타일을 지우고 카드처럼 보이게만 함 */
+   썸네일(왼쪽)과 글 정보(오른쪽)를 가로로 나란히 배치 */
 .card-link{
   display: flex;
-  flex-direction: column;
-  height: 100%;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 40px;
   width: 100%;
 }
 
-/* 썸네일: 가로 폭만 카드 폭에 맞추고, 세로 높이는 강제하지 않고
+/* 썸네일: 카드 폭의 일정 비율만 차지하고, 세로 높이는 강제하지 않ㄴ고
    사진 자체의 원래 비율을 그대로 따르게 함 -> 사진마다 세로 길이가 달라짐 */
 .card-img{
-  width: 100%;
+  width: 25%;
+  max-width: 220px;
+  flex-shrink: 0;
   overflow: hidden;
   background: #ececE6;
-  margin-bottom: 14px;
 }
 
 .card-img img{
@@ -459,6 +447,24 @@ body.sidebar-collapsed .sidebar > *:not(.sidebar-toggle){
 }
 .card:hover .card-img img{ transform: scale(1.035); }
 
+/* 오른쪽 글 정보 영역(날짜/카테고리/제목/설명) */
+.card-body{
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding-top: 2px;
+  max-width: 200px;
+}
+
+/* 날짜 + 카테고리를 한 줄에 나란히 */
+.card-meta{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+/* 카테고리 태그 기본 스타일 — 그리드 카드(.card-meta 안)와 개별 글 상단(.post-header 안)이 함께 씀 */
 .card-tag{
   font-size: 10px;
   letter-spacing: 0.1em;
@@ -467,27 +473,35 @@ body.sidebar-collapsed .sidebar > *:not(.sidebar-toggle){
   margin-bottom: 8px;
 }
 
+/* 카드 안 카테고리 태그만 이탤릭체로(레퍼런스의 "Alignment"처럼).
+   .card-meta 밖에서 쓰이는 .card-tag(개별 글 페이지 상단 태그)는 이 규칙의 영향을 받지 않음 */
+.card-meta .card-tag{
+  font-size: 11px;
+  font-style: italic;
+  font-family: 'Noto Serif KR', serif;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--ink);
+  margin-bottom: 0;
+}
+
 .card h3{
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.45;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .card p{
   font-size: 12.5px;
   line-height: 1.65;
   color: var(--muted);
-  margin: 0 0 10px;
+  margin: 0;
 }
 
-/* 카드 안에서 margin-top:auto로 항상 맨 아래에 붙음.
-   -> 같은 행의 다른 카드보다 사진+글이 짧으면, 이 여백이 늘어나면서
-      "행 전체 높이"에 맞춰 카드 아래쪽 빈 공간을 자동으로 채워줌 */
 .card-date{
-  font-size: 10.5px;
+  font-size: 11px;
   letter-spacing: 0.03em;
-  color: #b7b5ae;
-  margin-top: auto;
+  color: var(--muted);
 }
 
 /* About 카테고리를 눌렀을 때 그리드 대신 보여주는 자기소개 카드 (grid--single과 함께 사용) */

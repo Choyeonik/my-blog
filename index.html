@@ -17,54 +17,15 @@
   <!-- ============ SIDEBAR ============ -->
   <aside class="sidebar">
 
-    <!-- 사이드바 최소화(토글) 버튼: 사이드바 안쪽 오른쪽 위에 고정.
-         클릭하면 JS에서 body에 "sidebar-collapsed" 클래스를 붙였다 뗐다 하면서
-         사이드바를 좁게 접거나 다시 펼칩니다. -->
-    <button id="sidebarToggle" class="sidebar-toggle" type="button" aria-label="사이드바 접기/펼치기">
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
-
-
-    <!-- 글쓰기 / 설정 페이지로 이동 -->
-    <div class="sidebar-links">
-      <a href="write.html" class="write-link">새 글 쓰기 →</a>
-      <a href="settings.html" class="write-link">설정 →</a>
-    </div>
-
-    <!-- 나의 프로필 -->
-    <section class="profile">
-      <div class="profile-avatar">
-        <img id="sidebarAvatar" src="assets/profile-photo.jpg" alt="프로필 사진">
-      </div>
-      <h2 class="profile-name">Hello, Yeonnnn!</h2>
-      <p class="profile-title">Yeonnnn</p>
-      <p class="profile-bio">
-      </p>
-      <div class="profile-links">
-        <a href="https://instagram.com/whyeonik" target="_blank" rel="noopener">Instagram</a>
-        <a href="mailto:zging0151@gmail.com">Email</a>
-        <a href="https://github.com/Choyeonik" target="_blank" rel="noopener">Github</a>
-      </div>
-    </section>
-
-    <!-- 검색창 -->
-    <section class="search-box">
-      <input type="text" id="searchInput" placeholder="검색어를 입력하세요">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="7"></circle>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-      </svg>
-    </section>
+    <!-- 사이드바 맨 위 블로그 제목 -->
+    <div class="brand">Yeonn</div>
 
     <!-- 카테고리 -->
     <section class="categories">
-      <div class="side-heading">Category</div>
       <ul class="category-list">
         <li>
           <div class="category-total active" data-filter="total">
-            <span>Total</span>
+            <span class="cat-name">Total</span>
             <span class="count" id="totalCount">0</span>
           </div>
           <!-- 카테고리 목록은 site-config.json(설정 페이지에서 관리)을 기준으로 JS가 채웁니다 -->
@@ -73,19 +34,19 @@
       </ul>
     </section>
 
-    <!-- 최근 글 -->
-    <section class="recent-posts">
-      <div class="side-heading">최근 글</div>
-      <ul class="recent-list" id="recentList"></ul>
-    </section>
-
     <!-- 작업 폴더(posts) 연결 상태 —
          버튼을 누르면 실제 작업 폴더를 선택하고, 그 안의 posts/manifest.json을
          읽어서 아래 예시 글 대신 실제로 작성한 글들을 보여줍니다.
          (write.html에서 저장한 글이 여기에 나타납니다) -->
     <section class="folder-connect" id="folderConnect">
-      <button type="button" id="connectFolderBtn">폴더 연결해서 실제 글 불러오기</button>
+      <button type="button" id="connectFolderBtn">Conneted</button>
     </section>
+
+    <!-- 글쓰기 / 설정 페이지로 이동 — 사이드바 맨 아래 고정 -->
+    <div class="sidebar-links">
+      <a href="write.html" class="write-link">새 글 쓰기 →</a>
+      <a href="settings.html" class="write-link">설정 →</a>
+    </div>
 
   </aside>
 
@@ -93,9 +54,21 @@
   <main class="main">
     <div class="main-inner">
 
+      <!-- 검색창: 메인 영역 오른쪽 위 -->
+      <div class="main-topbar">
+        <section class="search-box">
+          <input type="text" id="searchInput" placeholder="">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </section>
+      </div>
+
       <div class="main-header">
-        <h1 id="pageTitle">Total</h1>
-		  <br>
+        <div class="hero-label"><span class="hero-num">1</span><em id="pageTitle">Total</em></div>
+        <h1 class="hero-title"> Learning from the BootCamp</h1>
+
       </div>
 
       <div class="grid" id="grid">
@@ -166,14 +139,28 @@
   // 자주 사용하는 DOM 요소를 미리 찾아둠
   const grid = document.getElementById('grid');
   const pageTitle = document.getElementById('pageTitle');
+  const heroTitle = document.querySelector('.hero-title');
   const searchInput = document.getElementById('searchInput');
-  const recentList = document.getElementById('recentList');
 
   // 상단에 보여줄 제목. total/about은 고정 문구, 나머지(카테고리)는 이름을 그대로 씀
   function labelFor(filter){
     if (filter === 'total') return 'Total';
     if (filter === 'about') return 'About';
     return filter;
+  }
+
+  // 카테고리별 hero-title 문구 매핑(직접 채워 넣는 문구). 목록에 없는 카테고리는 기본값 사용
+  const HERO_TITLE_MAP = {
+    total: 'Learning from the BootCamp.',
+    Project: 'Project.',
+    Study: 'Often What I Study.',
+    '배운 것': 'What I Know.',
+    Photo: 'Often What I Study.',
+    about: 'About me.'
+  };
+
+  function heroTitleFor(filter){
+    return HERO_TITLE_MAP[filter] || 'abcd';
   }
 
   let currentFilter = 'total';   // 현재 선택된 카테고리 (total/<카테고리 이름>/<하위 카테고리 이름>/about)
@@ -200,7 +187,7 @@
     const sub = document.getElementById('categorySubList');
     sub.innerHTML = categories.map(cat => `
       <li>
-        <a href="#" data-filter="${escapeHtml(cat.name)}">${escapeHtml(cat.name)} <span class="count">0</span></a>
+        <a href="#" data-filter="${escapeHtml(cat.name)}"><span class="cat-name">${escapeHtml(cat.name)}</span> <span class="count">0</span></a>
         ${cat.subcategories.length ? `
           <ul class="category-sub-nested">
             ${cat.subcategories.map(sc => `
@@ -209,7 +196,7 @@
           </ul>
         ` : ''}
       </li>
-    `).join('') + `<li><a href="#" data-filter="about">About</a></li>`;
+    `).join('') + `<li><a href="#" data-filter="about"><span class="cat-name">About</span></a></li>`;
     sub.querySelectorAll('a').forEach(a => {
       a.addEventListener('click', (e) => {
         e.preventDefault();
@@ -217,20 +204,6 @@
       });
     });
     updateCounts();
-  }
-
-  // "최근 글" 영역: 날짜순으로 정렬해 최신 5개만 사이드바에 표시
-  // (실제 글은 filename이 있으므로 posts/파일명으로 이동, 샘플 글은 그냥 #)
-  function renderRecent(){
-    const recent = [...posts].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 5);
-    recentList.innerHTML = recent.map(p => `
-      <li>
-        <a href="${p.filename ? 'posts/' + encodePathForUrl(postRelPath(p)) : '#'}">
-          <div class="recent-title">${p.title}</div>
-          <div class="recent-date">${p.date}</div>
-        </a>
-      </li>
-    `).join('');
   }
 
   // 게시글 카드 1개의 HTML을 만들어 반환 (main 그리드에 들어가는 카드)
@@ -243,10 +216,14 @@
       <article class="card" data-category="${p.category}" data-title="${p.title.toLowerCase()}">
         <a class="card-link" href="${href}">
           <div class="card-img"><img src="${thumbSrc}" alt="${p.title}" loading="lazy"></div>
-          <div class="card-tag">${p.category}</div>
-          <h3>${p.title}</h3>
-          <p>${p.excerpt}</p>
-          <div class="card-date">${p.date}</div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="card-date">${p.date}</span>
+              <span class="card-tag">${p.category}</span>
+            </div>
+            <h3>${p.title}</h3>
+            <p>${p.excerpt}</p>
+          </div>
         </a>
       </article>
     `;
@@ -314,6 +291,7 @@
       a.classList.toggle('active', a.dataset.filter === filter);
     });
     pageTitle.textContent = labelFor(filter);
+    heroTitle.innerHTML = heroTitleFor(filter);
     render();
   }
 
@@ -323,14 +301,6 @@
 
   // ---------- 검색창 입력 이벤트 연결 (입력할 때마다 실시간으로 필터링) ----------
   searchInput.addEventListener('input', render);
-
-  // ---------- 사이드바 최소화(토글) 버튼 ----------
-  // body에 "sidebar-collapsed" 클래스를 토글 -> CSS의
-  // "body.sidebar-collapsed .sidebar{ width:60px; ... }" 규칙이 사이드바를 좁게 접거나 다시 펼침
-  // (버튼은 항상 보이는 상태로 남아있어서 다시 눌러 펼칠 수 있음)
-  document.getElementById('sidebarToggle').addEventListener('click', () => {
-    document.body.classList.toggle('sidebar-collapsed');
-  });
 
   renderCategorySidebar();   // DEFAULT_CATEGORIES 기준으로 카테고리 목록 최초 렌더링
 
@@ -343,7 +313,7 @@
   const folderConnectEl = document.getElementById('folderConnect');
   const connectFolderBtn = document.getElementById('connectFolderBtn');
 
-  // manifest.json의 게시글 1개를, 화면(cardHTML/renderRecent)이 기대하는 모양으로 변환
+  // manifest.json의 게시글 1개를, 화면(cardHTML)이 기대하는 모양으로 변환
   // - date: "2026-08-20" -> "2026.08.20" (샘플 데이터와 표기 통일)
   // - excerpt: manifest의 description 필드를 그대로 사용
   // - seed: 썸네일 플레이스홀더 생성용 값으로 slug(파일명 기준 고유값) 사용
@@ -378,7 +348,6 @@
     posts = manifest.map(manifestEntryToPost);
     usingRealPosts = true;
     updateCounts();
-    renderRecent();
     render();
     return true;
   }
@@ -417,7 +386,6 @@
       } catch(e){ /* 설정 파일이 없어도 글 목록은 그대로 보여줌 */ }
 
       updateCounts();
-      renderRecent();
       render();
       return true;
     } catch(e){
@@ -483,7 +451,6 @@
 
   // ---------- 초기 실행 ----------
   updateCounts();   // 사이드바 카테고리 옆 숫자(개수) 채우기
-  renderRecent();   // "최근 글" 리스트 채우기
   render();         // 메인 그리드에 게시글 카드 렌더링
   loadPosts().finally(applyUrlParams);   // 실제 글/카테고리를 불러온 뒤에 URL의 필터/검색어를 적용
 </script>

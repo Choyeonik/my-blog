@@ -304,12 +304,12 @@ function renderMarkdown(md){
   return `<p>${escapeHtml(md || '').replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>')}</p>`;
 }
 
-/* ---------- 개별 글 페이지 사이드바(홈 화면 aside와 같은 구성: 프로필/검색/카테고리/최근 글) ---------- */
+/* ---------- 개별 글 페이지 사이드바(홈 화면 aside와 같은 구성: 검색/카테고리) ---------- */
 // categories = site-config.json의 카테고리 목록, manifest = posts/manifest.json 전체 배열
-// toRoot = 이 글 파일 -> 사이트 루트(index.html 등), toPosts = 이 글 파일 -> posts 폴더 자체
+// toRoot = 이 글 파일 -> 사이트 루트(index.html 등)
 // 검색/카테고리는 이 페이지 자체에 상태가 없으므로, index.html로 이동하면서
 // ?filter=이름 / ?q=검색어 형태로 조건을 넘기고 index.html이 그 값을 읽어 반영함
-function buildSidebarHtml({ categories, manifest, toRoot, toPosts }){
+function buildSidebarHtml({ categories, manifest, toRoot }){
   const posts = Array.isArray(manifest) ? manifest : [];
   const counts = {};
   posts.forEach(p => { counts[p.category] = (counts[p.category] || 0) + 1; });
@@ -325,64 +325,21 @@ function buildSidebarHtml({ categories, manifest, toRoot, toPosts }){
         </ul>` : '';
     return `
       <li>
-        <a href="${toRoot}index.html?filter=${encodeURIComponent(cat.name)}">${escapeHtml(cat.name)} <span class="count">${catCount}</span></a>
+        <a href="${toRoot}index.html?filter=${encodeURIComponent(cat.name)}"><span class="cat-name">${escapeHtml(cat.name)}</span> <span class="count">${catCount}</span></a>
         ${subHtml}
       </li>`;
-  }).join('') + `<li><a href="${toRoot}index.html?filter=about">About</a></li>`;
-
-  const recentHtml = [...posts]
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, 5)
-    .map(p => `
-      <li>
-        <a href="${toPosts}${encodePathForUrl(postRelPath(p))}">
-          <div class="recent-title">${escapeHtml(p.title)}</div>
-          <div class="recent-date">${p.date}</div>
-        </a>
-      </li>
-    `).join('');
+  }).join('') + `<li><a href="${toRoot}index.html?filter=about"><span class="cat-name">About</span></a></li>`;
 
   return `<aside class="sidebar">
 
-    <button id="sidebarToggle" class="sidebar-toggle" type="button" aria-label="사이드바 접기/펼치기">
-      <span></span><span></span><span></span>
-    </button>
-
-    <div class="sidebar-links">
-      <a href="${toRoot}write.html" class="write-link">새 글 쓰기 →</a>
-      <a href="${toRoot}settings.html" class="write-link">설정 →</a>
-    </div>
-
-    <section class="profile">
-      <div class="profile-avatar"><img src="${toRoot}assets/profile-photo.jpg" alt="프로필 사진"></div>
-      <h2 class="profile-name">Hello, Yeonnnn!</h2>
-      <p class="profile-title">Yeonnnn</p>
-      <p class="profile-bio"></p>
-      <div class="profile-links">
-        <a href="https://instagram.com/whyeonik" target="_blank" rel="noopener">Instagram</a>
-        <a href="mailto:zging0151@gmail.com">Email</a>
-        <a href="https://github.com/Choyeonik" target="_blank" rel="noopener">Github</a>
-      </div>
-    </section>
-
-    <section class="search-box">
-      <form action="${toRoot}index.html" method="get">
-        <input type="text" name="q" placeholder="검색어를 입력하세요">
-        <button type="submit" aria-label="검색">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="7"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-        </button>
-      </form>
-    </section>
+    <div class="brand">Yeonn</div>
 
     <section class="categories">
       <div class="side-heading">Category</div>
       <ul class="category-list">
         <li>
           <a class="category-total" href="${toRoot}index.html">
-            <span>Total</span>
+            <span class="cat-name">Total</span>
             <span class="count">${posts.length}</span>
           </a>
           <ul class="category-sub">${categoryItemsHtml}</ul>
@@ -390,10 +347,10 @@ function buildSidebarHtml({ categories, manifest, toRoot, toPosts }){
       </ul>
     </section>
 
-    <section class="recent-posts">
-      <div class="side-heading">최근 글</div>
-      <ul class="recent-list">${recentHtml}</ul>
-    </section>
+    <div class="sidebar-links">
+      <a href="${toRoot}write.html" class="write-link">새 글 쓰기 →</a>
+      <a href="${toRoot}settings.html" class="write-link">설정 →</a>
+    </div>
 
   </aside>`;
 }
@@ -428,7 +385,7 @@ function buildPostHtml({ title, category, description, bodyHtml, date, prev, nex
          <span class="post-nav-empty">없음</span>
        </div>`;
 
-  const sidebarHtml = buildSidebarHtml({ categories: categories || [], manifest: manifest || [], toRoot, toPosts });
+  const sidebarHtml = buildSidebarHtml({ categories: categories || [], manifest: manifest || [], toRoot });
 
   return `<!DOCTYPE html>
 <html lang="ko">
@@ -447,6 +404,20 @@ function buildPostHtml({ title, category, description, bodyHtml, date, prev, nex
 ${sidebarHtml}
 
   <main class="page-inner">
+
+    <div class="main-topbar">
+      <section class="search-box">
+        <form action="${toRoot}index.html" method="get">
+          <input type="text" name="q" placeholder="검색어를 입력하세요">
+          <button type="submit" aria-label="검색">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+        </form>
+      </section>
+    </div>
 
     <div class="post-header">
       <div class="card-tag">${catLabel}</div>
@@ -471,12 +442,6 @@ ${fixedBodyHtml}
   </main>
 
 </div>
-
-<script>
-  document.getElementById('sidebarToggle').addEventListener('click', () => {
-    document.body.classList.toggle('sidebar-collapsed');
-  });
-</script>
 
 </body>
 </html>
