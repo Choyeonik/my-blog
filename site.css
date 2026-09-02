@@ -327,7 +327,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
    -> 사이드바가 숨겨져(main이 넓어져)도 이 max-width 덕분에 콘텐츠는 항상 중앙에 위치 */
 .main-inner{
   max-width: 800px;
-  margin: 0 auto 0 100px;
+  margin: 0 auto 0 200px;
 }
 
 /* 좁은 폭(글쓰기/설정 페이지)이거나, 사이드바 옆의 좁은 본문(개별 글 페이지)으로 쓰는 컨테이너.
