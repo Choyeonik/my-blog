@@ -335,7 +335,6 @@ function buildSidebarHtml({ categories, manifest, toRoot }){
     <div class="brand">Yeonn</div>
 
     <section class="categories">
-      <div class="side-heading">Category</div>
       <ul class="category-list">
         <li>
           <a class="category-total" href="${toRoot}index.html">
@@ -403,7 +402,19 @@ function buildPostHtml({ title, category, description, bodyHtml, date, prev, nex
 <div class="layout">
 ${sidebarHtml}
 
-  <main class="page-inner">
+  <main class="post-page">
+
+    <!-- 검정 고정 프레임 + 링바인더: 홈 화면(.main)과 같은 디자인이 개별 글 페이지에도 이어지도록 함 -->
+    <div class="main-frame-top" aria-hidden="true"></div>
+    <div class="main-frame-bottom" aria-hidden="true"></div>
+    <div class="main-frame-right" aria-hidden="true"></div>
+    <div class="ring-strip" aria-hidden="true">
+      <span class="ring"></span>
+      <span class="ring"></span>
+      <span class="ring"></span>
+    </div>
+
+    <div class="page-inner">
 
     <div class="main-topbar">
       <section class="search-box">
@@ -439,6 +450,7 @@ ${fixedBodyHtml}
       ${navItem(next, '다음 글', 'is-next')}
     </nav>
 
+    </div>
   </main>
 
 </div>
