@@ -470,36 +470,10 @@
     await tryAutoConnect();
   }
 
-  // 오른쪽 세로 메모 카드(.side-memo)를 게시글 영역(.main-inner) 바로 오른쪽에 항상 20px
-  // 간격으로 붙임. site.css에 폭 값을 숫자로 박아두면 화면 크기가 바뀔 때마다(또는
-  // .main-inner 폭을 조정할 때마다) 어긋나기 쉬워서, 실제 렌더링된 위치를 읽어 매번 다시 계산함
-  function positionSideMemo(){
-    const sideMemo = document.querySelector('.side-memo');
-    const mainInner = document.querySelector('.main-inner');
-    const main = document.querySelector('.main');
-    if (!sideMemo || !mainInner || !main) return;
-    const gap = 20;
-
-    sideMemo.style.width = '';   // site.css의 기본 폭(clamp(...))으로 되돌린 뒤, 아래에서 필요할 때만 다시 줄임
-    const mainInnerRight = mainInner.getBoundingClientRect().right;
-    const mainRect = main.getBoundingClientRect();
-    sideMemo.style.left = (mainInnerRight - mainRect.left + gap) + 'px';
-
-    // 종이 오른쪽 경계(검정 프레임 시작 지점) 밖으로 카드가 넘어가 가려지지 않도록,
-    // 남는 공간이 부족하면 카드 폭 자체를 줄임 (남는 공간이 거의 없으면 사실상 안 보이게 됨)
-    const desiredWidth = sideMemo.getBoundingClientRect().width;
-    const available = mainRect.right - mainInnerRight - gap - 10;
-    if (available < desiredWidth){
-      sideMemo.style.width = Math.max(0, available) + 'px';
-    }
-  }
-
   // ---------- 초기 실행 ----------
   updateCounts();   // 사이드바 카테고리 옆 숫자(개수) 채우기
   render();         // 메인 그리드에 게시글 카드 렌더링
   loadPosts().finally(applyUrlParams);   // 실제 글/카테고리를 불러온 뒤에 URL의 필터/검색어를 적용
-  positionSideMemo();
-  window.addEventListener('resize', positionSideMemo);
 </script>
 
 </body>
