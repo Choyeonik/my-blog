@@ -422,7 +422,8 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   --w: clamp(50px, 6vw, 90px);
   position: absolute;
   top: calc(10% + 15px);
-  left: calc(40px + 150px + 910px + 20px);   /* .main 자신이 이미 사이드바 오른쪽부터 시작하므로 sidebar-w는 더하지 않음 */
+  left: calc(40px + 150px + 1100px + 20px);   /* .main 자신이 이미 사이드바 오른쪽부터 시작하므로 sidebar-w는 더하지 않음.
+     "1100px"는 .main-inner의 max-width와 반드시 같은 값이어야 함(게시글 영역 크기를 바꾸면 여기도 같이 바꿔야 간격이 유지됨) */
   width: var(--w);
   aspect-ratio: 377 / 523;   /* 원본 이미지(assets/side-memo.png) 비율 유지 — 여백 없이 다시 자른 사진에 맞춤 */
   overflow: hidden;   /* 화면이 좁아져 게시글 영역이 줄어들면 카드도 종이 오른쪽 밖으로 밀려 안 보이게 됨 */
@@ -465,7 +466,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
    -> 사이드바가 숨겨져(main이 넓어져)도 이 max-width 덕분에 콘텐츠는 항상 중앙에 위치 */
 .main-inner{
   position: relative;
-  max-width: 910px;
+  max-width: 1100px;
   margin: 0 auto 0 150px;
 }
 
@@ -534,7 +535,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
 .hero-memo{
   position: relative;
   display: inline-block;
-  width: 380px;
+  width: 480px;
   max-width: 100%;
   margin-left: -60px;
 }
