@@ -426,7 +426,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   top: calc(10% + 15px);
   right: 20px;
   width: var(--w);
-  aspect-ratio: 385 / 531;   /* 원본 이미지(assets/side-memo.png) 비율 유지 */
+  aspect-ratio: 377 / 523;   /* 원본 이미지(assets/side-memo.png) 비율 유지 — 여백 없이 다시 자른 사진에 맞춤 */
   overflow: hidden;   /* 폭이 0에 가까워지면(화면이 좁아지면) 카드+세로 글씨가 함께 사라지도록 */
   z-index: 4;   /* .ring(6)보다 아래에 둬서 링이 카드 위로 겹쳐 보이게 함 */
 }
