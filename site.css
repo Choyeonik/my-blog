@@ -412,22 +412,20 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
 .ring:nth-child(2){ top: 46%; }
 .ring:nth-child(3){ top: 82%; }
 
-/* 첫 번째 링(top:10%)에 걸려 있는 세로 메모 카드 — 카드 윗부분이 링과 겹치도록
-   ring 중심(10%)보다 살짝 아래에서 시작해, 링이 카드를 관통해 걸려 있는 것처럼 보이게 함.
-   right도 .ring과 가깝게(20px) 둬서 가로로도 겹치게 함.
-   .main-inner(왼쪽 max-width:800px 콘텐츠)와 겹치지 않도록, .main의 오른쪽 여백
-   (뷰포트 폭 - 사이드바 - .main 좌우 패딩 - main-inner 왼쪽 오프셋 - max-width)만큼만
-   너비를 갖도록 계산해서, 화면이 좁아지면 게시글 영역을 침범하기 전에 먼저 작아짐 */
+/* 첫 번째 링(top:10%) 옆에 걸려 있는 세로 메모 카드.
+   예전엔 .main 오른쪽 끝 기준(right)으로 위치를 잡아서, 화면이 넓어질수록
+   카드가 화면 폭의 절반씩만 따라 커져 게시글 영역과의 간격이 다시 벌어지는 문제가 있었음.
+   그래서 지금은 반대로 "게시글 영역(.main-inner) 오른쪽 끝 + 고정 간격"으로 left를 잡아서,
+   화면이 아무리 넓어져도 게시글 영역과의 간격이 항상 20px로 고정되게 함.
+   (sidebar-w 240 + main 왼쪽 패딩 40 + main-inner 왼쪽 오프셋 150 + max-width 910 = 게시글 영역 오른쪽 끝) */
 .side-memo{
-  --w: calc(clamp(0px, calc(100vw - var(--sidebar-w) - 40px - 150px - 910px - 76px + 95px), 400px) / 2);   /* 맨 끝 "/ 2"가 카드 전체 크기를 절반으로 줄이는 부분.
-     "+ 95px"는 .main-inner의 margin-left(110→150)와 max-width(850→910)를 합쳐 늘린 100px 중
-     95px를 다시 보태서, 게시글 영역이 커지고 오른쪽으로 옮겨져도 카드 크기 자체는 그대로 유지되게 하는 보정값 */
+  --w: clamp(50px, 6vw, 90px);
   position: absolute;
   top: calc(10% + 15px);
-  right: 34px;
+  left: calc(40px + 150px + 910px + 20px);   /* .main 자신이 이미 사이드바 오른쪽부터 시작하므로 sidebar-w는 더하지 않음 */
   width: var(--w);
   aspect-ratio: 377 / 523;   /* 원본 이미지(assets/side-memo.png) 비율 유지 — 여백 없이 다시 자른 사진에 맞춤 */
-  overflow: hidden;   /* 폭이 0에 가까워지면(화면이 좁아지면) 카드+세로 글씨가 함께 사라지도록 */
+  overflow: hidden;   /* 화면이 좁아져 게시글 영역이 줄어들면 카드도 종이 오른쪽 밖으로 밀려 안 보이게 됨 */
   z-index: 4;   /* .ring(6)보다 아래에 둬서 링이 카드 위로 겹쳐 보이게 함 */
 }
 
