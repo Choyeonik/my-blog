@@ -242,7 +242,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   justify-content: space-between;
   align-items: center;
   padding: 7px 0;
-  font-size: 13px;
+  font-size: 25px;
   color: var(--muted);
   transition: color .2s;
   font-family: 'Cormorant Garamond', 'Gowun Batang', serif;   /* 영문은 Cormorant Garamond, 한글은 Gowun Batang으로 표시됨 */
@@ -275,7 +275,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   padding-left: 12px;
   margin: 2px 0 2px 4px;
 }
-.category-sub-nested li a{ padding: 5px 0 5px 12px; font-size: 12px; }
+.category-sub-nested li a{ padding: 5px 0 5px 12px; font-size: 20px; }
 
 /* 홈 화면 사이드바의 "실제 글 불러오기" 폴더 연결 링크/상태 텍스트
    -> 기능(자동 fetch 연동)은 유지하되, 화면에는 표시하지 않음 */
@@ -419,7 +419,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
    (뷰포트 폭 - 사이드바 - .main 좌우 패딩 - main-inner 왼쪽 오프셋 - max-width)만큼만
    너비를 갖도록 계산해서, 화면이 좁아지면 게시글 영역을 침범하기 전에 먼저 작아짐 */
 .side-memo{
-  --w: clamp(0px, calc(100vw - var(--sidebar-w) - 40px - 110px - 770px - 76px - 5px), 260px);
+  --w: clamp(0px, calc(100vw - var(--sidebar-w) - 40px - 110px - 800px - 76px - 5px), 400px);
   position: absolute;
   top: calc(10% + 15px);
   right: 20px;
@@ -466,7 +466,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
 .main-inner{
   position: relative;
   max-width: 800px;
-  margin: 0 auto 0 110px;
+  margin: 0 auto 0 180px;
 }
 
 /* 좁은 폭(글쓰기/설정 페이지)이거나, 사이드바 옆의 좁은 본문(개별 글 페이지)으로 쓰는 컨테이너.
