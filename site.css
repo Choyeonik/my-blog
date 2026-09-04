@@ -16,7 +16,7 @@
   --line-soft: #efeee9;  /* 구분선 색 (연한 편) */
   --accent: #3a3a38;     /* 포인트 색(카테고리 태그 등, 무채색 톤) */
   --sidebar-w: 240px;    /* 왼쪽 사이드바(aside) 너비: 이 값만 바꾸면 폭이 조절됨 */
-  --paper-avg: #f1f3f4;  /* 메인 영역 종이 질감(assets/paper-texture.webp) 픽셀 평균색. 카테고리 글씨 색으로 사용 */
+  --paper-avg: #f4f4f1;  /* 메인 영역 종이 질감(assets/paper-texture.jpg) 픽셀 평균색. 카테고리 글씨 색으로 사용 */
   --sheet-margin: 20px;  /* 메인 영역에서 종이 시트 위/아래로 남기는 여백 높이 */
   --sheet-margin-right: 15px;  /* 메인 영역 오른쪽 여백 두께 (위/아래와 별도로 조절됨) */
   --ring-length: 80px;  /* 링바인더 긴 쪽 길이(눕힌 상태 기준 가로 폭). 이 값만 바꾸면 크기 조절됨 */
@@ -30,13 +30,13 @@ html, body{
   padding: 0;
   background: var(--bg);
   color: var(--ink);
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Cormorant Garamond', 'Gowun Batang', sans-serif;
   font-weight: 300;
   -webkit-font-smoothing: antialiased;
 }
 
 h1, h2, h3{
-  font-family: 'Noto Serif KR', serif;
+  font-family: 'Cormorant Garamond', 'Gowun Batang', serif;
   font-weight: 500;
   margin: 0;
 }
@@ -79,7 +79,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
 
 /* 사이드바 맨 위 블로그 제목 (레퍼런스의 "fleet" 로고 자리) */
 .brand{
-  font-family: 'EB Garamond', serif;
+  font-family: 'Cormorant Garamond', 'Gowun Batang', serif;
   font-style: italic;
   font-size: 22px;
   letter-spacing: 0.01em;
@@ -164,7 +164,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   border: none;
   border-bottom: 1px solid var(--line);
   background: transparent;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Cormorant Garamond', 'Gowun Batang', sans-serif;
   font-size: 13px;
   color: var(--ink);
   outline: none;
@@ -218,6 +218,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   justify-content: space-between;
   cursor: pointer;
   counter-increment: catnum;
+  font-family: 'Cormorant Garamond', 'Gowun Batang', serif;   /* 영문은 Cormorant Garamond, 한글은 Gowun Batang으로 표시됨 */
 }
 
 /* 카테고리 이름 앞에 붙는 순서 번호(1, 2, 3...) — .cat-name으로 감싼 이름 텍스트 앞에만 붙어서
@@ -244,6 +245,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   font-size: 13px;
   color: var(--muted);
   transition: color .2s;
+  font-family: 'Cormorant Garamond', 'Gowun Batang', serif;   /* 영문은 Cormorant Garamond, 한글은 Gowun Batang으로 표시됨 */
 }
 
 /* 상위 카테고리(하위 카테고리 목록의 직계 항목)에만 번호를 매김.
@@ -352,7 +354,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   min-height: 100vh;  /* 글이 적어 콘텐츠가 짧아도 종이 질감이 사이드바(검정)와 같은 높이까지 채워지도록 */
   padding: 70px 76px 100px 40px;   /* 오른쪽 고리 이미지와 본문 글자가 겹치지 않도록 오른쪽 패딩을 넉넉히 둠 */
   background-color: var(--paper-avg);   /* 종이 질감 이미지가 뜨기 전/실패 시 폴백 색 */
-  background-image: url("assets/paper-texture.webp");
+  background-image: url("assets/paper-texture.jpg");
   background-repeat: repeat;
   background-size: 100px 100px;
   overflow-x: hidden;   /* .ring이 오른쪽 가장자리 밖으로 절반 걸쳐 나가는 부분을 여기서 잘라냄 */
@@ -410,12 +412,61 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
 .ring:nth-child(2){ top: 46%; }
 .ring:nth-child(3){ top: 82%; }
 
+/* 첫 번째 링(top:10%)에 걸려 있는 세로 메모 카드 — 카드 윗부분이 링과 겹치도록
+   ring 중심(10%)보다 살짝 아래에서 시작해, 링이 카드를 관통해 걸려 있는 것처럼 보이게 함.
+   right도 .ring과 가깝게(20px) 둬서 가로로도 겹치게 함.
+   .main-inner(왼쪽 max-width:800px 콘텐츠)와 겹치지 않도록, .main의 오른쪽 여백
+   (뷰포트 폭 - 사이드바 - .main 좌우 패딩 - main-inner 왼쪽 오프셋 - max-width)만큼만
+   너비를 갖도록 계산해서, 화면이 좁아지면 게시글 영역을 침범하기 전에 먼저 작아짐 */
+.side-memo{
+  --w: clamp(0px, calc(100vw - var(--sidebar-w) - 40px - 110px - 770px - 76px - 5px), 260px);
+  position: absolute;
+  top: calc(10% + 15px);
+  right: 20px;
+  width: var(--w);
+  aspect-ratio: 385 / 531;   /* 원본 이미지(assets/side-memo.png) 비율 유지 */
+  overflow: hidden;   /* 폭이 0에 가까워지면(화면이 좁아지면) 카드+세로 글씨가 함께 사라지도록 */
+  z-index: 4;   /* .ring(6)보다 아래에 둬서 링이 카드 위로 겹쳐 보이게 함 */
+}
+
+.side-memo-img{
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: none;   /* 전역 img 흑백 필터(46번 줄) 해제 — 종이 색감을 그대로 보여줌 */
+  pointer-events: none;
+  user-select: none;
+}
+
+/* 카드 위에 세로로 흐르는 현재 카테고리명 (예: Total, Study, Project ...).
+   text-orientation: upright로 글자를 눕히지 않고 위→아래로 똑바로 쌓아 "세로쓰기"로 보이게 함.
+   font-size를 카드 폭(--w)에 비례시켜서, 카드가 아무리 작아져도 글자가 카드 높이를
+   넘어가 위/아래가 잘리지 않도록 함(고정 vw 단위를 쓰면 카드는 작은데 글자만 커서 잘리는 문제가 있었음) */
+.side-memo-text{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  font-family: 'Cormorant Garamond', 'Gowun Batang', serif;   /* 영문은 Cormorant Garamond, 한글은 Gowun Batang으로 표시됨 */
+  font-style: italic;
+  font-size: clamp(8px, calc(var(--w) * 0.475), 25px);
+  letter-spacing: 4px;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+@media (max-width: 980px){
+  .side-memo{ display: none; }   /* 사이드바가 상단 바로 바뀌는 좁은 화면에선 여백 자체가 사라지므로 숨김 */
+}
+
 /* main 안의 실제 콘텐츠 폭을 제한하고 가운데 정렬.
    -> 사이드바가 숨겨져(main이 넓어져)도 이 max-width 덕분에 콘텐츠는 항상 중앙에 위치 */
 .main-inner{
   position: relative;
   max-width: 800px;
-  margin: 0 auto 0 150px;
+  margin: 0 auto 0 110px;
 }
 
 /* 좁은 폭(글쓰기/설정 페이지)이거나, 사이드바 옆의 좁은 본문(개별 글 페이지)으로 쓰는 컨테이너.
@@ -442,7 +493,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   padding: 70px 76px 100px 40px;   /* 오른쪽 고리 이미지와 본문 글자가 겹치지 않도록 오른쪽 패딩을 넉넉히 둠 */
   overflow-x: hidden;   /* .ring이 오른쪽 가장자리 밖으로 절반 걸쳐 나가는 부분을 여기서 잘라냄 */
   background-color: var(--paper-avg);   /* 종이 질감 이미지가 뜨기 전/실패 시 폴백 색 */
-  background-image: url("assets/paper-texture.webp");
+  background-image: url("assets/paper-texture.jpg");
   background-repeat: repeat;
   background-size: 100px 100px;
 }
@@ -469,8 +520,8 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
 
 /* 상단 히어로 영역 — "번호 + 현재 카테고리" 작은 라벨 위에 큰 제목이 오는 구조 (레퍼런스 참고) */
 .main-header{
-  padding: 0 0 56px;
-  margin-bottom: 48px;
+  padding: 40px 0 24px;
+  margin-bottom: 16px;
   display: flex;
   flex-direction: column;          /* 라벨 아래 큰 제목이 오도록 세로 배치 */
   align-items: flex-start;         /* 왼쪽 정렬 */
@@ -478,31 +529,42 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   gap: 18px;
 }
 
-/* 라벨: "1  Study" 처럼 번호 + 현재 선택된 카테고리 이름 */
-.hero-label{
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--muted);
+/* 큰 제목을 올려두는 메모지 — 종이 클립 사진(assets/memo-clip.png) 위에
+   제목 글씨가 메모지와 같은 기울기로 얹혀 있는 것처럼 보이게 함 */
+.hero-memo{
+  position: relative;
+  display: inline-block;
+  width: 380px;
+  max-width: 100%;
+  margin-left: -60px;
 }
 
-.hero-label .hero-num{
-  color: var(--muted);
+.hero-memo-img{
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+  filter: none;   /* 전역 img 흑백 필터(46번 줄)를 해제해 메모지 색감을 그대로 보여줌 */
 }
 
-.hero-label em{
-  font-style: italic;
-  font-family: 'Noto Serif KR', serif;
-  color: var(--ink);
-}
-
-/* 큰 제목 — 카테고리와 무관하게 직접 적어 넣는 사이트 대표 문구 */
+/* 큰 제목 — 사진 속 메모지 자체의 기울기(-4deg)와 똑같이 회전시켜
+   메모지 위에 손글씨처럼 얹음 */
 .hero-title{
-  font-size: 44px;
-  line-height: 1.28;
+  position: absolute;
+  top: 54%;
+  left: 50%;
+  width: 72%;
+  margin: 0;
+  transform: translate(-50%, -50%) rotate(-4deg);
+  font-family: 'Cormorant Garamond', 'Gowun Batang', serif;   /* 영문은 Cormorant Garamond, 한글은 Gowun Batang으로 표시됨 */
+  font-style: italic;
+  font-size: 30px;
+  letter-spacing: 1.0px;
+  line-height: 1.34;
   font-weight: 500;
-  max-width: 640px;
+  text-align: center;
+  color: var(--ink);
 }
 
 .main-header p{
@@ -592,7 +654,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
 .card-meta .card-tag{
   font-size: 11px;
   font-style: italic;
-  font-family: 'Noto Serif KR', serif;
+  font-family: 'Cormorant Garamond', 'Gowun Batang', serif;
   text-transform: none;
   letter-spacing: 0;
   color: var(--ink);
@@ -679,7 +741,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
 .field select,
 .field textarea{
   width: 100%;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Cormorant Garamond', 'Gowun Batang', sans-serif;
   font-size: 14px;
   color: var(--ink);
   background: transparent;
@@ -689,7 +751,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   outline: none;
   transition: border-color .2s;
 }
-.field input[type="text"]{ font-family: 'Noto Serif KR', serif; font-size: 20px; }
+.field input[type="text"]{ font-family: 'Cormorant Garamond', 'Gowun Batang', serif; font-size: 20px; }
 .field input[type="text"]:focus,
 .field select:focus,
 .field textarea:focus{ border-color: var(--ink); }
@@ -797,7 +859,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
 }
 
 .btn{
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Cormorant Garamond', 'Gowun Batang', sans-serif;
   font-size: 13px;
   letter-spacing: 0.03em;
   padding: 11px 22px;
@@ -867,7 +929,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   text-align: center;
 }
 .lock-title{
-  font-family: 'Noto Serif KR', serif;
+  font-family: 'Cormorant Garamond', 'Gowun Batang', serif;
   font-size: 16px;
   margin-bottom: 20px;
 }
@@ -877,7 +939,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
 }
 .lock-screen input[type="password"]{
   flex: 1;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Cormorant Garamond', 'Gowun Batang', sans-serif;
   font-size: 14px;
   border: none;
   border-bottom: 1px solid var(--line);
@@ -957,7 +1019,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
 }
 .category-add-row input[type="text"]{
   flex: 1;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Cormorant Garamond', 'Gowun Batang', sans-serif;
   font-size: 14px;
   border: none;
   border-bottom: 1px solid var(--line);
@@ -1105,7 +1167,8 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
 
 @media (max-width: 720px){
   .main-header{ padding: 36px 16px; }
-  .main-header h1{ font-size: 26px; }
+  .hero-memo{ width: 280px; }
+  .hero-title{ font-size: 17px; }
   .page-inner{ padding: 40px 20px 80px; }
   .site-topbar{ padding: 18px 20px; }
 }

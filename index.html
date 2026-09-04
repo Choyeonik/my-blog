@@ -6,7 +6,7 @@
 <title>Yeonnnn's Blog</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500;700&family=EB+Garamond:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500;700&family=EB+Garamond:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Gowun+Batang&display=swap" rel="stylesheet">
 <!-- 공용 스타일시트: index.html / write.html / posts/*.html 모두 이 파일 하나를 공유합니다 -->
 <link rel="stylesheet" href="site.css">
 </head>
@@ -64,6 +64,12 @@
       <span class="ring"></span>
     </div>
 
+    <!-- 첫 번째 링(위쪽)에 걸린 듯한 세로 메모 카드 — 현재 카테고리명을 세로로 표시 -->
+    <div class="side-memo" aria-hidden="true">
+      <img src="assets/side-memo.png" alt="" class="side-memo-img">
+      <span class="side-memo-text" id="pageTitleVertical">Total</span>
+    </div>
+
     <div class="main-inner">
 
       <!-- 검색창: 메인 영역 오른쪽 위 -->
@@ -78,9 +84,10 @@
       </div>
 
       <div class="main-header">
-        <div class="hero-label"><span class="hero-num">1</span><em id="pageTitle">Total</em></div>
-        <h1 class="hero-title"> Learning from the BootCamp</h1>
-
+        <div class="hero-memo">
+          <img src="assets/memo-clip.png" alt="" class="hero-memo-img" aria-hidden="true">
+          <h1 class="hero-title">Learning from the BootCamp</h1>
+        </div>
       </div>
 
       <div class="grid" id="grid">
@@ -152,7 +159,7 @@
 
   // 자주 사용하는 DOM 요소를 미리 찾아둠
   const grid = document.getElementById('grid');
-  const pageTitle = document.getElementById('pageTitle');
+  const pageTitleVertical = document.getElementById('pageTitleVertical');
   const heroTitle = document.querySelector('.hero-title');
   const searchInput = document.getElementById('searchInput');
 
@@ -304,7 +311,7 @@
     document.querySelectorAll('.category-sub a').forEach(a => {
       a.classList.toggle('active', a.dataset.filter === filter);
     });
-    pageTitle.textContent = labelFor(filter);
+    pageTitleVertical.textContent = labelFor(filter);
     heroTitle.innerHTML = heroTitleFor(filter);
     render();
   }
