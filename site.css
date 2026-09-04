@@ -212,7 +212,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
 .category-list li{ margin-bottom: 4px; }
 
 .category-total{
-  font-size: 13px;
+  font-size: 18px;
   padding: 6px 0;
   display: flex;
   justify-content: space-between;
@@ -242,7 +242,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   justify-content: space-between;
   align-items: center;
   padding: 7px 0;
-  font-size: 25px;
+  font-size: 18px;
   color: var(--muted);
   transition: color .2s;
   font-family: 'Cormorant Garamond', 'Gowun Batang', serif;   /* 영문은 Cormorant Garamond, 한글은 Gowun Batang으로 표시됨 */
@@ -275,7 +275,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   padding-left: 12px;
   margin: 2px 0 2px 4px;
 }
-.category-sub-nested li a{ padding: 5px 0 5px 12px; font-size: 20px; }
+.category-sub-nested li a{ padding: 5px 0 5px 12px; font-size: 18px; }
 
 /* 홈 화면 사이드바의 "실제 글 불러오기" 폴더 연결 링크/상태 텍스트
    -> 기능(자동 fetch 연동)은 유지하되, 화면에는 표시하지 않음 */
@@ -419,7 +419,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
    (뷰포트 폭 - 사이드바 - .main 좌우 패딩 - main-inner 왼쪽 오프셋 - max-width)만큼만
    너비를 갖도록 계산해서, 화면이 좁아지면 게시글 영역을 침범하기 전에 먼저 작아짐 */
 .side-memo{
-  --w: clamp(0px, calc(100vw - var(--sidebar-w) - 40px - 110px - 800px - 76px - 5px), 400px);
+  --w: calc(clamp(0px, calc(100vw - var(--sidebar-w) - 40px - 110px - 850px - 76px - 5px), 400px) / 2);   /* 맨 끝 "/ 2"가 카드 전체 크기를 절반으로 줄이는 부분 */
   position: absolute;
   top: calc(10% + 15px);
   right: 20px;
@@ -451,8 +451,8 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   text-orientation: upright;
   font-family: 'Cormorant Garamond', 'Gowun Batang', serif;   /* 영문은 Cormorant Garamond, 한글은 Gowun Batang으로 표시됨 */
   font-style: italic;
-  font-size: clamp(8px, calc(var(--w) * 0.475), 25px);
-  letter-spacing: 4px;
+  font-size: clamp(6px, calc(var(--w) * 0.13), 22px);
+  letter-spacing: calc(var(--w) * 0.02);
   color: var(--ink);
   white-space: nowrap;
 }
@@ -465,8 +465,8 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
    -> 사이드바가 숨겨져(main이 넓어져)도 이 max-width 덕분에 콘텐츠는 항상 중앙에 위치 */
 .main-inner{
   position: relative;
-  max-width: 800px;
-  margin: 0 auto 0 180px;
+  max-width: 850px;
+  margin: 0 auto 0 110px;
 }
 
 /* 좁은 폭(글쓰기/설정 페이지)이거나, 사이드바 옆의 좁은 본문(개별 글 페이지)으로 쓰는 컨테이너.
