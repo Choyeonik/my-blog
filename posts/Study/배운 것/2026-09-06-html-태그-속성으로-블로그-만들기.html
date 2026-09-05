@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTML 태그의 속성을 활용해 나만의 블로그 페이지 만들기 — Portfolio Blog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500;700&family=EB+Garamond:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Gowun+Batang&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+
+<div class="layout">
+<aside class="sidebar">
+
+    <div class="brand">Yeonn</div>
+
+    <section class="categories">
+      <ul class="category-list">
+        <li>
+          <a class="category-total" href="../../../index.html">
+            <span class="cat-name">Total</span>
+            <span class="count">4</span>
+          </a>
+          <ul class="category-sub">
+      <li>
+        <a href="../../../index.html?filter=Project"><span class="cat-name">Project</span> <span class="count">0</span></a>
+
+      </li>
+      <li>
+        <a href="../../../index.html?filter=Study"><span class="cat-name">Study</span> <span class="count">4</span></a>
+
+        <ul class="category-sub-nested">
+
+            <li><a href="../../../index.html?filter=%EB%B0%B0%EC%9A%B4%20%EA%B2%83">배운 것 <span class="count">4</span></a></li>
+
+        </ul>
+      </li>
+      <li>
+        <a href="../../../index.html?filter=Photo"><span class="cat-name">Photo</span> <span class="count">0</span></a>
+
+      </li><li><a href="../../../index.html?filter=about"><span class="cat-name">About</span></a></li></ul>
+        </li>
+      </ul>
+    </section>
+
+    <div class="sidebar-links">
+      <a href="../../../write.html" class="write-link">새 글 쓰기 →</a>
+      <a href="../../../settings.html" class="write-link">설정 →</a>
+    </div>
+
+  </aside>
+
+  <main class="post-page">
+
+    <div class="main-frame-top" aria-hidden="true"></div>
+    <div class="main-frame-bottom" aria-hidden="true"></div>
+    <div class="main-frame-right" aria-hidden="true"></div>
+    <div class="ring-strip" aria-hidden="true">
+      <span class="ring"></span>
+      <span class="ring"></span>
+      <span class="ring"></span>
+    </div>
+
+    <div class="page-inner">
+
+    <div class="main-topbar">
+      <section class="search-box">
+        <form action="../../../index.html" method="get">
+          <input type="text" name="q" placeholder="검색어를 입력하세요">
+          <button type="submit" aria-label="검색">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+        </form>
+      </section>
+    </div>
+
+    <div class="post-header">
+      <div class="card-tag">배운 것</div>
+      <h1>HTML 태그의 속성을 활용해 나만의 블로그 페이지 만들기</h1>
+      <p class="post-desc">프론트엔드 기초를 배우기 위해 HTML을 학습하면서 태그의 속성을 활용해 나만의 블로그 페이지를 만들어보았습니다. 기본 태그부터 시행착오까지의 전 과정을 정리했습니다.</p>
+      <div class="post-date">2026-09-06</div>
+    </div>
+
+    <article class="post-body">
+<h2 id="들어가며-situation">들어가며 (Situation)</h2>
+<p>프론트엔드 개발자가 되기 위한 첫 걸음은 웹의 뼈대를 이해하는 것이다. 홈페이지가 어떻게 구성되는지 직접 만들어보면서 배워야 실무에서 CSS와 JavaScript를 다룰 때도 명확한 기초를 가질 수 있다. 이 경험을 통해 HTML의 기본 태그들이 단순한 텍스트 표시가 아니라, 웹 문서의 구조를 정의하는 중요한 역할을 한다는 것을 깨닫게 되었다.</p>
+<hr>
+<h2 id="문제-상황-task">문제 상황 (Task)</h2>
+<p>단순히 "홈페이지를 만들어보세요"라는 과제는 막연했다. 어떤 태그를 사용해야 하고, 어떻게 연결하고, 어떻게 콘텐츠를 표현해야 할까? 특히 텍스트, 목록, 이미지, 링크를 모두 조합해서 하나의 완성된 페이지로 만드는 것이 처음에는 어려웠다. 또한 단순히 화면에 보이도록 하는 것뿐만 아니라, 의미 있는 마크업으로 웹 표준에 맞게 작성해야 한다는 요구사항도 있었다.</p>
+<hr>
+<h2 id="해결-과정-action">해결 과정 (Action)</h2>
+<h3 id="1-html-문서의-기본-골격-이해">1. HTML 문서의 기본 골격 이해</h3>
+<p>먼저 모든 HTML 문서는 다음과 같은 기본 구조를 가진다는 것을 배웠다.</p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;페이지 제목&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;!-- 콘텐츠가 여기에 들어간다 --&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+<p><code>&lt;!DOCTYPE html&gt;</code>은 이 문서가 HTML5 표준임을 브라우저에 알리고, <code>&lt;meta charset="UTF-8"&gt;</code>은 한글 같은 다국어가 제대로 표시되도록 보장한다. 이 기본 틀 없이는 웹페이지가 제대로 렌더링되지 않는다.</p>
+<hr>
+<h3 id="2-텍스트-콘텐츠-구조화하기">2. 텍스트 콘텐츠 구조화하기</h3>
+<p>초반에는 모든 글을 <code>&lt;p&gt;</code> 태그로 작성했지만, 문제가 생겼다. 페이지에 여러 섹션이 있을 때 어디서 어디까지가 하나의 주제인지 구분이 안 되었다. 이를 해결하기 위해 제목 태그를 활용했다.</p>
+<pre><code class="language-html">&lt;h1&gt;박서준&lt;/h1&gt;
+&lt;p&gt;부트캠프에서 웹을 배우고 있습니다.&lt;/p&gt;
+
+&lt;h3&gt;좋아하는 것&lt;/h3&gt;
+&lt;ul&gt;
+    &lt;li&gt;커피 내리기&lt;/li&gt;
+    &lt;li&gt;영화 보기&lt;/li&gt;
+    &lt;li&gt;주말 산책&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3&gt;배우고 싶은 순서&lt;/h3&gt;
+&lt;ol&gt;
+    &lt;li&gt;HTML&lt;/li&gt;
+    &lt;li&gt;CSS&lt;/li&gt;
+    &lt;li&gt;JavaScript&lt;/li&gt;
+&lt;/ol&gt;</code></pre>
+<p><code>&lt;h1&gt;</code>은 페이지의 주제(이름), <code>&lt;h3&gt;</code>은 섹션의 부제목으로 사용했다. 이렇게 하면 화면에 시각적으로 계층이 보이고, 스크린 리더 사용자도 문서 구조를 이해할 수 있다.</p>
+<hr>
+<h3 id="3-태그의-속성으로-더-풍부한-표현하기">3. 태그의 속성으로 더 풍부한 표현하기</h3>
+<p>기본 <code>&lt;p&gt;</code> 태그 안의 텍스트만으로는 강조가 부족했다. 동일한 "굵게"를 표현하는 <code>&lt;strong&gt;</code>과 <code>&lt;b&gt;</code>, 기울임을 하는 <code>&lt;em&gt;</code>과 <code>&lt;i&gt;</code> 사이의 차이를 배웠다.</p>
+<ul>
+<li><code>&lt;strong&gt;</code> vs <code>&lt;b&gt;</code>: strong은 <strong>의미적 강조</strong> (중요한 내용), b는 <strong>시각적 강조</strong>만 담당</li>
+<li><code>&lt;em&gt;</code> vs <code>&lt;i&gt;</code>: em은 <strong>강조의 의미</strong>, i는 기술 용어나 책 제목 같은 <strong>기울임 스타일</strong></li>
+</ul>
+<pre><code class="language-html">&lt;p&gt;&lt;strong&gt;중요한 공지사항:&lt;/strong&gt; 다음 주부터 수강 가능합니다.&lt;/p&gt;
+&lt;p&gt;이 책은 &lt;i&gt;웹 표준&lt;/i&gt;의 중요성을 설명한다.&lt;/p&gt;</code></pre>
+<p>이 차이를 이해하면서 "왜 같은 결과인데 다른 태그가 필요할까?"라는 질문에 대한 답을 얻었다. 검색 엔진과 접근성 도구가 <code>&lt;strong&gt;</code>을 더 중요하게 인식하기 때문이다.</p>
+<hr>
+<h3 id="4-링크와-이미지로-상호작용-추가">4. 링크와 이미지로 상호작용 추가</h3>
+<p>정적인 텍스트만으로는 블로그가 완성되지 않았다. 다른 사이트로의 링크와 이미지가 필요했다.</p>
+<pre><code class="language-html">&lt;h3&gt;링크&lt;/h3&gt;
+&lt;ul&gt;
+    &lt;li&gt;&lt;a href="https://www.google.com"&gt;구글 검색&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href="https://github.com"&gt;깃허브&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href="https://choyeonik.github.io/my-blog/index.html"&gt;내 블로그&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3&gt;좋아하는 것&lt;/h3&gt;
+&lt;ul&gt;
+    &lt;li&gt;커피 내리기 &lt;img src="sample/image/flower1.PNG" alt="커피내리기"&gt;&lt;/li&gt;
+    &lt;li&gt;영화 보기 &lt;img src="sample/image/flower4.PNG" alt="영화 보기"&gt;&lt;/li&gt;
+    &lt;li&gt;주말 산책 &lt;img src="sample/image/flower3.PNG" alt="주말 산책"&gt;&lt;/li&gt;
+&lt;/ul&gt;</code></pre>
+<p><code>&lt;a&gt;</code> 태그의 <code>href</code> 속성으로 URL을 지정하고, <code>&lt;img&gt;</code> 태그의 <code>src</code> 속성으로 이미지 경로를, <code>alt</code> 속성으로 이미지 설명을 추가했다. 특히 <code>alt</code> 속성은 이미지가 로드되지 않았을 때나 시각 장애인용 스크린 리더가 읽을 수 있도록 해준다.</p>
+<hr>
+<h3 id="5-영역-태그로-섹션-구분하기">5. 영역 태그로 섹션 구분하기</h3>
+<p>여러 사람의 정보를 한 페이지에 표시할 때, 각 사람의 정보가 시각적으로 분리되어야 했다. 이때 <code>&lt;div&gt;</code> 태그를 사용했다.</p>
+<pre><code class="language-html">&lt;div&gt;
+    &lt;h1&gt;박서준&lt;/h1&gt;
+    &lt;p&gt;부트캠프에서 웹을 배우고 있습니다.&lt;/p&gt;
+    &lt;h3&gt;좋아하는 것&lt;/h3&gt;
+    &lt;ul&gt;
+        &lt;li&gt;커피 내리기&lt;/li&gt;
+    &lt;/ul&gt;
+&lt;/div&gt;
+
+&lt;hr&gt;
+
+&lt;div&gt;
+    &lt;h1&gt;김서연&lt;/h1&gt;
+    &lt;p&gt;안녕하세요.&lt;/p&gt;
+&lt;/div&gt;</code></pre>
+<p><code>&lt;div&gt;</code>는 콘텐츠를 그룹화하는 역할을 하고, <code>&lt;hr&gt;</code>로 시각적 구분선을 추가했다. 이 구조 덕분에 나중에 CSS로 스타일을 입힐 때 각 섹션을 독립적으로 꾸밀 수 있게 되었다.</p>
+<hr>
+<h3 id="6-시행착오-의미-있는-마크업의-중요성">6. 시행착오: 의미 있는 마크업의 중요성</h3>
+<p>처음에는 단순히 "화면에 보이면 된다"는 생각으로 <code>&lt;b&gt;</code> 대신 <code>&lt;strong&gt;</code>을, 장식용 <code>&lt;hr&gt;</code> 태그를 마구 사용했다. 하지만 강의를 진행하면서 웹 표준과 접근성의 중요성을 깨달았다. 스크린 리더 사용자가 내 페이지를 사용할 때, 또는 검색 엔진이 내 콘텐츠를 색인화할 때, 단순한 시각 효과가 아니라 구조화된 의미가 얼마나 중요한지 알게 되었다.</p>
+<hr>
+<h2 id="결과-result">결과 (Result)</h2>
+<h3 id="before-첫-시도">Before: 첫 시도</h3>
+<ul>
+<li>모든 콘텐츠가 <code>&lt;p&gt;</code> 태그로 평탄하게 작성됨</li>
+<li>강조나 시각적 구분이 부족함</li>
+<li>링크와 이미지는 있지만 구조화되지 않음</li>
+</ul>
+<h3 id="after-최종-완성">After: 최종 완성</h3>
+<ul>
+<li>의미 있는 제목 태그로 계층 구조 형성</li>
+<li>의미적 마크업(<code>&lt;strong&gt;</code>, <code>&lt;em&gt;</code>) 사용</li>
+<li>목록 태그로 정보를 체계적으로 조직화</li>
+<li><code>alt</code> 속성으로 접근성 확보</li>
+<li><code>&lt;div&gt;</code>로 논리적 섹션 분리</li>
+</ul>
+<p>이 과정을 통해 첫 번째 블로그 페이지를 완성했고, HTML은 단순한 텍스트 표시 언어가 아니라 <strong>웹 문서의 의미를 정의하는 언어</strong>임을 이해하게 되었다. 이제 다음 단계인 CSS로 스타일을 입히고, JavaScript로 상호작용을 추가할 때도 이 견고한 HTML 기초가 있으면 훨씬 수월할 것 같다.</p>
+<hr>
+<h2 id="더-학습하면-좋은-개념">더 학습하면 좋은 개념</h2>
+<ul>
+<li><strong>Semantic HTML (의미론적 HTML)</strong> — <code>&lt;div&gt;</code> 대신 <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;footer&gt;</code> 같은 의미 있는 태그를 사용하면 코드의 의도가 더 명확해진다. 접근성과 SEO 측면에서도 중요하다.</li>
+<li><strong>웹 접근성(Web Accessibility, a11y)</strong> — 시각, 청각, 운동 장애가 있는 사용자도 웹사이트를 사용할 수 있도록 만드는 것이다. <code>alt</code> 속성, <code>&lt;label&gt;</code> 태그, 키보드 네비게이션 등이 포함된다. WCAG 지침을 참고하면 좋다.</li>
+<li><strong>SEO (검색 엔진 최적화)</strong> — 구글, 네이버 같은 검색 엔진이 내 웹사이트를 올바르게 이해하도록 HTML을 작성하는 방법. <code>&lt;title&gt;</code>, <code>&lt;meta&gt;</code> 태그, 제목 태그의 계층 구조가 중요하다.</li>
+<li><strong>HTML 폼 요소</strong> — <code>&lt;form&gt;</code>, <code>&lt;input&gt;</code>, <code>&lt;textarea&gt;</code>, <code>&lt;select&gt;</code> 등으로 사용자 입력을 받는 방법. 블로그에 댓글 기능이나 회원가입 페이지를 만들 때 필수다.</li>
+<li><strong>메타데이터와 Open Graph</strong> — <code>&lt;meta&gt;</code> 태그 중 특히 <code>og:title</code>, <code>og:image</code>, <code>og:description</code> 등으로 소셜 미디어에서 링크 공유 시 보여지는 미리보기를 정의할 수 있다.</li>
+</ul>
+<hr>
+<h2 id="참고-자료">참고 자료</h2>
+<ul>
+<li><a href="https://developer.mozilla.org/en-US/docs/Learn/HTML">MDN - HTML 기초</a></li>
+<li><a href="https://html.spec.whatwg.org/">HTML 공식 표준 - W3C</a></li>
+<li><a href="https://www.w3.org/WAI/WCAG21/quickref/">웹 접근성 지침 - WCAG 2.1</a></li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Glossary/Semantics#semantics_in_html">Semantic HTML - MDN</a></li>
+</ul>
+    </article>
+        </div>
+    </main>
+</div>
+
+<script src="../../../site-storage.js"></script>
+<script src="../../../sidebar-motion.js"></script>
+
+</body>
+</html>
