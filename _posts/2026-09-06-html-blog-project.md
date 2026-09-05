@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "HTML 태그의 속성을 활용해 나만의 블로그 페이지 만들기"
-date: 2026-09-06 14:30:00 +0900
+date: 2026-09-06 08:00:00 +0900
 categories: [Learned]
 tags: [html, semantic-markup, web-basics]
 ---
