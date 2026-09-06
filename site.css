@@ -706,6 +706,19 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
      않고, 클릭하면 JS가 사진을 확대하는 라이트박스를 띄움
    ========================================================== */
 
+/* Total 화면에서 일반 게시글과 Photo 모자이크 사이를 구분해주는 가로선 + 제목 */
+.photo-section-divider{
+  grid-column: 1 / -1;
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 8px 0 32px;
+}
+.photo-section-title{
+  grid-column: 1 / -1;
+  font-size: 20px;
+  margin: -14px 0 24px;
+}
+
 /* .grid(일반 글 카드용 2열)와는 별개로 다룸. .grid의 자식이지만 grid-column으로
    항상 전체 폭을 차지해서 일반 글 카드 레이아웃에는 영향을 주지 않음 */
 .photo-mosaic{

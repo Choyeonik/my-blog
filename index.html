@@ -363,9 +363,13 @@
     const normalHtml = normalCards.map((p, i) => cardHTML(p, i)).join('');
 
     // 사진은 이미 위 정렬 단계에서 같은 제목(계열)끼리 붙어 있는 순서이므로,
-    // 그 순서 그대로 하나의 모자이크 그리드(.photo-mosaic)에 나란히 채워 넣음
+    // 그 순서 그대로 하나의 모자이크 그리드(.photo-mosaic)에 나란히 채워 넣음.
+    // Total 화면에서는 일반 게시글과 Photo 사이를 가로선 + "Photo" 제목으로 구분해줌
+    const photoSectionHeader = (currentFilter === 'total' && normalCards.length)
+      ? `<hr class="photo-section-divider"><h2 class="photo-section-title">Photo</h2>`
+      : '';
     const photoHtml = photoCards.length
-      ? `<div class="photo-mosaic">${photoCards.map((p, i) => cardHTML(p, i)).join('')}</div>`
+      ? `${photoSectionHeader}<div class="photo-mosaic">${photoCards.map((p, i) => cardHTML(p, i)).join('')}</div>`
       : '';
     grid.innerHTML = normalHtml + photoHtml;
     layoutPhotoMosaic();
