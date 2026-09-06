@@ -230,11 +230,11 @@
   // 게시글 카드 1개의 HTML을 만들어 반환 (main 그리드에 들어가는 카드)
   // 실제 글(filename 있음)은 posts/파일명.html로 이동하는 링크로 감싸고,
   // 샘플 글(filename 없음)은 클릭해도 이동하지 않도록 함
-  function cardHTML(p){
+  function cardHTML(p, i){
     const href = p.filename ? 'posts/' + encodePathForUrl(postRelPath(p)) : '#';
     const thumbSrc = p.thumbnail ? 'posts/' + encodePathForUrl(p.thumbnail) : placeholderDataUri(p.seed);
     return `
-      <article class="card" data-category="${p.category}" data-title="${p.title.toLowerCase()}">
+      <article class="card" data-category="${p.category}" data-title="${p.title.toLowerCase()}" style="--i:${i}">
         <a class="card-link" href="${href}">
           <div class="card-img"><img src="${thumbSrc}" alt="${p.title}" loading="lazy"></div>
           <div class="card-body">
@@ -301,7 +301,7 @@
     }
 
     grid.classList.remove('grid--single');   // 카드 목록을 보여줄 때는 다시 다단 레이아웃으로
-    grid.innerHTML = filtered.map(cardHTML).join('');
+    grid.innerHTML = filtered.map((p, i) => cardHTML(p, i)).join('');
   }
 
   // 사이드바에서 카테고리를 클릭했을 때: 활성 상태 표시 + 상단 제목 변경 + 그리드 다시 렌더링
