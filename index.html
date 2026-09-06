@@ -335,12 +335,17 @@
 
     // 최신 글이 화면 왼쪽(그리드 맨 앞)에 오도록 날짜 내림차순으로 정렬.
     // Total 화면에서는 Photo 카테고리 글이 항상 다른 카테고리 글보다 아래로 가도록
-    // 우선 그룹을 나누고, 그 안에서 다시 날짜 내림차순으로 정렬함
+    // 우선 그룹을 나누고, Photo끼리는 다시 제목(같은 계열 사진은 같은 제목)이 같은 것끼리
+    // 뭉치도록 묶은 뒤, 그 안에서 날짜 내림차순으로 정렬함
     filtered = [...filtered].sort((a, b) => {
       if (currentFilter === 'total'){
         const aPhoto = isPhotoCategory(a.category);
         const bPhoto = isPhotoCategory(b.category);
         if (aPhoto !== bPhoto) return aPhoto ? 1 : -1;
+        if (aPhoto && bPhoto){
+          const byTitle = a.title.localeCompare(b.title, 'ko');
+          if (byTitle !== 0) return byTitle;
+        }
       }
       return b.date.localeCompare(a.date);
     });
