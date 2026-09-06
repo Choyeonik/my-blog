@@ -1195,7 +1195,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
      같은 opacity 0 → 1 디졸브에 요소마다 다른 animation-delay를 준다.
    ========================================================== */
 @keyframes dissolveIn{
-  from{ opacity: 0; transform: translateY(10px); }
+  from{ opacity: 0; transform: translateY(-10px); }
   to{ opacity: 1; transform: translateY(0); }
 }
 
