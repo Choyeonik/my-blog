@@ -693,6 +693,94 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   color: var(--muted);
 }
 
+/* ==========================================================
+   Photo 카테고리 전용 카드
+   - 사진이 위, 제목/설명이 아래로 쌓이는 세로 레이아웃(날짜/카테고리 태그 없음)
+   - .card-link가 <a>가 아니라 role="button"인 <div>라서 글 페이지로 이동하지
+     않고, 클릭하면 JS가 사진을 확대하는 라이트박스를 띄움
+   ========================================================== */
+.card--photo .card-link{
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+  cursor: pointer;
+}
+.card--photo .card-img{
+  width: 100%;
+  max-width: none;
+}
+
+/* 사진 확대보기(라이트박스) — 확대된 사진 옆(모바일에서는 아래)에 제목/날짜/설명 표시 */
+.lightbox{
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+.lightbox-backdrop{
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 20, 18, 0.82);
+}
+.lightbox-panel{
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 32px;
+  max-width: 1100px;
+  max-height: 100%;
+  background: var(--bg);
+  padding: 32px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+.lightbox-img{
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lightbox-img img{
+  max-width: 100%;
+  max-height: 78vh;
+  width: auto;
+  height: auto;
+  display: block;
+  filter: none;   /* 사진 원본 색 그대로(사이트 전역 흑백 필터 제외) */
+}
+.lightbox-info{
+  flex: 0 0 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.lightbox-info h2{ font-size: 22px; margin-bottom: 10px; }
+.lightbox-info .card-date{ margin-bottom: 14px; }
+.lightbox-info p{ font-size: 13px; line-height: 1.7; color: var(--muted); }
+.lightbox-close{
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--ink);
+}
+body.lightbox-open{ overflow: hidden; }   /* 라이트박스가 떠 있는 동안 뒤 배경 스크롤 방지 */
+
+@media (max-width: 720px){
+  .lightbox{ padding: 16px; }
+  .lightbox-panel{ flex-direction: column; overflow-y: auto; padding: 20px; gap: 20px; }
+  .lightbox-info{ flex: none; }
+}
+
 /* About 카테고리를 눌렀을 때 그리드 대신 보여주는 자기소개 카드 (grid--single과 함께 사용) */
 .about-card{
   text-align: center;

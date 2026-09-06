@@ -99,6 +99,20 @@
 
 </div>
 
+<!-- Photo 카테고리 카드를 누르면 글 페이지로 이동하는 대신 여기에 사진을 확대해서 보여줌 -->
+<div class="lightbox" id="photoLightbox" hidden>
+  <div class="lightbox-backdrop" id="lightboxBackdrop"></div>
+  <div class="lightbox-panel" role="dialog" aria-modal="true" aria-label="사진 확대보기">
+    <button type="button" class="lightbox-close" id="lightboxClose" aria-label="닫기">✕</button>
+    <div class="lightbox-img"><img id="lightboxImg" src="" alt=""></div>
+    <div class="lightbox-info">
+      <h2 id="lightboxTitle"></h2>
+      <div class="card-date" id="lightboxDate"></div>
+      <p id="lightboxDesc"></p>
+    </div>
+  </div>
+</div>
+
 <!-- posts 폴더 읽기/쓰기 공용 헬퍼 (site-storage.js) -->
 <script src="site-storage.js"></script>
 <!-- 사이드바 스크롤 관성/바운스 모션 -->
@@ -227,12 +241,41 @@
     updateCounts();
   }
 
+  // p.category가 Photo 카테고리(또는 그 하위 카테고리)에 속하는지 판단.
+  // Photo 카테고리 게시글은 카드 레이아웃과 클릭 동작이 다르게 동작함
+  function isPhotoCategory(category){
+    const photoCat = categories.find(c => c.name === 'Photo');
+    if (!photoCat) return category === 'Photo';
+    return category === photoCat.name || photoCat.subcategories.includes(category);
+  }
+
   // 게시글 카드 1개의 HTML을 만들어 반환 (main 그리드에 들어가는 카드)
   // 실제 글(filename 있음)은 posts/파일명.html로 이동하는 링크로 감싸고,
-  // 샘플 글(filename 없음)은 클릭해도 이동하지 않도록 함
+  // 샘플 글(filename 없음)은 클릭해도 이동하지 않도록 함.
+  // Photo 카테고리는 예외: 사진이 위/제목·설명이 아래로 쌓이고 날짜·카테고리 태그는 표시하지 않으며,
+  // 클릭하면 글 페이지로 이동하는 대신 사진이 크게 확대되는 라이트박스가 열림
   function cardHTML(p, i){
     const href = p.filename ? 'posts/' + encodePathForUrl(postRelPath(p)) : '#';
     const thumbSrc = p.thumbnail ? 'posts/' + encodePathForUrl(p.thumbnail) : placeholderDataUri(p.seed);
+
+    if (isPhotoCategory(p.category)){
+      return `
+        <article class="card card--photo" data-category="${p.category}" data-title="${p.title.toLowerCase()}" style="--i:${i}">
+          <div class="card-link" data-lightbox role="button" tabindex="0"
+               data-photo-src="${escapeHtml(thumbSrc)}"
+               data-photo-title="${escapeHtml(p.title)}"
+               data-photo-date="${escapeHtml(p.date)}"
+               data-photo-desc="${escapeHtml(p.excerpt)}">
+            <div class="card-img"><img src="${thumbSrc}" alt="${p.title}" loading="lazy"></div>
+            <div class="card-body">
+              <h3>${p.title}</h3>
+              <p>${p.excerpt}</p>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
     return `
       <article class="card" data-category="${p.category}" data-title="${p.title.toLowerCase()}" style="--i:${i}">
         <a class="card-link" href="${href}">
@@ -338,6 +381,48 @@
 
   // ---------- 검색창 입력 이벤트 연결 (입력할 때마다 실시간으로 필터링) ----------
   searchInput.addEventListener('input', render);
+
+  // ---------- Photo 카테고리 카드: 사진 확대보기(라이트박스) ----------
+  // 카드는 render()가 매번 grid.innerHTML을 통째로 새로 그리므로, 카드 하나하나에
+  // 이벤트를 다시 붙이는 대신 grid에 이벤트 위임(delegation)으로 한 번만 연결함
+  const lightbox = document.getElementById('photoLightbox');
+  const lightboxImg = document.getElementById('lightboxImg');
+  const lightboxTitle = document.getElementById('lightboxTitle');
+  const lightboxDate = document.getElementById('lightboxDate');
+  const lightboxDesc = document.getElementById('lightboxDesc');
+
+  function openLightbox(trigger){
+    lightboxImg.src = trigger.dataset.photoSrc;
+    lightboxImg.alt = trigger.dataset.photoTitle;
+    lightboxTitle.textContent = trigger.dataset.photoTitle;
+    lightboxDate.textContent = trigger.dataset.photoDate;
+    lightboxDesc.textContent = trigger.dataset.photoDesc;
+    lightbox.hidden = false;
+    document.body.classList.add('lightbox-open');
+  }
+  function closeLightbox(){
+    lightbox.hidden = true;
+    document.body.classList.remove('lightbox-open');
+  }
+
+  grid.addEventListener('click', (e) => {
+    const trigger = e.target.closest('[data-lightbox]');
+    if (!trigger) return;
+    e.preventDefault();
+    openLightbox(trigger);
+  });
+  grid.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const trigger = e.target.closest('[data-lightbox]');
+    if (!trigger) return;
+    e.preventDefault();
+    openLightbox(trigger);
+  });
+  document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+  document.getElementById('lightboxBackdrop').addEventListener('click', closeLightbox);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !lightbox.hidden) closeLightbox();
+  });
 
   renderCategorySidebar();   // DEFAULT_CATEGORIES 기준으로 카테고리 목록 최초 렌더링
 
