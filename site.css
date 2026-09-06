@@ -694,11 +694,12 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
 }
 
 /* ==========================================================
-   Photo 카테고리 전용 카드 — 계열별로 뭉친 정렬형(justified) 갤러리
+   Photo 카테고리 전용 카드 — 모자이크 그리드
    - 제목/설명 없이 사진만 보여주고(제목/설명은 라이트박스에서만 표시)
-   - 사진은 자르지 않고 원본 비율 그대로 보여줌(높이만 맞추고 폭은 비율대로 결정)
-   - 같은 제목(계열)의 사진은 photo-group 하나로 묶여 붙어 보이고,
-     다른 계열(다른 photo-group)과는 간격이 벌어져 그룹이 시각적으로 구분됨
+   - 타일 크기가 큰 것/작은 것이 섞인 촘촘한 모자이크(참고 이미지 스타일).
+     사진은 각 타일 크기에 맞춰 채워 넣고 넘치는 부분만 잘라냄(object-fit: cover)
+   - 같은 제목(계열)의 사진은 정렬 단계에서 이미 서로 붙어 있는 순서라서
+     모자이크 안에서도 자연스럽게 이웃하게 배치됨
    - .card-link가 <a>가 아니라 role="button"인 <div>라서 글 페이지로 이동하지
      않고, 클릭하면 JS가 사진을 확대하는 라이트박스를 띄움
    ========================================================== */
@@ -707,38 +708,36 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
    항상 전체 폭을 차지해서 일반 글 카드 레이아웃에는 영향을 주지 않음 */
 .photo-mosaic{
   grid-column: 1 / -1;
-  display: flex;
-  flex-direction: column;
-  gap: 40px;   /* 서로 다른 계열(그룹) 사이 간격 */
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 140px;
+  grid-auto-flow: dense;
+  gap: 12px;
+}
+@media (max-width: 720px){
+  .photo-mosaic{ grid-template-columns: repeat(2, 1fr); grid-auto-rows: 110px; gap: 8px; }
 }
 
-/* 같은 계열 사진들이 한 줄로 이어져 붙어 보이는 그룹 하나 */
-.photo-group{
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 10px;   /* 같은 계열 안 사진끼리 간격 */
-}
+.card--photo{ overflow: hidden; }
+/* 네 칸에 하나꼴, 일곱 칸에 하나꼴로 큰 타일(2x2)이 섞이도록 함 */
+.card--photo:nth-child(4n+1){ grid-column: span 2; grid-row: span 2; }
+.card--photo:nth-child(7n+4){ grid-column: span 2; grid-row: span 2; }
 
 .card--photo .card-link{
   display: block;
+  height: 100%;
   cursor: pointer;
 }
 .card--photo .card-img{
-  display: block;
-  width: auto;        /* 공용 .card-img의 width:25%/max-width:220px를 무효화 */
+  width: 100%;
+  height: 100%;
   max-width: none;
-  overflow: visible;
-  background: none;
+  overflow: hidden;
 }
 .card--photo .card-img img{
-  height: 220px;
-  width: auto;
-  max-width: none;
-  display: block;   /* height만 정하고 width는 auto라서 원본 비율 그대로, 잘리지 않음 */
-}
-@media (max-width: 720px){
-  .card--photo .card-img img{ height: 140px; }
+  width: 100%;
+  height: 100%;
+  object-fit: cover;   /* 타일 크기를 꽉 채우고 넘치는 부분은 잘라냄 */
 }
 
 /* 사진 확대보기(라이트박스) — 확대된 사진 옆(모바일에서는 아래)에 제목/날짜/설명 표시 */

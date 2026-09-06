@@ -361,18 +361,10 @@
     const photoCards = filtered.filter(p => isPhotoCategory(p.category));
     const normalHtml = normalCards.map((p, i) => cardHTML(p, i)).join('');
 
-    // 사진은 제목(계열)이 연달아 같은 것끼리 하나의 photo-group으로 묶어서,
-    // 같은 계열은 붙어 보이고 다른 계열과는 간격이 벌어지도록 함(CSS의 .photo-mosaic gap이 담당)
-    const photoGroups = [];
-    for (const p of photoCards){
-      const last = photoGroups[photoGroups.length - 1];
-      if (last && last.title === p.title) last.items.push(p);
-      else photoGroups.push({ title: p.title, items: [p] });
-    }
+    // 사진은 이미 위 정렬 단계에서 같은 제목(계열)끼리 붙어 있는 순서이므로,
+    // 그 순서 그대로 하나의 모자이크 그리드(.photo-mosaic)에 나란히 채워 넣음
     const photoHtml = photoCards.length
-      ? `<div class="photo-mosaic">${
-          photoGroups.map(g => `<div class="photo-group">${g.items.map((p, i) => cardHTML(p, i)).join('')}</div>`).join('')
-        }</div>`
+      ? `<div class="photo-mosaic">${photoCards.map((p, i) => cardHTML(p, i)).join('')}</div>`
       : '';
     grid.innerHTML = normalHtml + photoHtml;
   }
