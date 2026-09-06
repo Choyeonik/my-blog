@@ -10,7 +10,9 @@
     "description": "간식을 들고 있어서 뚫어져라 쳐다보고 있다.",
     "date": "2026-09-07",
     "markdown": "간식을 들고 있어서 뚫어져라 쳐다보고 있다.",
-    "thumbnail": "assets/20220812-IMG_9278/thumbnail.jpg"
+    "thumbnail": "assets/20220812-IMG_9278/thumbnail.jpg",
+    "width": 2200,
+    "height": 1694
   },
   {
     "slug": "20221026-IMG_2023",
@@ -23,7 +25,9 @@
     "description": "15분째 미동도 하지 않는다.",
     "date": "2026-09-07",
     "markdown": "15분째 미동도 하지 않는다.",
-    "thumbnail": "assets/20221026-IMG_2023/thumbnail.jpg"
+    "thumbnail": "assets/20221026-IMG_2023/thumbnail.jpg",
+    "width": 2200,
+    "height": 1467
   },
   {
     "slug": "20250203-IMG_2551",
@@ -36,7 +40,9 @@
     "description": "",
     "date": "2026-09-07",
     "markdown": "",
-    "thumbnail": "assets/20250203-IMG_2551/thumbnail.jpg"
+    "thumbnail": "assets/20250203-IMG_2551/thumbnail.jpg",
+    "width": 2200,
+    "height": 1657
   },
   {
     "slug": "20250203-IMG_2580",
@@ -49,7 +55,9 @@
     "description": "잔뜩 취한 상태",
     "date": "2026-09-07",
     "markdown": "잔뜩 취한 상태",
-    "thumbnail": "assets/20250203-IMG_2580/thumbnail.jpg"
+    "thumbnail": "assets/20250203-IMG_2580/thumbnail.jpg",
+    "width": 1657,
+    "height": 2200
   },
   {
     "slug": "20250204-IMG_2600",
@@ -62,7 +70,9 @@
     "description": "",
     "date": "2026-09-07",
     "markdown": "",
-    "thumbnail": "assets/20250204-IMG_2600/thumbnail.jpg"
+    "thumbnail": "assets/20250204-IMG_2600/thumbnail.jpg",
+    "width": 2200,
+    "height": 1657
   },
   {
     "slug": "20250204-IMG_2652",
@@ -75,7 +85,9 @@
     "description": "",
     "date": "2026-09-07",
     "markdown": "",
-    "thumbnail": "assets/20250204-IMG_2652/thumbnail.jpg"
+    "thumbnail": "assets/20250204-IMG_2652/thumbnail.jpg",
+    "width": 1657,
+    "height": 2200
   },
   {
     "slug": "20250204-IMG_2745",
@@ -88,7 +100,9 @@
     "description": "",
     "date": "2026-09-07",
     "markdown": "",
-    "thumbnail": "assets/20250204-IMG_2745/thumbnail.jpg"
+    "thumbnail": "assets/20250204-IMG_2745/thumbnail.jpg",
+    "width": 1657,
+    "height": 2200
   },
   {
     "slug": "20250204-IMG_2770",
@@ -101,7 +115,9 @@
     "description": "",
     "date": "2026-09-07",
     "markdown": "",
-    "thumbnail": "assets/20250204-IMG_2770/thumbnail.jpg"
+    "thumbnail": "assets/20250204-IMG_2770/thumbnail.jpg",
+    "width": 1657,
+    "height": 2200
   },
   {
     "slug": "245밴드(6)",
@@ -114,7 +130,9 @@
     "description": "ABC",
     "date": "2026-09-07",
     "markdown": "ABC",
-    "thumbnail": "assets/245밴드(6)/thumbnail.jpg"
+    "thumbnail": "assets/245밴드(6)/thumbnail.jpg",
+    "width": 2200,
+    "height": 1467
   },
   {
     "slug": "245밴드(9)",
@@ -127,7 +145,9 @@
     "description": "Keyboeard",
     "date": "2026-09-07",
     "markdown": "Keyboeard",
-    "thumbnail": "assets/245밴드(9)/thumbnail.jpg"
+    "thumbnail": "assets/245밴드(9)/thumbnail.jpg",
+    "width": 2200,
+    "height": 1467
   },
   {
     "slug": "8월밴드(5)",
@@ -140,7 +160,9 @@
     "description": "Bass",
     "date": "2026-09-07",
     "markdown": "Bass",
-    "thumbnail": "assets/8월밴드(5)/thumbnail.jpg"
+    "thumbnail": "assets/8월밴드(5)/thumbnail.jpg",
+    "width": 2200,
+    "height": 1467
   },
   {
     "slug": "IMG_0491-향상됨-노이즈-감소_1",
@@ -153,7 +175,9 @@
     "description": "",
     "date": "2026-09-07",
     "markdown": "",
-    "thumbnail": "assets/IMG_0491-향상됨-노이즈-감소_1/thumbnail.jpg"
+    "thumbnail": "assets/IMG_0491-향상됨-노이즈-감소_1/thumbnail.jpg",
+    "width": 2200,
+    "height": 1650
   },
   {
     "slug": "IMG_0507-향상됨-노이즈-감소_1",
@@ -166,7 +190,9 @@
     "description": "",
     "date": "2026-09-07",
     "markdown": "",
-    "thumbnail": "assets/IMG_0507-향상됨-노이즈-감소_1/thumbnail.jpg"
+    "thumbnail": "assets/IMG_0507-향상됨-노이즈-감소_1/thumbnail.jpg",
+    "width": 2200,
+    "height": 1650
   },
   {
     "slug": "IMG_0729-향상됨-노이즈-감소_1",
@@ -179,7 +205,9 @@
     "description": "",
     "date": "2026-09-07",
     "markdown": "",
-    "thumbnail": "assets/IMG_0729-향상됨-노이즈-감소_1/thumbnail.jpg"
+    "thumbnail": "assets/IMG_0729-향상됨-노이즈-감소_1/thumbnail.jpg",
+    "width": 1650,
+    "height": 2200
   },
   {
     "slug": "IMG_0749",
@@ -192,7 +220,9 @@
     "description": "",
     "date": "2026-09-07",
     "markdown": "",
-    "thumbnail": "assets/IMG_0749/thumbnail.jpg"
+    "thumbnail": "assets/IMG_0749/thumbnail.jpg",
+    "width": 1657,
+    "height": 2200
   },
   {
     "slug": "IMG_0770-향상됨-노이즈-감소_1",
@@ -205,7 +235,9 @@
     "description": "",
     "date": "2026-09-07",
     "markdown": "",
-    "thumbnail": "assets/IMG_0770-향상됨-노이즈-감소_1/thumbnail.jpg"
+    "thumbnail": "assets/IMG_0770-향상됨-노이즈-감소_1/thumbnail.jpg",
+    "width": 1650,
+    "height": 2200
   },
   {
     "slug": "IMG_0814-향상됨-노이즈-감소_1",
@@ -218,7 +250,9 @@
     "description": "",
     "date": "2026-09-07",
     "markdown": "",
-    "thumbnail": "assets/IMG_0814-향상됨-노이즈-감소_1/thumbnail.jpg"
+    "thumbnail": "assets/IMG_0814-향상됨-노이즈-감소_1/thumbnail.jpg",
+    "width": 1650,
+    "height": 2200
   },
   {
     "slug": "IMG_0918-향상됨-노이즈-감소_1",
@@ -231,7 +265,9 @@
     "description": "",
     "date": "2026-09-07",
     "markdown": "",
-    "thumbnail": "assets/IMG_0918-향상됨-노이즈-감소_1/thumbnail.jpg"
+    "thumbnail": "assets/IMG_0918-향상됨-노이즈-감소_1/thumbnail.jpg",
+    "width": 1650,
+    "height": 2200
   },
   {
     "slug": "IMG_7485-향상됨-노이즈-감소",
@@ -244,7 +280,9 @@
     "description": "",
     "date": "2026-09-07",
     "markdown": "",
-    "thumbnail": "assets/IMG_7485-향상됨-노이즈-감소/thumbnail.jpg"
+    "thumbnail": "assets/IMG_7485-향상됨-노이즈-감소/thumbnail.jpg",
+    "width": 2200,
+    "height": 1657
   },
   {
     "slug": "IMG_7630",
@@ -257,7 +295,9 @@
     "description": "",
     "date": "2026-09-07",
     "markdown": "",
-    "thumbnail": "assets/IMG_7630/thumbnail.jpg"
+    "thumbnail": "assets/IMG_7630/thumbnail.jpg",
+    "width": 2200,
+    "height": 1657
   },
   {
     "slug": "IMG_7767",
@@ -270,7 +310,9 @@
     "description": "",
     "date": "2026-09-07",
     "markdown": "",
-    "thumbnail": "assets/IMG_7767/thumbnail.jpg"
+    "thumbnail": "assets/IMG_7767/thumbnail.jpg",
+    "width": 2200,
+    "height": 1657
   },
   {
     "slug": "IMG_8712-향상됨-노이즈-감소-편집",
@@ -283,7 +325,9 @@
     "description": "",
     "date": "2026-09-07",
     "markdown": "",
-    "thumbnail": "assets/IMG_8712-향상됨-노이즈-감소-편집/thumbnail.jpg"
+    "thumbnail": "assets/IMG_8712-향상됨-노이즈-감소-편집/thumbnail.jpg",
+    "width": 2200,
+    "height": 1657
   },
   {
     "slug": "LIMINALZ밴드(12)",
@@ -296,7 +340,9 @@
     "description": "",
     "date": "2026-09-07",
     "markdown": "",
-    "thumbnail": "assets/LIMINALZ밴드(12)/thumbnail.jpg"
+    "thumbnail": "assets/LIMINALZ밴드(12)/thumbnail.jpg",
+    "width": 1467,
+    "height": 2200
   },
   {
     "slug": "LIMINALZ밴드(13)",
@@ -309,7 +355,9 @@
     "description": "",
     "date": "2026-09-07",
     "markdown": "",
-    "thumbnail": "assets/LIMINALZ밴드(13)/thumbnail.jpg"
+    "thumbnail": "assets/LIMINALZ밴드(13)/thumbnail.jpg",
+    "width": 2200,
+    "height": 1467
   },
   {
     "slug": "LIMINALZ밴드(2)",
@@ -322,7 +370,9 @@
     "description": "",
     "date": "2026-09-07",
     "markdown": "",
-    "thumbnail": "assets/LIMINALZ밴드(2)/thumbnail.jpg"
+    "thumbnail": "assets/LIMINALZ밴드(2)/thumbnail.jpg",
+    "width": 2200,
+    "height": 1467
   },
   {
     "slug": "Mojiko-Station",
@@ -335,7 +385,9 @@
     "description": "",
     "date": "2026-09-07",
     "markdown": "",
-    "thumbnail": "assets/Mojiko-Station/thumbnail.jpg"
+    "thumbnail": "assets/Mojiko-Station/thumbnail.jpg",
+    "width": 2200,
+    "height": 1657
   },
   {
     "slug": "집-앞-고양이",
@@ -348,7 +400,9 @@
     "description": "",
     "date": "2026-09-07",
     "markdown": "",
-    "thumbnail": "assets/집-앞-고양이/thumbnail.jpg"
+    "thumbnail": "assets/집-앞-고양이/thumbnail.jpg",
+    "width": 2200,
+    "height": 1694
   },
   {
     "slug": "HTML-폼-태그-심화와-CSS-선택자-정리",
