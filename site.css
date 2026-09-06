@@ -760,6 +760,15 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
 .lightbox-info h2{ font-size: 22px; margin-bottom: 10px; }
 .lightbox-info .card-date{ margin-bottom: 14px; }
 .lightbox-info p{ font-size: 13px; line-height: 1.7; color: var(--muted); }
+.lightbox-edit-link{
+  display: inline-block;
+  margin-top: 20px;
+  font-size: 11px;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.lightbox-edit-link:hover{ color: var(--ink); }
 .lightbox-close{
   position: absolute;
   top: 10px;

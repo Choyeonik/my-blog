@@ -109,6 +109,7 @@
       <h2 id="lightboxTitle"></h2>
       <div class="card-date" id="lightboxDate"></div>
       <p id="lightboxDesc"></p>
+      <a class="post-edit-link lightbox-edit-link" id="lightboxEditLink" href="write.html">수정하기 →</a>
     </div>
   </div>
 </div>
@@ -265,7 +266,8 @@
                data-photo-src="${escapeHtml(thumbSrc)}"
                data-photo-title="${escapeHtml(p.title)}"
                data-photo-date="${escapeHtml(p.date)}"
-               data-photo-desc="${escapeHtml(p.excerpt)}">
+               data-photo-desc="${escapeHtml(p.excerpt)}"
+               data-photo-filename="${escapeHtml(p.filename || '')}">
             <div class="card-img"><img src="${thumbSrc}" alt="${p.title}" loading="lazy"></div>
             <div class="card-body">
               <h3>${p.title}</h3>
@@ -390,6 +392,7 @@
   const lightboxTitle = document.getElementById('lightboxTitle');
   const lightboxDate = document.getElementById('lightboxDate');
   const lightboxDesc = document.getElementById('lightboxDesc');
+  const lightboxEditLink = document.getElementById('lightboxEditLink');
 
   function openLightbox(trigger){
     lightboxImg.src = trigger.dataset.photoSrc;
@@ -397,6 +400,7 @@
     lightboxTitle.textContent = trigger.dataset.photoTitle;
     lightboxDate.textContent = trigger.dataset.photoDate;
     lightboxDesc.textContent = trigger.dataset.photoDesc;
+    lightboxEditLink.href = 'write.html?edit=' + encodeURIComponent(trigger.dataset.photoFilename || '');
     lightbox.hidden = false;
     document.body.classList.add('lightbox-open');
   }
