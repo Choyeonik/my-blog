@@ -694,20 +694,51 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
 }
 
 /* ==========================================================
-   Photo 카테고리 전용 카드
-   - 사진이 위, 제목/설명이 아래로 쌓이는 세로 레이아웃(날짜/카테고리 태그 없음)
+   Photo 카테고리 전용 카드 — 모자이크 타일
+   - 제목/설명 없이 사진만 보여주고(제목/설명은 라이트박스에서만 표시),
+     타일마다 크기가 다른 모자이크 그리드로 촘촘하게 뭉쳐 보이도록 함
    - .card-link가 <a>가 아니라 role="button"인 <div>라서 글 페이지로 이동하지
      않고, 클릭하면 JS가 사진을 확대하는 라이트박스를 띄움
    ========================================================== */
-.card--photo .card-link{
-  flex-direction: column;
-  align-items: stretch;
+
+/* .grid(일반 글 카드용 2열)와는 별개로, 모자이크 전용 그리드를 하나 더 둠.
+   .grid의 자식으로 있지만 grid-column으로 항상 전체 폭을 차지해서
+   일반 글 카드 레이아웃에는 영향을 주지 않음 */
+.photo-mosaic{
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-auto-rows: 90px;
+  grid-auto-flow: dense;
   gap: 14px;
+}
+@media (max-width: 720px){
+  .photo-mosaic{ grid-template-columns: repeat(3, 1fr); grid-auto-rows: 70px; gap: 8px; }
+}
+
+.card--photo{
+  grid-column: span 2;
+  grid-row: span 2;
+  overflow: hidden;
+}
+/* nth-child 패턴 몇 가지를 겹쳐서 큰 타일/넓은 타일/세로로 긴 타일이 불규칙하게 섞이도록 함 */
+.card--photo:nth-child(5n+1){ grid-column: span 3; grid-row: span 3; }
+.card--photo:nth-child(7n+3){ grid-column: span 2; grid-row: span 3; }
+.card--photo:nth-child(11n+6){ grid-column: span 3; grid-row: span 2; }
+
+.card--photo .card-link{
+  height: 100%;
   cursor: pointer;
 }
 .card--photo .card-img{
   width: 100%;
+  height: 100%;
   max-width: none;
+}
+.card--photo .card-img img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;   /* 타일 크기에 맞춰 사진을 꽉 채우고 넘치는 부분은 잘라냄 */
 }
 
 /* 사진 확대보기(라이트박스) — 확대된 사진 옆(모바일에서는 아래)에 제목/날짜/설명 표시 */

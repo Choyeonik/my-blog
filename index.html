@@ -253,8 +253,8 @@
   // 게시글 카드 1개의 HTML을 만들어 반환 (main 그리드에 들어가는 카드)
   // 실제 글(filename 있음)은 posts/파일명.html로 이동하는 링크로 감싸고,
   // 샘플 글(filename 없음)은 클릭해도 이동하지 않도록 함.
-  // Photo 카테고리는 예외: 사진이 위/제목·설명이 아래로 쌓이고 날짜·카테고리 태그는 표시하지 않으며,
-  // 클릭하면 글 페이지로 이동하는 대신 사진이 크게 확대되는 라이트박스가 열림
+  // Photo 카테고리는 예외: 제목/설명 없이 사진만 모자이크 타일로 보여주고(제목/설명은
+  // 라이트박스에서만 표시), 클릭하면 글 페이지로 이동하는 대신 사진이 크게 확대됨
   function cardHTML(p, i){
     const href = p.filename ? 'posts/' + encodePathForUrl(postRelPath(p)) : '#';
     const thumbSrc = p.thumbnail ? 'posts/' + encodePathForUrl(p.thumbnail) : placeholderDataUri(p.seed);
@@ -269,10 +269,6 @@
                data-photo-desc="${escapeHtml(p.excerpt)}"
                data-photo-filename="${escapeHtml(p.filename || '')}">
             <div class="card-img"><img src="${thumbSrc}" alt="${p.title}" loading="lazy"></div>
-            <div class="card-body">
-              <h3>${p.title}</h3>
-              <p>${p.excerpt}</p>
-            </div>
           </div>
         </article>
       `;
@@ -335,17 +331,15 @@
 
     // 최신 글이 화면 왼쪽(그리드 맨 앞)에 오도록 날짜 내림차순으로 정렬.
     // Total 화면에서는 Photo 카테고리 글이 항상 다른 카테고리 글보다 아래로 가도록
-    // 우선 그룹을 나누고, Photo끼리는 다시 제목(같은 계열 사진은 같은 제목)이 같은 것끼리
-    // 뭉치도록 묶은 뒤, 그 안에서 날짜 내림차순으로 정렬함
+    // 우선 그룹을 나누고, Photo끼리는(Total/Photo 필터 모두) 다시 제목(같은 계열
+    // 사진은 같은 제목)이 같은 것끼리 뭉치도록 묶은 뒤, 그 안에서 날짜 내림차순으로 정렬함
     filtered = [...filtered].sort((a, b) => {
-      if (currentFilter === 'total'){
-        const aPhoto = isPhotoCategory(a.category);
-        const bPhoto = isPhotoCategory(b.category);
-        if (aPhoto !== bPhoto) return aPhoto ? 1 : -1;
-        if (aPhoto && bPhoto){
-          const byTitle = a.title.localeCompare(b.title, 'ko');
-          if (byTitle !== 0) return byTitle;
-        }
+      const aPhoto = isPhotoCategory(a.category);
+      const bPhoto = isPhotoCategory(b.category);
+      if (currentFilter === 'total' && aPhoto !== bPhoto) return aPhoto ? 1 : -1;
+      if (aPhoto && bPhoto){
+        const byTitle = a.title.localeCompare(b.title, 'ko');
+        if (byTitle !== 0) return byTitle;
       }
       return b.date.localeCompare(a.date);
     });
@@ -360,7 +354,16 @@
     }
 
     grid.classList.remove('grid--single');   // 카드 목록을 보여줄 때는 다시 다단 레이아웃으로
-    grid.innerHTML = filtered.map((p, i) => cardHTML(p, i)).join('');
+
+    // Photo 카테고리 카드는 일반 카드와 그리드 성격이 달라서(크기가 들쭉날쭉한 모자이크 타일)
+    // 같은 #grid 안에 있되 <div class="photo-mosaic">로 따로 묶어서 자체 그리드를 가짐
+    const normalCards = filtered.filter(p => !isPhotoCategory(p.category));
+    const photoCards = filtered.filter(p => isPhotoCategory(p.category));
+    const normalHtml = normalCards.map((p, i) => cardHTML(p, i)).join('');
+    const photoHtml = photoCards.length
+      ? `<div class="photo-mosaic">${photoCards.map((p, i) => cardHTML(p, i)).join('')}</div>`
+      : '';
+    grid.innerHTML = normalHtml + photoHtml;
   }
 
   // site.css의 디졸브 애니메이션을 처음부터 다시 재생시키는 헬퍼.
