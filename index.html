@@ -333,8 +333,17 @@
     }
     if (query) filtered = filtered.filter(p => p.title.toLowerCase().includes(query));
 
-    // 최신 글이 화면 왼쪽(그리드 맨 앞)에 오도록 날짜 내림차순으로 정렬
-    filtered = [...filtered].sort((a, b) => b.date.localeCompare(a.date));
+    // 최신 글이 화면 왼쪽(그리드 맨 앞)에 오도록 날짜 내림차순으로 정렬.
+    // Total 화면에서는 Photo 카테고리 글이 항상 다른 카테고리 글보다 아래로 가도록
+    // 우선 그룹을 나누고, 그 안에서 다시 날짜 내림차순으로 정렬함
+    filtered = [...filtered].sort((a, b) => {
+      if (currentFilter === 'total'){
+        const aPhoto = isPhotoCategory(a.category);
+        const bPhoto = isPhotoCategory(b.category);
+        if (aPhoto !== bPhoto) return aPhoto ? 1 : -1;
+      }
+      return b.date.localeCompare(a.date);
+    });
 
     if (filtered.length === 0){
       grid.classList.add('grid--single');
