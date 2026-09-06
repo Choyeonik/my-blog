@@ -304,13 +304,19 @@
     grid.innerHTML = filtered.map((p, i) => cardHTML(p, i)).join('');
   }
 
-  // site.css의 dissolveIn 애니메이션을 처음부터 다시 재생시키는 헬퍼.
+  // site.css의 디졸브 애니메이션을 처음부터 다시 재생시키는 헬퍼.
   // 카테고리를 바꿔 타이틀 메모지 내용이 바뀔 때마다 디졸브 효과가 다시 나오도록 함.
+  // opacity/transform만 바뀌는 애니메이션은 offsetWidth 리플로우만으로는 재시작이 안 되는
+  // 경우가 있어, "none으로 끈 상태"가 실제로 한 프레임 그려지도록 requestAnimationFrame을
+  // 두 번 걸쳐 다시 켜준다.
   function replayDissolve(el){
     if (!el) return;
     el.style.animation = 'none';
-    void el.offsetWidth;   // 강제 리플로우로 애니메이션 상태를 초기화
-    el.style.animation = '';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        el.style.animation = '';
+      });
+    });
   }
 
   // 사이드바에서 카테고리를 클릭했을 때: 활성 상태 표시 + 상단 제목 변경 + 그리드 다시 렌더링
