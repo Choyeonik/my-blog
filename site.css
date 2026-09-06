@@ -1199,22 +1199,13 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   to{ opacity: 1; transform: translateY(0); }
 }
 
-/* 타이틀 메모지 전용 — 카테고리를 바꿀 때마다 JS(replayDissolve)가 이 애니메이션을 처음부터
-   다시 재생시키는데, 눈에 뚜렷하게 보이도록 이동 거리/시간을 다른 요소보다 크게 잡음 */
-@keyframes dissolveInMemo{
-  from{ opacity: 0; transform: translateY(-22px); }
-  to{ opacity: 1; transform: translateY(0); }
-}
-
-/* 홈 화면(index.html) */
-.main .side-memo,
+/* 홈 화면(index.html) — 사이드 메모지(side-memo)는 제외하고 검색창/헤더/카드만 디졸브 */
 .main .main-topbar,
 .main .main-header,
 .main .grid .card{
   opacity: 0;
   animation: dissolveIn .6s ease forwards;
 }
-.main .side-memo{ animation: dissolveInMemo .8s ease forwards; }
 .main .main-topbar{ animation-delay: .05s; }
 .main .main-header{ animation-delay: .18s; }
 /* 카드는 render()가 넣어주는 --i(카드 순서) 값을 이용해 하나씩 순서대로 나타남 */
@@ -1251,7 +1242,6 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
 .settings-section:nth-of-type(n+3){ animation-delay: .31s; }
 
 @media (prefers-reduced-motion: reduce){
-  .main .side-memo,
   .main .main-topbar,
   .main .main-header,
   .main .grid .card,
