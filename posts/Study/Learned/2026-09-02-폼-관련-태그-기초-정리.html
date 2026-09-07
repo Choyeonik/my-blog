@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>폼 관련 태그 기초 정리 — Portfolio Blog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500;700&family=EB+Garamond:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Gowun+Batang&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+
+<div class="layout">
+<aside class="sidebar">
+
+    <div class="brand">Yeonn</div>
+
+    <section class="categories">
+      <ul class="category-list">
+        <li>
+          <a class="category-total" href="../../../index.html">
+            <span class="cat-name">Total</span>
+            <span class="count">5</span>
+          </a>
+          <ul class="category-sub">
+      <li>
+        <a href="../../../index.html?filter=Project"><span class="cat-name">Project</span> <span class="count">0</span></a>
+
+      </li>
+      <li>
+        <a href="../../../index.html?filter=Study"><span class="cat-name">Study</span> <span class="count">5</span></a>
+
+        <ul class="category-sub-nested">
+
+            <li><a href="../../../index.html?filter=%EB%B0%B0%EC%9A%B4%20%EA%B2%83">배운 것 <span class="count">5</span></a></li>
+
+        </ul>
+      </li>
+      <li>
+        <a href="../../../index.html?filter=Photo"><span class="cat-name">Photo</span> <span class="count">0</span></a>
+
+      </li><li><a href="../../../index.html?filter=about"><span class="cat-name">About</span></a></li></ul>
+        </li>
+      </ul>
+    </section>
+
+    <div class="sidebar-links">
+      <a href="../../../write.html" class="write-link">새 글 쓰기 →</a>
+      <a href="../../../settings.html" class="write-link">설정 →</a>
+    </div>
+
+  </aside>
+
+  <main class="post-page">
+
+    <!-- 검정 고정 프레임 + 링바인더: 홈 화면(.main)과 같은 디자인이 개별 글 페이지에도 이어지도록 함 -->
+    <div class="main-frame-top" aria-hidden="true"></div>
+    <div class="main-frame-bottom" aria-hidden="true"></div>
+    <div class="main-frame-right" aria-hidden="true"></div>
+    <div class="ring-strip" aria-hidden="true">
+      <span class="ring"></span>
+      <span class="ring"></span>
+      <span class="ring"></span>
+    </div>
+
+    <div class="page-inner">
+
+    <div class="main-topbar">
+      <section class="search-box">
+        <form action="../../../index.html" method="get">
+          <input type="text" name="q" placeholder="검색어를 입력하세요">
+          <button type="submit" aria-label="검색">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+        </form>
+      </section>
+    </div>
+
+    <div class="post-header">
+      <div class="card-tag">배운 것</div>
+      <h1>폼 관련 태그 기초 정리</h1>
+      <p class="post-desc">HTML에서 사용자와 상호작용하는 폼(Form) 요소들의 다양한 타입과 용도를 학습한 내용입니다. input, select, textarea 등의 태그를 실습하며 각각의 역할과 속성을 정리했습니다.</p>
+      <div class="post-date">2026-09-02</div>
+    </div>
+
+    <article class="post-body">
+<p>HTML에서 사용자의 입력을 받기 위한 폼(Form) 요소들을 학습했습니다. 웹 사이트가 일방적인 정보 제공이 아닌 사용자와의 상호작용을 담당하는 것에서 폼의 역할이 중요함을 알게 되었습니다.</p>
+<hr>
+<h2 id="form-태그란">Form 태그란?</h2>
+<p><strong>form 태그</strong>는 HTML에서 사용자가 값을 입력할 수 있는 양식을 제공하는 태그입니다. 검색창, 로그인 화면, 회원가입 폼 등 사용자의 정보를 입력받아 서버로 전송하는 역할을 합니다.</p>
+<p>form 태그 내부에서 input, select, textarea 같은 태그들을 활용하여 사용자가 입력한 데이터를 서버로 전달합니다.</p>
+<h3 id="form-태그의-주요-속성">form 태그의 주요 속성</h3>
+<table>
+<thead>
+<tr>
+<th>속성</th>
+<th>설명</th>
+<th>예시</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>action</strong></td>
+<td>폼의 입력된 값들을 전송받을 서버의 주소</td>
+<td><code>action="https://search.naver.com/search.naver"</code></td>
+</tr>
+<tr>
+<td><strong>method</strong></td>
+<td>서버에 데이터를 전송하는 방식 (GET 또는 POST)</td>
+<td><code>method="post"</code></td>
+</tr>
+<tr>
+<td><strong>enctype</strong></td>
+<td>폼 데이터의 인코딩 방식 (파일 업로드 시 필요)</td>
+<td><code>enctype="multipart/form-data"</code></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="input-태그의-다양한-타입">input 태그의 다양한 타입</h2>
+<p>input 태그의 <code>type</code> 속성은 어떤 종류의 입력을 받을지 결정합니다. 각 타입마다 고유한 기능을 제공합니다.</p>
+<h3 id="텍스트-관련-타입">텍스트 관련 타입</h3>
+<ul>
+<li><strong>type="text"</strong>: 한 줄의 텍스트 입력 필드
+<ul>
+<li><code>placeholder</code> 속성으로 입력 힌트 제공 가능</li>
+<li><code>size</code> 속성으로 입력창 너비 조절 가능</li>
+</ul>
+</li>
+<li><strong>type="password"</strong>: 비밀번호 입력 필드
+<ul>
+<li>입력한 문자가 화면에 노출되지 않음</li>
+</ul>
+</li>
+<li><strong>type="email"</strong>: 이메일 입력 필드
+<ul>
+<li>자동으로 이메일 형식 검증</li>
+</ul>
+</li>
+<li><strong>type="tel"</strong>: 전화번호 입력 필드</li>
+<li><strong>type="url"</strong>: URL 입력 필드</li>
+<li><strong>type="search"</strong>: 검색 입력 필드</li>
+</ul>
+<p><strong>예시 코드:</strong></p>
+<pre><code class="language-html">&lt;form action="#" method="post"&gt;
+    &lt;label for="userId"&gt;아이디 : &lt;/label&gt;
+    &lt;input type="text" id="userId" name="userId"
+           size="60" placeholder="아이디를 입력해주세요"&gt;
+
+    &lt;label for="userPwd"&gt;비밀번호 : &lt;/label&gt;
+    &lt;input type="password" id="userPwd" name="userPwd"
+           size="40" placeholder="비밀번호를 입력해주세요"&gt;
+
+    &lt;button type="submit"&gt;로그인&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+<h3 id="숫자와-범위-관련-타입">숫자와 범위 관련 타입</h3>
+<ul>
+<li><strong>type="number"</strong>: 숫자만 입력 가능
+<ul>
+<li><code>min</code>, <code>max</code> 속성으로 범위 지정</li>
+<li><code>step</code> 속성으로 증감 단위 지정</li>
+</ul>
+</li>
+<li><strong>type="range"</strong>: 슬라이더로 범위 내 값 선택
+<ul>
+<li>마우스로 드래그하여 값을 선택</li>
+</ul>
+</li>
+</ul>
+<p><strong>예시 코드:</strong></p>
+<pre><code class="language-html">&lt;form action="#" method="get"&gt;
+    &lt;label&gt;수량 : &lt;/label&gt;
+    &lt;input type="number" name="amount" min="0" max="10" value="0" step="1"&gt;
+    &lt;br&gt;
+    &lt;label&gt;점수 : &lt;/label&gt;
+    &lt;input type="range" name="point" min="0" max="100" value="50"&gt;
+    &lt;br&gt;
+    &lt;button type="submit"&gt;전송&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+<h3 id="날짜와-시간-관련-타입">날짜와 시간 관련 타입</h3>
+<ul>
+<li><strong>type="date"</strong>: 년/월/일 선택</li>
+<li><strong>type="month"</strong>: 년/월 선택</li>
+<li><strong>type="week"</strong>: 주(week) 단위 선택</li>
+<li><strong>type="time"</strong>: 시간/분 선택</li>
+<li><strong>type="datetime-local"</strong>: 년/월/일/시간/분 선택</li>
+</ul>
+<p><strong>예시 코드:</strong></p>
+<pre><code class="language-html">&lt;form action="#"&gt;
+    &lt;label&gt;날짜 : &lt;/label&gt;
+    &lt;input type="date" name="date"&gt;&lt;br&gt;
+
+    &lt;label&gt;시간 : &lt;/label&gt;
+    &lt;input type="time" name="time"&gt;&lt;br&gt;
+
+    &lt;label&gt;정확한 시각 : &lt;/label&gt;
+    &lt;input type="datetime-local" name="datetime"&gt;&lt;br&gt;
+
+    &lt;button type="submit"&gt;전송&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+<h3 id="선택-및-체크-관련-타입">선택 및 체크 관련 타입</h3>
+<ul>
+<li><strong>type="radio"</strong>: 라디오 버튼 (단일 선택)
+<ul>
+<li>같은 <code>name</code> 속성을 가진 라디오 버튼들은 그룹을 이루며, 하나만 선택 가능</li>
+</ul>
+</li>
+<li><strong>type="checkbox"</strong>: 체크박스 (중복 선택)
+<ul>
+<li>여러 개를 동시에 선택 가능</li>
+</ul>
+</li>
+<li><strong>type="color"</strong>: 색상 선택</li>
+<li><strong>type="file"</strong>: 파일 업로드
+<ul>
+<li><code>multiple</code> 속성으로 여러 파일 동시 선택 가능</li>
+</ul>
+</li>
+</ul>
+<p><strong>라디오 버튼 예시 (단일 선택):</strong></p>
+<pre><code class="language-html">&lt;form action="#"&gt;
+    &lt;fieldset&gt;
+        &lt;legend&gt;성별&lt;/legend&gt;
+        &lt;label&gt;
+            &lt;input type="radio" name="gender" value="남성"&gt; 남성
+        &lt;/label&gt;
+        &lt;label&gt;
+            &lt;input type="radio" name="gender" value="여성"&gt; 여성
+        &lt;/label&gt;
+    &lt;/fieldset&gt;
+    &lt;button type="submit"&gt;제출&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+<p><strong>체크박스 예시 (중복 선택):</strong></p>
+<pre><code class="language-html">&lt;form&gt;
+    &lt;fieldset&gt;
+        &lt;legend&gt;취미&lt;/legend&gt;
+        &lt;label&gt;
+            &lt;input type="checkbox" name="hobby" value="야구" checked&gt; 야구
+        &lt;/label&gt;
+        &lt;label&gt;
+            &lt;input type="checkbox" name="hobby" value="농구"&gt; 농구
+        &lt;/label&gt;
+        &lt;label&gt;
+            &lt;input type="checkbox" name="hobby" value="축구"&gt; 축구
+        &lt;/label&gt;
+    &lt;/fieldset&gt;
+    &lt;button type="submit"&gt;제출&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+<h3 id="버튼-관련-타입">버튼 관련 타입</h3>
+<ul>
+<li><strong>type="submit"</strong>: 폼 제출 버튼</li>
+<li><strong>type="reset"</strong>: 폼 초기화 버튼 (모든 입력값 지우기)</li>
+<li><strong>type="button"</strong>: 일반 버튼 (기본 동작 없음, JavaScript로 커스터마이징 가능)</li>
+<li><strong>type="hidden"</strong>: 화면에 표시되지 않는 숨겨진 데이터 필드</li>
+</ul>
+<hr>
+<h2 id="select-옵션-태그">select & option 태그</h2>
+<p><strong>select 태그</strong>는 드롭다운 메뉴를 만드는 태그입니다. 사용자가 여러 옵션 중 하나를 선택할 수 있게 해줍니다.</p>
+<ul>
+<li><code>&lt;option value="값"&gt;</code>: 각 선택 옵션</li>
+<li><code>selected</code> 속성: 기본으로 선택되는 옵션 지정</li>
+<li><code>size</code> 속성: 한 번에 보이는 옵션의 개수</li>
+<li><code>multiple</code> 속성: 여러 개 동시 선택 가능</li>
+</ul>
+<p><strong>기본 select 예시:</strong></p>
+<pre><code class="language-html">&lt;form action="#"&gt;
+    &lt;label&gt;국적 : &lt;/label&gt;
+    &lt;select name="nation"&gt;
+        &lt;option value="ko"&gt;한국&lt;/option&gt;
+        &lt;option value="ch"&gt;중국&lt;/option&gt;
+        &lt;option value="jp" selected&gt;일본&lt;/option&gt;
+        &lt;option value="etc"&gt;그 외&lt;/option&gt;
+    &lt;/select&gt;
+    &lt;button type="submit"&gt;제출&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+<p><strong>중요한 개념:</strong> 화면에 표시되는 텍스트(한국, 중국, 일본)와 서버에 전송되는 <code>value</code> 속성값(ko, ch, jp)은 다릅니다. 개발자는 value를 기준으로 데이터를 처리합니다.</p>
+<hr>
+<h2 id="textarea-태그">textarea 태그</h2>
+<p><strong>textarea</strong>는 여러 줄의 텍스트를 입력받을 수 있는 태그입니다. input type="text"는 한 줄만 가능하지만, textarea는 세로와 가로 크기를 조절할 수 있습니다.</p>
+<ul>
+<li><code>cols</code> 속성: 가로 너비 (문자 개수)</li>
+<li><code>rows</code> 속성: 세로 높이 (줄 개수)</li>
+</ul>
+<p><strong>예시 코드:</strong></p>
+<pre><code class="language-html">&lt;form action="#"&gt;
+    &lt;label for="comment"&gt;의견을 남겨주세요 : &lt;/label&gt;
+    &lt;textarea id="comment" name="comment" cols="50" rows="5"
+              placeholder="여러 줄의 의견을 작성할 수 있습니다"&gt;&lt;/textarea&gt;
+    &lt;button type="submit"&gt;제출&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+<hr>
+<h2 id="datalist-태그">datalist 태그</h2>
+<p><strong>datalist</strong>는 input 요소와 함께 사용하여 입력 중에 추천 목록을 제공하는 태그입니다. 사용자가 입력할 때마다 일치하는 항목들이 자동으로 표시됩니다.</p>
+<p><strong>예시 코드:</strong></p>
+<pre><code class="language-html">&lt;form action="#"&gt;
+    &lt;label for="browser"&gt;브라우저 선택 : &lt;/label&gt;
+    &lt;input type="text" id="browser" name="browser" list="browserList"&gt;
+
+    &lt;datalist id="browserList"&gt;
+        &lt;option value="Chrome"&gt;
+        &lt;option value="Firefox"&gt;
+        &lt;option value="Safari"&gt;
+        &lt;option value="Edge"&gt;
+    &lt;/datalist&gt;
+
+    &lt;button type="submit"&gt;제출&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+<hr>
+<h2 id="fieldset-legend-태그">fieldset & legend 태그</h2>
+<p><strong>fieldset</strong>은 폼의 요소들을 논리적으로 그룹화하는 태그이고, <strong>legend</strong>는 그 그룹에 제목을 붙이는 태그입니다.</p>
+<p><strong>예시 코드:</strong></p>
+<pre><code class="language-html">&lt;form action="#"&gt;
+    &lt;fieldset&gt;
+        &lt;legend&gt;개인정보&lt;/legend&gt;
+        &lt;label&gt;이름 : &lt;input type="text" name="name"&gt;&lt;/label&gt;&lt;br&gt;
+        &lt;label&gt;이메일 : &lt;input type="email" name="email"&gt;&lt;/label&gt;&lt;br&gt;
+    &lt;/fieldset&gt;
+
+    &lt;fieldset&gt;
+        &lt;legend&gt;선택사항&lt;/legend&gt;
+        &lt;label&gt;뉴스레터 구독 : &lt;input type="checkbox" name="newsletter"&gt;&lt;/label&gt;&lt;br&gt;
+    &lt;/fieldset&gt;
+
+    &lt;button type="submit"&gt;제출&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+<hr>
+<h2 id="get-vs-post-방식">GET vs POST 방식</h2>
+<p>form 태그의 <code>method</code> 속성으로 지정합니다.</p>
+<table>
+<thead>
+<tr>
+<th>구분</th>
+<th>GET</th>
+<th>POST</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>데이터 노출</strong></td>
+<td>URL에 노출됨</td>
+<td>숨겨짐 (보안)</td>
+</tr>
+<tr>
+<td><strong>데이터 크기 제한</strong></td>
+<td>제한 있음 (URL 길이)</td>
+<td>제한 없음</td>
+</tr>
+<tr>
+<td><strong>용도</strong></td>
+<td>검색, 필터링</td>
+<td>로그인, 회원가입, 데이터 변경</td>
+</tr>
+<tr>
+<td><strong>기본값</strong></td>
+<td>method 미지정 시 기본</td>
+<td>명시적으로 지정</td>
+</tr>
+</tbody>
+</table>
+<p><strong>실제 예시 - 네이버 검색 폼 (GET 방식):</strong></p>
+<pre><code class="language-html">&lt;form action="https://search.naver.com/search.naver" method="get"&gt;
+    &lt;h3&gt;🔍 네이버 검색&lt;/h3&gt;
+    &lt;input type="text" name="query" placeholder="검색어를 입력하세요" required&gt;
+    &lt;button type="submit"&gt;검색&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+<p>이 폼을 제출하면 URL이 <code>https://search.naver.com/search.naver?query=검색어</code>로 변경됩니다.</p>
+<hr>
+<h2 id="배운-점">배운 점</h2>
+<p>폼 요소들을 학습하면서 웹에서 사용자와의 상호작용이 얼마나 중요한지 깨달았습니다.</p>
+<ul>
+<li><strong>각 input type의 역할 이해</strong>: 단순한 텍스트 입력뿐만 아니라 숫자, 날짜, 색상, 파일 등 다양한 타입이 각자의 용도에 최적화되어 있습니다.</li>
+<li><strong>data 속성값의 중요성</strong>: 사용자에게 보이는 텍스트와 서버에 전송되는 value는 다르며, 개발자는 value를 기준으로 데이터를 처리합니다.</li>
+<li><strong>form의 보안성</strong>: GET과 POST 방식의 차이를 이해하고 상황에 맞는 방식을 선택하는 것이 중요합니다.</li>
+<li><strong>사용자 경험 개선</strong>: placeholder, label, fieldset 등을 올바르게 사용하면 사용자가 폼을 더 쉽게 이해하고 사용할 수 있습니다.</li>
+</ul>
+    </article>
+
+    <div class="post-edit-bar">
+      <a class="post-edit-link" href="../../../write.html?edit=2026-09-02-%ED%8F%AC%EB%A7%90-%EA%B4%80%EB%A0%A8-%ED%83%9C%EA%B7%B8-%EA%B8%B0%EC%B4%88-%EC%A0%95%EB%A6%AC.html">수정하기 →</a>
+    </div>
+
+  </div>
+
+  </main>
+
+</div>
+
+</body>
+</html>
