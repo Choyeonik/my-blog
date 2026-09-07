@@ -99,6 +99,21 @@
 
 </div>
 
+<!-- Photo 카테고리 카드를 누르면 글 페이지로 이동하는 대신 여기에 사진을 확대해서 보여줌 -->
+<div class="lightbox" id="photoLightbox" hidden>
+  <div class="lightbox-backdrop" id="lightboxBackdrop"></div>
+  <div class="lightbox-panel" role="dialog" aria-modal="true" aria-label="사진 확대보기">
+    <button type="button" class="lightbox-close" id="lightboxClose" aria-label="닫기">✕</button>
+    <div class="lightbox-img"><img id="lightboxImg" src="" alt=""></div>
+    <div class="lightbox-info">
+      <h2 id="lightboxTitle"></h2>
+      <div class="card-date" id="lightboxDate"></div>
+      <p id="lightboxDesc"></p>
+      <a class="post-edit-link lightbox-edit-link" id="lightboxEditLink" href="write.html">수정하기 →</a>
+    </div>
+  </div>
+</div>
+
 <!-- posts 폴더 읽기/쓰기 공용 헬퍼 (site-storage.js) -->
 <script src="site-storage.js"></script>
 <!-- 사이드바 스크롤 관성/바운스 모션 -->
@@ -175,8 +190,8 @@
     total: 'Learning from the BootCamp.',
     Project: 'Project.',
     Study: 'Often What I Study.',
-    'Learned': 'What I Learned.',
-    Photo: 'Often What I Study.',
+    Learned: 'What I Learned.',
+    Photo: 'Often What I See.',
     about: 'About me.'
   };
 
@@ -227,14 +242,41 @@
     updateCounts();
   }
 
+  // p.category가 Photo 카테고리(또는 그 하위 카테고리)에 속하는지 판단.
+  // Photo 카테고리 게시글은 카드 레이아웃과 클릭 동작이 다르게 동작함
+  function isPhotoCategory(category){
+    const photoCat = categories.find(c => c.name === 'Photo');
+    if (!photoCat) return category === 'Photo';
+    return category === photoCat.name || photoCat.subcategories.includes(category);
+  }
+
   // 게시글 카드 1개의 HTML을 만들어 반환 (main 그리드에 들어가는 카드)
   // 실제 글(filename 있음)은 posts/파일명.html로 이동하는 링크로 감싸고,
-  // 샘플 글(filename 없음)은 클릭해도 이동하지 않도록 함
-  function cardHTML(p){
+  // 샘플 글(filename 없음)은 클릭해도 이동하지 않도록 함.
+  // Photo 카테고리는 예외: 제목/설명 없이 사진만 모자이크 타일로 보여주고(제목/설명은
+  // 라이트박스에서만 표시), 클릭하면 글 페이지로 이동하는 대신 사진이 크게 확대됨
+  function cardHTML(p, i){
     const href = p.filename ? 'posts/' + encodePathForUrl(postRelPath(p)) : '#';
     const thumbSrc = p.thumbnail ? 'posts/' + encodePathForUrl(p.thumbnail) : placeholderDataUri(p.seed);
+
+    if (isPhotoCategory(p.category)){
+      const ratio = (p.width && p.height) ? p.width / p.height : 1;
+      return `
+        <article class="card card--photo" data-category="${p.category}" data-title="${p.title.toLowerCase()}" data-ratio="${ratio}" style="--i:${i}">
+          <div class="card-link" data-lightbox role="button" tabindex="0"
+               data-photo-src="${escapeHtml(thumbSrc)}"
+               data-photo-title="${escapeHtml(p.title)}"
+               data-photo-date="${escapeHtml(p.date)}"
+               data-photo-desc="${escapeHtml(p.excerpt)}"
+               data-photo-filename="${escapeHtml(p.filename || '')}">
+            <div class="card-img"><img src="${thumbSrc}" alt="${p.title}" loading="lazy"></div>
+          </div>
+        </article>
+      `;
+    }
+
     return `
-      <article class="card" data-category="${p.category}" data-title="${p.title.toLowerCase()}">
+      <article class="card" data-category="${p.category}" data-title="${p.title.toLowerCase()}" style="--i:${i}">
         <a class="card-link" href="${href}">
           <div class="card-img"><img src="${thumbSrc}" alt="${p.title}" loading="lazy"></div>
           <div class="card-body">
@@ -288,8 +330,20 @@
     }
     if (query) filtered = filtered.filter(p => p.title.toLowerCase().includes(query));
 
-    // 최신 글이 화면 왼쪽(그리드 맨 앞)에 오도록 날짜 내림차순으로 정렬
-    filtered = [...filtered].sort((a, b) => b.date.localeCompare(a.date));
+    // 최신 글이 화면 왼쪽(그리드 맨 앞)에 오도록 날짜 내림차순으로 정렬.
+    // Total 화면에서는 Photo 카테고리 글이 항상 다른 카테고리 글보다 아래로 가도록
+    // 우선 그룹을 나누고, Photo끼리는(Total/Photo 필터 모두) 다시 제목(같은 계열
+    // 사진은 같은 제목)이 같은 것끼리 뭉치도록 묶은 뒤, 그 안에서 날짜 내림차순으로 정렬함
+    filtered = [...filtered].sort((a, b) => {
+      const aPhoto = isPhotoCategory(a.category);
+      const bPhoto = isPhotoCategory(b.category);
+      if (currentFilter === 'total' && aPhoto !== bPhoto) return aPhoto ? 1 : -1;
+      if (aPhoto && bPhoto){
+        const byTitle = a.title.localeCompare(b.title, 'ko');
+        if (byTitle !== 0) return byTitle;
+      }
+      return b.date.localeCompare(a.date);
+    });
 
     if (filtered.length === 0){
       grid.classList.add('grid--single');
@@ -301,7 +355,66 @@
     }
 
     grid.classList.remove('grid--single');   // 카드 목록을 보여줄 때는 다시 다단 레이아웃으로
-    grid.innerHTML = filtered.map(cardHTML).join('');
+
+    // Photo 카테고리 카드는 일반 카드와 그리드 성격이 달라서(크기가 들쭉날쭉한 모자이크 타일)
+    // 같은 #grid 안에 있되 <div class="photo-mosaic">로 따로 묶어서 자체 그리드를 가짐
+    const normalCards = filtered.filter(p => !isPhotoCategory(p.category));
+    const photoCards = filtered.filter(p => isPhotoCategory(p.category));
+    const normalHtml = normalCards.map((p, i) => cardHTML(p, i)).join('');
+
+    // 사진은 이미 위 정렬 단계에서 같은 제목(계열)끼리 붙어 있는 순서이므로,
+    // 그 순서 그대로 하나의 모자이크 그리드(.photo-mosaic)에 나란히 채워 넣음.
+    // Total 화면에서는 일반 게시글과 Photo 사이를 가로선 + "Photo" 제목으로 구분해줌
+    const photoSectionHeader = (currentFilter === 'total' && normalCards.length)
+      ? `<hr class="photo-section-divider"><h2 class="photo-section-title">Photo</h2>`
+      : '';
+    const photoHtml = photoCards.length
+      ? `${photoSectionHeader}<div class="photo-mosaic">${photoCards.map((p, i) => cardHTML(p, i)).join('')}</div>`
+      : '';
+    grid.innerHTML = normalHtml + photoHtml;
+    layoutPhotoMosaic();
+  }
+
+  // Photo 모자이크에서 각 사진이 크롭 없이 원본 비율 그대로 칸 높이를 차지하도록,
+  // 렌더링 직후 실제 칸 폭(컬럼 너비)을 기준으로 grid-row span을 계산해 넣어줌.
+  // 줄 높이 단위(grid-auto-rows)로 딱 안 떨어지는 부분은 올림 처리해서, 칸 아래에
+  // 약간의 여백이 남는 건 허용함(크롭하지 않기 위한 트레이드오프).
+  function layoutPhotoMosaic(){
+    const mosaic = document.querySelector('.photo-mosaic');
+    if (!mosaic) return;
+    const cs = getComputedStyle(mosaic);
+    const rowUnit = parseFloat(cs.gridAutoRows) || 1;
+    const rowGap = parseFloat(cs.rowGap) || 0;
+    mosaic.querySelectorAll('.card--photo').forEach(card => {
+      const ratio = parseFloat(card.dataset.ratio) || 1;   // width / height
+      const colWidth = card.getBoundingClientRect().width;
+      if (!colWidth) return;
+      const naturalHeight = colWidth / ratio;
+      const span = Math.max(1, Math.ceil((naturalHeight + rowGap) / (rowUnit + rowGap)));
+      card.style.gridRowEnd = 'span ' + span;
+    });
+  }
+
+  // 화면 폭이 바뀌면(창 크기 조절 등) 칸 폭도 바뀌므로 모자이크 배치를 다시 계산함
+  let mosaicResizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(mosaicResizeTimer);
+    mosaicResizeTimer = setTimeout(layoutPhotoMosaic, 150);
+  });
+
+  // site.css의 디졸브 애니메이션을 처음부터 다시 재생시키는 헬퍼.
+  // 카테고리를 바꿔 타이틀 메모지 내용이 바뀔 때마다 디졸브 효과가 다시 나오도록 함.
+  // opacity/transform만 바뀌는 애니메이션은 offsetWidth 리플로우만으로는 재시작이 안 되는
+  // 경우가 있어, "none으로 끈 상태"가 실제로 한 프레임 그려지도록 requestAnimationFrame을
+  // 두 번 걸쳐 다시 켜준다.
+  function replayDissolve(el){
+    if (!el) return;
+    el.style.animation = 'none';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        el.style.animation = '';
+      });
+    });
   }
 
   // 사이드바에서 카테고리를 클릭했을 때: 활성 상태 표시 + 상단 제목 변경 + 그리드 다시 렌더링
@@ -313,6 +426,7 @@
     });
     pageTitleVertical.textContent = labelFor(filter);
     heroTitle.innerHTML = heroTitleFor(filter);
+    replayDissolve(document.querySelector('.main-header'));
     render();
   }
 
@@ -322,6 +436,50 @@
 
   // ---------- 검색창 입력 이벤트 연결 (입력할 때마다 실시간으로 필터링) ----------
   searchInput.addEventListener('input', render);
+
+  // ---------- Photo 카테고리 카드: 사진 확대보기(라이트박스) ----------
+  // 카드는 render()가 매번 grid.innerHTML을 통째로 새로 그리므로, 카드 하나하나에
+  // 이벤트를 다시 붙이는 대신 grid에 이벤트 위임(delegation)으로 한 번만 연결함
+  const lightbox = document.getElementById('photoLightbox');
+  const lightboxImg = document.getElementById('lightboxImg');
+  const lightboxTitle = document.getElementById('lightboxTitle');
+  const lightboxDate = document.getElementById('lightboxDate');
+  const lightboxDesc = document.getElementById('lightboxDesc');
+  const lightboxEditLink = document.getElementById('lightboxEditLink');
+
+  function openLightbox(trigger){
+    lightboxImg.src = trigger.dataset.photoSrc;
+    lightboxImg.alt = trigger.dataset.photoTitle;
+    lightboxTitle.textContent = trigger.dataset.photoTitle;
+    lightboxDate.textContent = trigger.dataset.photoDate;
+    lightboxDesc.textContent = trigger.dataset.photoDesc;
+    lightboxEditLink.href = 'write.html?edit=' + encodeURIComponent(trigger.dataset.photoFilename || '');
+    lightbox.hidden = false;
+    document.body.classList.add('lightbox-open');
+  }
+  function closeLightbox(){
+    lightbox.hidden = true;
+    document.body.classList.remove('lightbox-open');
+  }
+
+  grid.addEventListener('click', (e) => {
+    const trigger = e.target.closest('[data-lightbox]');
+    if (!trigger) return;
+    e.preventDefault();
+    openLightbox(trigger);
+  });
+  grid.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const trigger = e.target.closest('[data-lightbox]');
+    if (!trigger) return;
+    e.preventDefault();
+    openLightbox(trigger);
+  });
+  document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+  document.getElementById('lightboxBackdrop').addEventListener('click', closeLightbox);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !lightbox.hidden) closeLightbox();
+  });
 
   renderCategorySidebar();   // DEFAULT_CATEGORIES 기준으로 카테고리 목록 최초 렌더링
 
@@ -348,7 +506,9 @@
       seed: entry.slug || entry.filename,
       filename: entry.filename,
       folder: entry.folder || [],   // posts 폴더 기준 카테고리 하위 폴더 경로 (없으면 posts 바로 아래)
-      thumbnail: entry.thumbnail || null   // posts 폴더 기준 썸네일 사진 경로 (없으면 무늬 플레이스홀더 사용)
+      thumbnail: entry.thumbnail || null,   // posts 폴더 기준 썸네일 사진 경로 (없으면 무늬 플레이스홀더 사용)
+      width: entry.width || null,   // Photo 모자이크에서 원본 비율대로 칸 높이를 계산하는 데 사용
+      height: entry.height || null
     };
   }
 

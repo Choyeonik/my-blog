@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTML 폼(Form) 태그 심화와 CSS 선택자 정리 — Portfolio Blog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500;700&family=EB+Garamond:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Gowun+Batang&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+
+<div class="layout">
+<aside class="sidebar">
+
+    <div class="brand">Yeonn</div>
+
+    <section class="categories">
+      <ul class="category-list">
+        <li>
+          <a class="category-total" href="../../../index.html">
+            <span class="cat-name">Total</span>
+            <span class="count">32</span>
+          </a>
+          <ul class="category-sub">
+      <li>
+        <a href="../../../index.html?filter=Project"><span class="cat-name">Project</span> <span class="count">0</span></a>
+        
+      </li>
+      <li>
+        <a href="../../../index.html?filter=Study"><span class="cat-name">Study</span> <span class="count">5</span></a>
+        
+        <ul class="category-sub-nested">
+          
+            <li><a href="../../../index.html?filter=Learned">Learned <span class="count">5</span></a></li>
+          
+        </ul>
+      </li>
+      <li>
+        <a href="../../../index.html?filter=Photo"><span class="cat-name">Photo</span> <span class="count">27</span></a>
+        
+      </li><li><a href="../../../index.html?filter=about"><span class="cat-name">About</span></a></li></ul>
+        </li>
+      </ul>
+    </section>
+
+    <div class="sidebar-links">
+      <a href="../../../write.html" class="write-link">새 글 쓰기 →</a>
+      <a href="../../../settings.html" class="write-link">설정 →</a>
+    </div>
+
+  </aside>
+
+  <main class="post-page">
+
+    <!-- 검정 고정 프레임 + 링바인더: 홈 화면(.main)과 같은 디자인이 개별 글 페이지에도 이어지도록 함 -->
+    <div class="main-frame-top" aria-hidden="true"></div>
+    <div class="main-frame-bottom" aria-hidden="true"></div>
+    <div class="main-frame-right" aria-hidden="true"></div>
+    <div class="ring-strip" aria-hidden="true">
+      <span class="ring"></span>
+      <span class="ring"></span>
+      <span class="ring"></span>
+    </div>
+
+    <div class="page-inner">
+
+    <div class="main-topbar">
+      <section class="search-box">
+        <form action="../../../index.html" method="get">
+          <input type="text" name="q" placeholder="검색어를 입력하세요">
+          <button type="submit" aria-label="검색">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+        </form>
+      </section>
+    </div>
+
+    <div class="post-header">
+      <div class="card-tag">Learned</div>
+      <h1>HTML 폼(Form) 태그 심화와 CSS 선택자 정리</h1>
+      <p class="post-desc">부트캠프 강의에서 HTML 폼(Form) 태그의 다양한 input 타입과, CSS 선택자·속성 선택자로 원하는 요소를 정확히 지정하는 방법을 실습하며 정리했습니다.</p>
+      <div class="post-date">2026-09-06</div>
+    </div>
+
+    <article class="post-body">
+<p>저번 <strong>HTML 완전 정복</strong> 글에서는 태그를 전체적으로 훑었는데, 그때 폼(Form) 부분은 겉핥기로만 다뤘다. 이번엔 실습을 통해 폼 안에서 쓰이는 다양한 input 타입을 하나하나 뜯어봤고, 처음 배운 CSS로 그 요소들을 원하는 대로 골라 꾸미는 선택자까지 이어서 정리했다.</p>
+<hr>
+<h2 id="form-태그의-역할">form 태그의 역할</h2>
+<p>form 태그는 사용자가 값을 입력할 수 있는 양식을 제공하고, 내부의 input 태그로 입력받은 데이터를 서버로 전달하는 역할을 한다. 구글 폼이나 네이버 로그인 화면처럼, 여러 입력 요소를 자식 태그로 묶어서 하나의 폼으로 만든다.</p>
+<p>form 태그의 핵심 속성은 두 가지다.</p>
+<table>
+<thead>
+<tr>
+<th align="left">속성</th>
+<th>설명</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">action</td>
+<td>입력된 값들을 전송받을 서버의 주소</td>
+</tr>
+<tr>
+<td align="left">method</td>
+<td>전송 방식 지정 (get / post)</td>
+</tr>
+</tbody></table>
+<p>get과 post의 차이가 특히 중요했다.</p>
+<table>
+<thead>
+<tr>
+<th align="left">방식</th>
+<th>데이터 노출</th>
+<th>기본값</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">get</td>
+<td>url에 데이터가 그대로 보인다</td>
+<td>기본값</td>
+</tr>
+<tr>
+<td align="left">post</td>
+<td>url에 데이터가 감춰진다</td>
+<td>-</td>
+</tr>
+</tbody></table>
+<pre><code class="language-html">&lt;form action=&quot;search&quot; method=&quot;post&quot;&gt;
+    &lt;label for=&quot;&quot;&gt;검색 할 내용&lt;/label&gt;
+    &lt;input type=&quot;text&quot; name=&quot;search&quot; required&gt;
+    &lt;button type=&quot;submit&quot;&gt;검색!&lt;/button&gt;
+&lt;/form&gt;
+</code></pre>
+<hr>
+<h2 id="텍스트-입력-text-password">텍스트 입력: text, password</h2>
+<p>가장 기본적인 입력창은 <code>type=&quot;text&quot;</code>다.</p>
+<pre><code class="language-html">&lt;input type=&quot;text&quot; id=&quot;userId&quot; name=&quot;userId&quot;
+    size=&quot;60&quot; placeholder=&quot;아이디를 입력해주세요&quot;&gt;
+</code></pre>
+<ul>
+<li><code>size</code> 속성으로 입력 칸의 가로 크기를 조절할 수 있다.</li>
+<li><code>placeholder</code> 속성으로 무엇을 입력해야 하는지 안내 문구를 넣을 수 있다.</li>
+</ul>
+<p>비밀번호처럼 화면에 그대로 노출되면 안 되는 값은 <code>type=&quot;password&quot;</code>를 쓴다.</p>
+<pre><code class="language-html">&lt;label&gt;비밀번호 : &lt;/label&gt;
+&lt;input type=&quot;password&quot; name=&quot;userPwd&quot; size=&quot;40&quot;
+    placeholder=&quot;비밀번호를 입력해주세요&quot;&gt;
+</code></pre>
+<hr>
+<h2 id="숫자와-범위-number-range">숫자와 범위: number, range</h2>
+<pre><code class="language-html">&lt;label&gt;수량 : &lt;/label&gt;
+&lt;input type=&quot;number&quot; name=&quot;amount&quot; min=&quot;0&quot; max=&quot;10&quot; value=&quot;0&quot; step=&quot;3&quot;&gt;
+&lt;label&gt;점수 : &lt;/label&gt;
+&lt;input type=&quot;range&quot; name=&quot;point&quot; min=&quot;0&quot; max=&quot;100&quot; value=&quot;10&quot;&gt;
+</code></pre>
+<p><code>min</code>은 최솟값, <code>max</code>는 최댓값, <code>value</code>는 기본값이다. <code>number</code>는 숫자를 직접 타이핑해 넣는 방식이고, <code>range</code>는 슬라이더로 범위 안의 값을 고르는 방식이라는 차이가 있다.</p>
+<hr>
+<h2 id="날짜와-시간">날짜와 시간</h2>
+<table>
+<thead>
+<tr>
+<th align="left">type</th>
+<th>선택 범위</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">date</td>
+<td>년/월/일</td>
+</tr>
+<tr>
+<td align="left">month</td>
+<td>년/월</td>
+</tr>
+<tr>
+<td align="left">week</td>
+<td>주 단위</td>
+</tr>
+<tr>
+<td align="left">time</td>
+<td>시:분</td>
+</tr>
+<tr>
+<td align="left">datetime-local</td>
+<td>년/월/일/시간(로컬 기준)</td>
+</tr>
+</tbody></table>
+<pre><code class="language-html">&lt;label&gt;date : &lt;/label&gt;&lt;input type=&quot;date&quot; name=&quot;date&quot;&gt;
+&lt;label&gt;month :&lt;/label&gt;&lt;input type=&quot;month&quot; name=&quot;month&quot;&gt;
+&lt;label&gt;week : &lt;/label&gt;&lt;input type=&quot;week&quot; name=&quot;week&quot;&gt;
+</code></pre>
+<hr>
+<h2 id="라디오-버튼과-체크박스">라디오 버튼과 체크박스</h2>
+<p>라디오 버튼은 하나만 선택할 수 있다. 여러 개의 라디오를 하나의 그룹으로 묶으려면 <strong>name 속성 값을 반드시 일치</strong>시켜야 한다. 일치시키지 않으면 그룹으로 묶이지 않아서 여러 개가 동시에 선택되는 문제가 생긴다.</p>
+<pre><code class="language-html">&lt;label&gt;성별 : &lt;/label&gt;
+&lt;input id=&quot;male&quot; type=&quot;radio&quot; name=&quot;gender&quot; value=&quot;남성&quot;&gt;
+&lt;label for=&quot;male&quot;&gt;남성&lt;/label&gt;
+&lt;input id=&quot;female&quot; type=&quot;radio&quot; name=&quot;gender&quot; value=&quot;여성&quot;&gt;
+&lt;label for=&quot;female&quot;&gt;여성&lt;/label&gt;
+</code></pre>
+<p>체크박스도 name을 일치시키는 건 같지만, 라디오와 다르게 <strong>중복 선택이 가능</strong>하다는 점이 다르다.</p>
+<pre><code class="language-html">&lt;label&gt;취미 : &lt;/label&gt;
+&lt;input type=&quot;checkbox&quot; id=&quot;baseball&quot; name=&quot;hobby&quot; value=&quot;야구&quot; checked&gt;
+&lt;label for=&quot;baseball&quot;&gt;야구&lt;/label&gt;
+&lt;input type=&quot;checkbox&quot; id=&quot;basketball&quot; name=&quot;hobby&quot; value=&quot;농구&quot;&gt;
+&lt;label for=&quot;basketball&quot;&gt;농구&lt;/label&gt;
+</code></pre>
+<p>label의 <code>for</code> 속성은 input의 <code>id</code>와, value는 label 텍스트와 일치시켜 주는 게 좋다는 것도 배웠다.</p>
+<hr>
+<h2 id="드롭다운-목록-select와-option">드롭다운 목록: select와 option</h2>
+<p>여러 옵션 중 하나(또는 여럿)를 고르게 하는 드롭다운 목록이다.</p>
+<pre><code class="language-html">&lt;label&gt;국적 : &lt;/label&gt;
+&lt;select name=&quot;nation&quot;&gt;
+    &lt;option value=&quot;ko&quot;&gt;한국&lt;/option&gt;
+    &lt;option value=&quot;ch&quot;&gt;중국&lt;/option&gt;
+    &lt;option value=&quot;jp&quot; selected&gt;일본&lt;/option&gt;
+&lt;/select&gt;
+</code></pre>
+<p><code>size</code>, <code>multiple</code> 속성을 추가하면 여러 줄이 펼쳐진 목록에서 여러 개를 동시에 선택할 수도 있다. 여기서 재미있었던 점은, 화면에는 &quot;한국&quot;, &quot;중국&quot; 같은 한글 텍스트가 보이지만 서버로 넘어가거나 개발자가 실제로 다루는 값은 <code>option</code>의 <code>value</code>(ko, ch 같은)라는 것이다.</p>
+<hr>
+<h2 id="그-외-input들과-textarea">그 외 input들과 textarea</h2>
+<pre><code class="language-html">&lt;label&gt;색상 선택하기 : &lt;/label&gt;
+&lt;input type=&quot;color&quot; name=&quot;color&quot;&gt;
+&lt;label&gt;파일 선택하기 : &lt;/label&gt;
+&lt;input type=&quot;file&quot; name=&quot;file&quot; multiple&gt;
+&lt;label&gt;보이지 않는 태그 : &lt;/label&gt;
+&lt;input type=&quot;hidden&quot; name=&quot;hidden&quot; value=&quot;1&quot;&gt;
+</code></pre>
+<p><code>color</code>는 색상 선택기를, <code>file</code>은 파일 첨부(<code>multiple</code>이면 여러 개)를 담당한다. <code>button</code> 태그는 타입을 따로 지정하지 않으면 기본값이 <code>submit</code>이라는 점이 헷갈리기 쉬웠다.</p>
+<p>여러 줄을 입력받아야 할 때는 <code>input</code>이 아니라 <code>textarea</code>를 쓴다. <code>input type=&quot;text&quot;</code>는 한 줄만 입력할 수 있지만, <code>textarea</code>는 여러 줄을 입력할 수 있고 세로 크기도 조절할 수 있다.</p>
+<pre><code class="language-html">&lt;textarea cols=&quot;50&quot; rows=&quot;30&quot;&gt;&lt;/textarea&gt;
+</code></pre>
+<hr>
+<h2 id="css로-꾸미기--선택자의-기본">CSS로 꾸미기 — 선택자의 기본</h2>
+<p>HTML이 문서의 내용을 담당한다면, CSS는 디자인을 담당한다. 꾸미고 싶은 요소를 **선택자(selector)**로 지정한 뒤, <code>{}</code> 안에서 스타일을 적어주는 구조다.</p>
+<pre><code class="language-css">li {
+    color: blueviolet;
+}
+
+/* 아이디 선택자, id는 # 기호로 지정 */
+#id3 {
+    color: green;
+    background: yellow;
+}
+</code></pre>
+<ul>
+<li>태그 이름을 그대로 쓰면 태그 선택자</li>
+<li><code>#</code>은 id 선택자</li>
+<li><code>.</code>은 class 선택자</li>
+</ul>
+<p>이렇게 기호로 대응되지 않는 속성은 대괄호(<code>[]</code>)를 쓰는 <strong>속성 선택자</strong>로 지정할 수 있다는 것도 배웠다. 그리고 스타일이 여러 개 겹치면 <strong>우선순위</strong>에 따라 적용된다는 점도 함께 익혔다.</p>
+<hr>
+<h2 id="외부-스타일시트로-분리하기">외부 스타일시트로 분리하기</h2>
+<p>html 파일 안에 css를 직접 적는 대신, <code>.css</code> 파일을 따로 만들고 head에서 <code>link</code> 태그로 연결하는 방식도 배웠다.</p>
+<pre><code class="language-html">&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;title&gt;Document&lt;/title&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;selector.css&quot;&gt;
+&lt;/head&gt;
+</code></pre>
+<p>디자인이 복잡해질수록 이렇게 분리해두는 게 관리하기 편하겠다는 생각이 들었다.</p>
+<hr>
+<h2 id="속성-선택자-attribute-selector">속성 선택자 (Attribute Selector)</h2>
+<p>가장 헷갈리면서도 재미있었던 부분이다. 아래와 같은 div들이 있다고 할 때,</p>
+<pre><code class="language-html">&lt;div name=&quot;name1 name5 name6&quot; class=&quot;div-class&quot;&gt;div1&lt;/div&gt;
+&lt;div name=&quot;name2&quot; class=&quot;div-class&quot;&gt;div2&lt;/div&gt;
+&lt;div name=&quot;name3&quot; class=&quot;div-class&quot;&gt;div3&lt;/div&gt;
+&lt;div name=&quot;name4 name1&quot; class=&quot;div-class&quot;&gt;div4&lt;/div&gt;
+</code></pre>
+<p>다섯 가지 기호가 각각 다르게 동작한다.</p>
+<table>
+<thead>
+<tr>
+<th align="left">기호</th>
+<th>의미</th>
+<th>예시</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>~=</code></td>
+<td>공백으로 구분된 값 중 하나로 완전히 일치하면 선택</td>
+<td><code>div[name~=name1]</code></td>
+</tr>
+<tr>
+<td align="left"><code>|=</code></td>
+<td>값이 정확히 일치하거나, 그 값 뒤에 <code>-</code>가 붙은 문자로 시작하면 선택</td>
+<td>`div[class</td>
+</tr>
+<tr>
+<td align="left"><code>^=</code></td>
+<td>값을 접두사로 가지고 있으면 선택</td>
+<td><code>div[name^=name]</code></td>
+</tr>
+<tr>
+<td align="left"><code>$=</code></td>
+<td>값을 접미사로 가지고 있으면 선택</td>
+<td><code>div[class$=class]</code></td>
+</tr>
+<tr>
+<td align="left"><code>*=</code></td>
+<td>값 안에 특정 문자열이 포함되어 있으면 선택</td>
+<td><code>div[class*=div]</code></td>
+</tr>
+</tbody></table>
+<pre><code class="language-css">div[name~=name1]{
+    background: yellow;
+}
+
+div[class|=class] {
+    background: chartreuse;
+    /* class 또는 class-로 시작하는 값을 선택 */
+}
+
+div[name^=name] {
+    background: blueviolet;
+}
+
+div[class$=class] {
+    background: white;
+}
+
+div[class*=div] {
+    background: orchid;
+}
+</code></pre>
+<p><code>~=</code>와 <code>^=</code>의 차이가 처음엔 헷갈렸다. <code>~=</code>는 공백으로 나뉜 여러 값 중 <strong>정확히 일치하는 값</strong>이 있는지를 보는 거고, <code>^=</code>는 값의 <strong>앞부분 글자</strong>가 일치하는지를 보는 거라서, 동작 방식 자체가 다르다는 걸 직접 코드를 돌려보고서야 확실히 이해했다.</p>
+<hr>
+<h2 id="정리하며">정리하며</h2>
+<p>Before: input은 type=&quot;text&quot; 정도만 알고 있었고, CSS는 태그/아이디/클래스 선택자만 쓸 줄 알았다.</p>
+<p>After: input의 타입에 따라 number, range, date류, radio, checkbox, select, color, file, hidden 등 목적에 맞는 입력 방식을 고를 수 있게 됐고, CSS 속성 선택자 다섯 가지의 차이를 구분해서 쓸 수 있게 됐다.</p>
+<h2 id="더-학습하면-좋은-개념">더 학습하면 좋은 개념</h2>
+<ul>
+<li><strong>폼 유효성 검사 (Constraint Validation API)</strong> — <code>required</code> 외에도 <code>pattern</code>, <code>minlength</code>, <code>maxlength</code> 등으로 서버에 보내기 전에 브라우저 단에서 값을 검증할 수 있다. 폼을 실제 서비스에 쓰려면 꼭 필요한 개념이다.</li>
+<li><strong>CSS 우선순위(Specificity)와 캐스케이딩</strong> — 같은 요소에 여러 선택자가 겹칠 때 어떤 스타일이 최종 적용되는지 결정하는 규칙이다. id, class, 태그 선택자를 함께 쓰다 보면 반드시 부딪히는 문제다.</li>
+<li><strong>가상 클래스/가상 요소 (:hover, ::before 등)</strong> — 상태나 위치를 기준으로 요소를 선택하는 CSS 문법이다. 지금 배운 속성 선택자와 함께 알아두면 선택의 폭이 훨씬 넓어진다.</li>
+<li><strong>폼 데이터와 서버 통신(GET/POST 실전)</strong> — action/method로 배운 개념이 실제로 서버에서 어떻게 요청을 받아 처리하는지 이어서 배우면 폼의 전체 흐름이 이해된다.</li>
+<li><strong>접근성 있는 폼 설계</strong> — label의 for 속성, aria 속성 등으로 스크린 리더 사용자도 폼을 문제없이 쓸 수 있게 만드는 방법이다.</li>
+</ul>
+<h2 id="참고-자료">참고 자료</h2>
+<ul>
+<li><a href="https://developer.mozilla.org/ko/docs/Web/HTML/Element/input">MDN - <input> 태그</a></li>
+<li><a href="https://developer.mozilla.org/ko/docs/Web/HTML/Element/form">MDN - <form> 태그</a></li>
+<li><a href="https://developer.mozilla.org/ko/docs/Web/CSS/Attribute_selectors">MDN - CSS 속성 선택자</a></li>
+<li><a href="https://developer.mozilla.org/ko/docs/Web/CSS/CSS_selectors">MDN - CSS 선택자 개요</a></li>
+<li><a href="https://www.w3.org/TR/selectors-4/">W3C - CSS Selectors Level 4</a></li>
+</ul>
+
+    </article>
+
+    <div class="post-edit-bar">
+      <a class="post-edit-link" href="../../../write.html?edit=2026-09-06-HTML-%ED%8F%BC-%ED%83%9C%EA%B7%B8-%EC%8B%AC%ED%99%94%EC%99%80-CSS-%EC%84%A0%ED%83%9D%EC%9E%90-%EC%A0%95%EB%A6%AC.html">수정하기 →</a>
+    </div>
+
+    <nav class="post-nav">
+      <a class="post-nav-item " href="../../Study/Learned/2026-09-06-html-%EC%99%84%EC%A0%84-%EC%A0%95%EB%B3%B5.html">
+         <span class="post-nav-label">이전 글</span>
+         <span class="post-nav-title">HTML 완전 정복: 기본 구조부터 폼 처리까지</span>
+       </a>
+      <a class="post-nav-item is-next" href="../../Photo/2026-09-07-20220812-IMG_9278.html">
+         <span class="post-nav-label">다음 글</span>
+         <span class="post-nav-title">삼색이</span>
+       </a>
+    </nav>
+
+    </div>
+  </main>
+
+</div>
+
+<script src="../../../sidebar-motion.js"></script>
+</body>
+</html>

@@ -264,12 +264,24 @@
     applyFontSize(Math.min(FONT_SIZE_MAX, parseInt(fieldBody.style.fontSize, 10) + 1));
   });
 
+  // 선택된 카테고리가 Photo(또는 그 하위 카테고리)인지 판단.
+  // Photo 게시글은 사진 자체가 콘텐츠라서 본문(마크다운) 없이도 저장할 수 있어야 함
+  function isPhotoCategorySelected(){
+    const categories = siteConfig ? siteConfig.categories : null;
+    if (!categories) return fieldCategory.value === 'Photo';
+    const photoCat = categories.find(c => c.name === 'Photo');
+    if (!photoCat) return fieldCategory.value === 'Photo';
+    return fieldCategory.value === photoCat.name || photoCat.subcategories.includes(fieldCategory.value);
+  }
+
   // 필수 입력값이 모두 채워졌는지 체크해서 "게시하기" 버튼 활성/비활성 전환
   function updatePublishState(){
-    const ready = fieldTitle.value.trim() && fieldDesc.value.trim() && fieldBody.value.trim();
+    const bodyOk = isPhotoCategorySelected() || fieldBody.value.trim();
+    const ready = fieldTitle.value.trim() && fieldDesc.value.trim() && bodyOk;
     publishBtn.disabled = !ready;
   }
   [fieldTitle, fieldDesc, fieldBody].forEach(el => el.addEventListener('input', updatePublishState));
+  fieldCategory.addEventListener('change', updatePublishState);
   updatePublishState();
 
   function setStatus(text, kind){
@@ -627,7 +639,7 @@
     const category = fieldCategory.value;
     const description = fieldDesc.value.trim();
     const markdown = fieldBody.value;
-    if (!title || !description || !markdown.trim()) return;
+    if (!title || !description || !(isPhotoCategorySelected() || markdown.trim())) return;
 
     const isEditing = !!editingEntry;
     publishBtn.disabled = true;

@@ -693,6 +693,148 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   color: var(--muted);
 }
 
+/* ==========================================================
+   Photo 카테고리 전용 카드 — 크롭 없는 모자이크 그리드
+   - 제목/설명 없이 사진만 보여주고(제목/설명은 라이트박스에서만 표시)
+   - 타일 폭(칼럼 수)은 크고 작은 게 섞이지만, 칸 높이는 JS(layoutPhotoMosaic)가
+     각 사진의 실제 원본 비율대로 계산해서 넣어줌 -> 사진을 자르지 않음.
+     grid-auto-rows 단위(4px)로 딱 안 떨어지는 나머지는 올림 처리되어 칸 아래에
+     약간의 여백이 남을 수 있음(의도된 트레이드오프)
+   - 같은 제목(계열)의 사진은 정렬 단계에서 이미 서로 붙어 있는 순서라서
+     모자이크 안에서도 자연스럽게 이웃하게 배치됨
+   - .card-link가 <a>가 아니라 role="button"인 <div>라서 글 페이지로 이동하지
+     않고, 클릭하면 JS가 사진을 확대하는 라이트박스를 띄움
+   ========================================================== */
+
+/* Total 화면에서 일반 게시글과 Photo 모자이크 사이를 구분해주는 가로선 + 제목 */
+.photo-section-divider{
+  grid-column: 1 / -1;
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 8px 0 32px;
+}
+.photo-section-title{
+  grid-column: 1 / -1;
+  font-size: 20px;
+  margin: -14px 0 24px;
+}
+
+/* .grid(일반 글 카드용 2열)와는 별개로 다룸. .grid의 자식이지만 grid-column으로
+   항상 전체 폭을 차지해서 일반 글 카드 레이아웃에는 영향을 주지 않음 */
+.photo-mosaic{
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 4px;   /* 아주 촘촘한 단위 — layoutPhotoMosaic()이 이 단위로 span 개수를 계산함 */
+  grid-auto-flow: dense;
+  gap: 12px;
+}
+@media (max-width: 720px){
+  .photo-mosaic{ grid-template-columns: repeat(2, 1fr); gap: 8px; }
+}
+
+.card--photo{ overflow: hidden; }
+/* 네 칸에 하나꼴, 일곱 칸에 하나꼴로 폭이 넓은 타일이 섞이도록 함(높이는 JS가 비율대로 계산) */
+.card--photo:nth-child(4n+1){ grid-column: span 2; }
+.card--photo:nth-child(7n+4){ grid-column: span 2; }
+
+.card--photo .card-link{
+  display: block;
+  height: 100%;
+  cursor: pointer;
+}
+.card--photo .card-img{
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  overflow: hidden;
+}
+.card--photo .card-img img{
+  width: 100%;
+  height: 100%;
+  object-fit: contain;   /* 자르지 않고 칸 안에 원본 비율 그대로 표시 */
+}
+
+/* 사진 확대보기(라이트박스) — 확대된 사진 옆(모바일에서는 아래)에 제목/날짜/설명 표시 */
+.lightbox{
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+.lightbox-backdrop{
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 20, 18, 0.82);
+}
+.lightbox-panel{
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 32px;
+  max-width: 1100px;
+  max-height: 100%;
+  background: var(--bg);
+  padding: 32px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+.lightbox-img{
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lightbox-img img{
+  max-width: 100%;
+  max-height: 78vh;
+  width: auto;
+  height: auto;
+  display: block;
+  filter: none;   /* 사진 원본 색 그대로(사이트 전역 흑백 필터 제외) */
+}
+.lightbox-info{
+  flex: 0 0 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.lightbox-info h2{ font-size: 22px; margin-bottom: 10px; }
+.lightbox-info .card-date{ margin-bottom: 14px; }
+.lightbox-info p{ font-size: 13px; line-height: 1.7; color: var(--muted); }
+.lightbox-edit-link{
+  display: inline-block;
+  margin-top: 20px;
+  font-size: 11px;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.lightbox-edit-link:hover{ color: var(--ink); }
+.lightbox-close{
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--ink);
+}
+body.lightbox-open{ overflow: hidden; }   /* 라이트박스가 떠 있는 동안 뒤 배경 스크롤 방지 */
+
+@media (max-width: 720px){
+  .lightbox{ padding: 16px; }
+  .lightbox-panel{ flex-direction: column; overflow-y: auto; padding: 20px; gap: 20px; }
+  .lightbox-info{ flex: none; }
+}
+
 /* About 카테고리를 눌렀을 때 그리드 대신 보여주는 자기소개 카드 (grid--single과 함께 사용) */
 .about-card{
   text-align: center;
@@ -1184,4 +1326,76 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   .hero-title{ font-size: 17px; }
   .page-inner{ padding: 40px 20px 80px; }
   .site-topbar{ padding: 18px 20px; }
+}
+
+/* ==========================================================
+   페이지 진입 디졸브 애니메이션
+   - index.html(main.main) / write.html·settings.html(#editorContent,
+     .settings-section 등) 전용. 개별 게시글 페이지(main.post-page)는
+     선택자가 겹치지 않아 이 규칙의 영향을 받지 않는다.
+   - 메인 영역의 구성요소가 위에서부터 순서대로 하나씩 나타나도록
+     같은 opacity 0 → 1 디졸브에 요소마다 다른 animation-delay를 준다.
+   ========================================================== */
+@keyframes dissolveIn{
+  from{ opacity: 0; transform: translateY(-10px); }
+  to{ opacity: 1; transform: translateY(0); }
+}
+
+/* 홈 화면(index.html) — 사이드 메모지(side-memo)는 제외하고 검색창/헤더/카드만 디졸브 */
+.main .main-topbar,
+.main .main-header,
+.main .grid .card{
+  opacity: 0;
+  animation: dissolveIn .6s ease forwards;
+}
+.main .main-topbar{ animation-delay: .05s; }
+.main .main-header{ animation-delay: .18s; }
+/* 카드는 render()가 넣어주는 --i(카드 순서) 값을 이용해 하나씩 순서대로 나타남 */
+.main .grid .card{
+  animation-delay: calc(.08s * min(var(--i, 0), 10) + .3s);
+}
+
+/* 글쓰기(write.html) / 설정(settings.html) 공용 */
+.editor-header,
+.editor-note,
+.editor-gate,
+.lock-screen,
+#editorContent .field,
+#editorContent .editor-actions,
+.settings-section{
+  opacity: 0;
+  animation: dissolveIn .6s ease forwards;
+}
+.editor-header{ animation-delay: .05s; }
+.editor-note{ animation-delay: .16s; }
+.editor-gate,
+.lock-screen{ animation-delay: .27s; }
+
+#editorContent .field:nth-of-type(1){ animation-delay: .05s; }
+#editorContent .field:nth-of-type(2){ animation-delay: .12s; }
+#editorContent .field:nth-of-type(3){ animation-delay: .19s; }
+#editorContent .field:nth-of-type(4){ animation-delay: .26s; }
+#editorContent .field:nth-of-type(5){ animation-delay: .33s; }
+#editorContent .field:nth-of-type(n+6){ animation-delay: .40s; }
+#editorContent .editor-actions{ animation-delay: .47s; }
+
+.settings-section:nth-of-type(1){ animation-delay: .05s; }
+.settings-section:nth-of-type(2){ animation-delay: .18s; }
+.settings-section:nth-of-type(n+3){ animation-delay: .31s; }
+
+@media (prefers-reduced-motion: reduce){
+  .main .main-topbar,
+  .main .main-header,
+  .main .grid .card,
+  .editor-header,
+  .editor-note,
+  .editor-gate,
+  .lock-screen,
+  #editorContent .field,
+  #editorContent .editor-actions,
+  .settings-section{
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
 }
