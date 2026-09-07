@@ -711,12 +711,12 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   grid-column: 1 / -1;
   border: none;
   border-top: 1px solid var(--line);
-  margin: 8px 0 32px;
+  margin: 16px 0 48px;
 }
 .photo-section-title{
   grid-column: 1 / -1;
   font-size: 20px;
-  margin: -14px 0 24px;
+  margin: 0 0 32px;
 }
 
 /* .grid(일반 글 카드용 2열)와는 별개로 다룸. .grid의 자식이지만 grid-column으로
