@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 프롬프트 작성 도우미 개발 Start — Portfolio Blog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500;700&family=EB+Garamond:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Gowun+Batang&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../site.css">
+</head>
+<body>
+
+<div class="layout">
+<aside class="sidebar">
+
+    <div class="brand">Yeonn</div>
+
+    <section class="categories">
+      <ul class="category-list">
+        <li>
+          <a class="category-total" href="../../index.html">
+            <span class="cat-name">Total</span>
+            <span class="count">32</span>
+          </a>
+          <ul class="category-sub">
+      <li>
+        <a href="../../index.html?filter=Project"><span class="cat-name">Project</span> <span class="count">1</span></a>
+        
+      </li>
+      <li>
+        <a href="../../index.html?filter=Study"><span class="cat-name">Study</span> <span class="count">6</span></a>
+        
+        <ul class="category-sub-nested">
+          
+            <li><a href="../../index.html?filter=Learned">Learned <span class="count">6</span></a></li>
+          
+        </ul>
+      </li>
+      <li>
+        <a href="../../index.html?filter=Photo"><span class="cat-name">Photo</span> <span class="count">25</span></a>
+        
+      </li><li><a href="../../index.html?filter=about"><span class="cat-name">About</span></a></li></ul>
+        </li>
+      </ul>
+    </section>
+
+    <div class="sidebar-links">
+      <a href="../../write.html" class="write-link">새 글 쓰기 →</a>
+      <a href="../../settings.html" class="write-link">설정 →</a>
+    </div>
+
+  </aside>
+
+  <main class="post-page">
+
+    <!-- 검정 고정 프레임 + 링바인더: 홈 화면(.main)과 같은 디자인이 개별 글 페이지에도 이어지도록 함 -->
+    <div class="main-frame-top" aria-hidden="true"></div>
+    <div class="main-frame-bottom" aria-hidden="true"></div>
+    <div class="main-frame-right" aria-hidden="true"></div>
+    <div class="ring-strip" aria-hidden="true">
+      <span class="ring"></span>
+      <span class="ring"></span>
+      <span class="ring"></span>
+    </div>
+
+    <div class="page-inner">
+
+    <div class="main-topbar">
+      <section class="search-box">
+        <form action="../../index.html" method="get">
+          <input type="text" name="q" placeholder="검색어를 입력하세요">
+          <button type="submit" aria-label="검색">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+        </form>
+      </section>
+    </div>
+
+    <div class="post-header">
+      <div class="card-tag">Project</div>
+      <h1>AI 프롬프트 작성 도우미 개발 Start</h1>
+      <p class="post-desc">첫번째 프로젝트 : AI 프롬프트 작성 도우미를 기획하고 개발하는 첫 단계 (카테고리 별 축 결정까지)로 기록하였습니다.</p>
+      <div class="post-date">2026-09-08</div>
+    </div>
+
+    <article class="post-body">
+<p>이번 포스팅은 소프트웨어 개발 프로젝트 첫단계를 기록해보려한다.</p>
+<hr>
+<h2 id="프로젝트-주제-정하기">프로젝트 주제 정하기</h2>
+<p>여러가지 아이디어를 서로 나누어보았다.</p>
+<ul>
+<li>주식 예측 소프트웨어</li>
+<li>부트캠프용 단기간 메타버스</li>
+<li>사진 색감 복제 프로그램</li>
+<li>AI 프롬프트 작성 도우미<br>...</li>
+</ul>
+<p>여러 주제를 듣고 현재 프론트엔드로만 배포를 한다는 제한이 존재해 주제를 AI 프롬프트 작성 도우미&quot;로 결정하였다.</p>
+<hr>
+<h2 id="카테고리-선정">카테고리 선정</h2>
+<p>AI 프롬프트 사용자는 AI에게 중요도 있는 내용을 물어볼 가능성이 꽤 높기에 보다 구체적으로 요청 카테고리를 정하기로 하였다.</p>
+<p>팀원들끼리 아이디어를 발산하였고 정해진 카테고리들은 다음과 같다.</p>
+<ul>
+<li>개인 상담</li>
+<li>여행 계획</li>
+<li>의료 상담</li>
+<li>AI 사진 생성</li>
+<li>이메일/ 보고서 등 작성</li>
+</ul>
+<p>으로 다섯가지로 결정하였다.</p>
+<hr>
+<h2 id="카테고리-별로-축옵션-생성">카테고리 별로 축(옵션) 생성</h2>
+<p>프롬프트를 요청할 때 필요한 축들이 존재한다. 예를 들어 작성 류의 경우 이메일인지 보고서 또는 다른 종류의 글 작성인지 고르는 축이 필요하다.</p>
+<p>카테고리 별로 세네 개씩 축들도 각자 양식대로 작성하였다.</p>
+<p><img src="../assets/AI-%ED%94%84%EB%A1%AC%ED%94%84%ED%8A%B8-%EC%9E%91%EC%84%B1-%EB%8F%84%EC%9A%B0%EB%AF%B8-%EA%B0%9C%EB%B0%9C-Start/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202026-09-08%20173018.png" alt="스크린샷 2026-09-08 173018"></p>
+<p>.md 파일로 모두 업로드 하였고 살펴 본 결과</p>
+<ul>
+<li>작성 류<ul>
+<li>목적<ul>
+<li>정보 전달/보고서, 요청/승인</li>
+</ul>
+</li>
+<li>대상<br> -상급자/외부인, 동료/팀원</li>
+<li>문서 유형<ul>
+<li>간단한 형식(이메일/메신저), 간단한 형식(이메일/메신저)</li>
+</ul>
+</li>
+<li>긴급도<ul>
+<li>일반적, 긴급</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<br>
+
+<ul>
+<li>의료 질문<ul>
+<li>목적<ul>
+<li>증상·질병 정보 알아보기, 병원 가기 전 문진 준비</li>
+</ul>
+</li>
+<li>대상<ul>
+<li>본인, 가족/보호 대상자</li>
+</ul>
+</li>
+<li>증상 성격<ul>
+<li>갑자기 생긴 증상, 만성 증상</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<br>
+
+<ul>
+<li>여행 계획<ul>
+<li>목적<ul>
+<li>여행지 정보, 일정/동선 짜기</li>
+</ul>
+</li>
+<li>동행<ul>
+<li>혼자, 동반자 있음</li>
+</ul>
+</li>
+<li>여행 시점<ul>
+<li>임박한 여행, 아직 막연(고려 중)</li>
+</ul>
+</li>
+<li>스타일<ul>
+<li>휴양/힐링, 액티비티/체험 중심</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<br>
+
+<ul>
+<li>개인 상담<ul>
+<li><p>상담 주제 별 페르소나</p>
+<ul>
+<li>주제별로 여러 선택지를 만들었다. ex) 연애고수모드, 선생님 모드</li>
+</ul>
+</li>
+<li><p>상담 스타일</p>
+<ul>
+<li>완전 공감형, 균형형, 직설/해결형</li>
+</ul>
+</li>
+<li><p>개입 방식</p>
+<ul>
+<li>질문으로 유도, 직접 조언 제시</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="이렇게-카테고리별로-축까지-결정하고-다들-만든-md-파일을-깃헙으로-병합하였다">이렇게 카테고리별로 축까지 결정하고 다들 만든 .md 파일을 깃헙으로 병합하였다.</h2>
+<h2 id="마무리">마무리</h2>
+<p>오늘은 팀원들과 축까지 결정하였다.<br>기획이 생각보다 아이디어를 짜는데 상당한 시간이 걸렸다. 사용자가 무엇을 원하는지 파악하는데 어려움을 겪은 것 같다.</p>
+
+    </article>
+
+    <div class="post-edit-bar">
+      <a class="post-edit-link" href="../../write.html?edit=2026-09-08-AI-%ED%94%84%EB%A1%AC%ED%94%84%ED%8A%B8-%EC%9E%91%EC%84%B1-%EB%8F%84%EC%9A%B0%EB%AF%B8-%EA%B0%9C%EB%B0%9C-Start.html">수정하기 →</a>
+    </div>
+
+    <nav class="post-nav">
+      <a class="post-nav-item " href="../Photo/2026-09-07-Mojiko-Station.html">
+         <span class="post-nav-label">이전 글</span>
+         <span class="post-nav-title">Mojiko Station</span>
+       </a>
+      <div class="post-nav-item is-next">
+         <span class="post-nav-label">다음 글</span>
+         <span class="post-nav-empty">없음</span>
+       </div>
+    </nav>
+
+    </div>
+  </main>
+
+</div>
+
+<script src="../../sidebar-motion.js"></script>
+</body>
+</html>
