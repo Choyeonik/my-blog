@@ -292,6 +292,26 @@
     `;
   }
 
+  const TOTAL_COLUMN_LIMIT = 5;
+
+  // Total 화면 전용: Photo를 제외한 상위 카테고리마다 세로 열 하나(.total-column)를
+  // 만들어 그 카테고리 글만 담고, 5개 넘으면 자르고 "더보기" 버튼을 붙임
+  function totalColumnsHTML(normalCards){
+    return categories
+      .filter(cat => cat.name !== 'Photo')
+      .map(cat => {
+        const names = categoryNamesForFilter(categories, cat.name);
+        const items = normalCards.filter(p => names.includes(p.category));
+        const shown = items.slice(0, TOTAL_COLUMN_LIMIT);
+        const cardsHtml = shown.map((p, i) => cardHTML(p, i)).join('');
+        const moreBtn = items.length > TOTAL_COLUMN_LIMIT
+          ? `<button type="button" class="write-link total-column-more" data-more-filter="${escapeHtml(cat.name)}">더보기 →</button>`
+          : '';
+        return `<div class="total-column">${cardsHtml}${moreBtn}</div>`;
+      })
+      .join('');
+  }
+
   // "About" 카테고리를 선택했을 때 그리드 대신 보여줄 자기소개 카드
   function aboutCardHTML(){
     return `
@@ -360,7 +380,13 @@
     // 같은 #grid 안에 있되 <div class="photo-mosaic">로 따로 묶어서 자체 그리드를 가짐
     const normalCards = filtered.filter(p => !isPhotoCategory(p.category));
     const photoCards = filtered.filter(p => isPhotoCategory(p.category));
-    const normalHtml = normalCards.map((p, i) => cardHTML(p, i)).join('');
+
+    // Total 화면에서는 일반 글을 한 줄에 섞어 배치하는 대신, Photo를 제외한 상위
+    // 카테고리마다 세로 열을 하나씩 나눠서(1열 = 첫 카테고리, 2열 = 두 번째 카테고리 ...)
+    // 그 열 안에서만 날짜 내림차순으로 쌓고, 5개를 넘으면 "더보기" 버튼으로 잘라 보여줌
+    const normalHtml = (currentFilter === 'total')
+      ? totalColumnsHTML(normalCards)
+      : normalCards.map((p, i) => cardHTML(p, i)).join('');
 
     // 사진은 이미 위 정렬 단계에서 같은 제목(계열)끼리 붙어 있는 순서이므로,
     // 그 순서 그대로 하나의 모자이크 그리드(.photo-mosaic)에 나란히 채워 넣음.
@@ -463,6 +489,11 @@
   }
 
   grid.addEventListener('click', (e) => {
+    const moreBtn = e.target.closest('[data-more-filter]');
+    if (moreBtn){
+      setActive(moreBtn.dataset.moreFilter);
+      return;
+    }
     const trigger = e.target.closest('[data-lightbox]');
     if (!trigger) return;
     e.preventDefault();

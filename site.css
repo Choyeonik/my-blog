@@ -606,6 +606,24 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   .grid{ grid-template-columns: 1fr; }
 }
 
+/* Total 화면에서 Photo를 제외한 카테고리별로 나뉜 세로 열(1열 = 첫 카테고리, 2열 = 두 번째
+   카테고리 ...). .grid의 2열짜리 grid-template-columns를 그대로 물려받아, 열마다 카드가
+   세로로만 쌓이도록 함 */
+.total-column{
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+}
+.total-column-more{
+  align-self: flex-start;
+  margin-top: 8px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
 /* 카드 전체(사진+글)를 감싸는 링크 — 실제 글(posts/*.html)로 이동.
    썸네일(왼쪽)과 글 정보(오른쪽)를 가로로 나란히 배치 */
 .card-link{
