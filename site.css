@@ -612,7 +612,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
 .total-column{
   display: flex;
   flex-direction: column;
-  gap: 56px;
+  gap: 96px;
 }
 .total-column-more{
   align-self: flex-start;
