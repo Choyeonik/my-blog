@@ -642,6 +642,9 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   width: 100%;
   margin: 0 0 -26px;
 }
+.total-column .card{
+  margin-bottom: -20px;
+}
 
 /* 카드 전체(사진+글)를 감싸는 링크 — 실제 글(posts/*.html)로 이동.
    썸네일(왼쪽)과 글 정보(오른쪽)를 가로로 나란히 배치 */
