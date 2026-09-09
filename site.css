@@ -649,7 +649,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   align-self: flex-start;
   margin-bottom: -56px;
   color: var(--accent);
-  font-size: 13px;
+  font-size: 30px;
 }
 
 /* 카드 전체(사진+글)를 감싸는 링크 — 실제 글(posts/*.html)로 이동.
