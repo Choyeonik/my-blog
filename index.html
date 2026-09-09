@@ -307,10 +307,12 @@
         const cardsHtml = shown.map((p, i) => cardHTML(p, i)).join('');
         const nameBtn = `<button type="button" class="write-link total-column-name" data-more-filter="${escapeHtml(cat.name)}">${escapeHtml(cat.name)}</button>`;
         const divider = `<hr class="total-column-divider">`;
+        const remaining = items.length - TOTAL_COLUMN_LIMIT;
+        const remainingLabel = remaining > 0 ? `<div class="total-column-remaining">+${remaining}</div>` : '';
         const moreBtn = items.length > TOTAL_COLUMN_LIMIT
           ? `<button type="button" class="write-link total-column-more" data-more-filter="${escapeHtml(cat.name)}">더보기 →</button>`
           : '';
-        return `<div class="total-column">${nameBtn}${divider}${cardsHtml}${moreBtn}</div>`;
+        return `<div class="total-column">${nameBtn}${divider}${cardsHtml}${remainingLabel}${moreBtn}</div>`;
       })
       .join('');
   }
