@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>첫 번째 프로젝트의 두 번째 단계: 업무 분석 — Portfolio Blog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500;700&family=EB+Garamond:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Gowun+Batang&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../site.css">
+</head>
+<body>
+
+<div class="layout">
+<aside class="sidebar">
+
+    <div class="brand">Yeonn</div>
+
+    <section class="categories">
+      <ul class="category-list">
+        <li>
+          <a class="category-total" href="../../index.html">
+            <span class="cat-name">Total</span>
+            <span class="count">34</span>
+          </a>
+          <ul class="category-sub">
+      <li>
+        <a href="../../index.html?filter=Project"><span class="cat-name">Project</span> <span class="count">2</span></a>
+        
+      </li>
+      <li>
+        <a href="../../index.html?filter=Study"><span class="cat-name">Study</span> <span class="count">7</span></a>
+        
+        <ul class="category-sub-nested">
+          
+            <li><a href="../../index.html?filter=Learned">Learned <span class="count">7</span></a></li>
+          
+        </ul>
+      </li>
+      <li>
+        <a href="../../index.html?filter=Photo"><span class="cat-name">Photo</span> <span class="count">25</span></a>
+        
+      </li><li><a href="../../index.html?filter=about"><span class="cat-name">About</span></a></li></ul>
+        </li>
+      </ul>
+    </section>
+
+    <div class="sidebar-links">
+      <a href="../../write.html" class="write-link">새 글 쓰기 →</a>
+      <a href="../../settings.html" class="write-link">설정 →</a>
+    </div>
+
+  </aside>
+
+  <main class="post-page">
+
+    <!-- 검정 고정 프레임 + 링바인더: 홈 화면(.main)과 같은 디자인이 개별 글 페이지에도 이어지도록 함 -->
+    <div class="main-frame-top" aria-hidden="true"></div>
+    <div class="main-frame-bottom" aria-hidden="true"></div>
+    <div class="main-frame-right" aria-hidden="true"></div>
+    <div class="ring-strip" aria-hidden="true">
+      <span class="ring"></span>
+      <span class="ring"></span>
+      <span class="ring"></span>
+    </div>
+
+    <div class="page-inner">
+
+    <div class="main-topbar">
+      <section class="search-box">
+        <form action="../../index.html" method="get">
+          <input type="text" name="q" placeholder="검색어를 입력하세요">
+          <button type="submit" aria-label="검색">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+        </form>
+      </section>
+    </div>
+
+    <div class="post-header">
+      <div class="card-tag">Project</div>
+      <h1>첫 번째 프로젝트의 두 번째 단계: 업무 분석</h1>
+      <p class="post-desc">클로드를 이용하여 업무 분석 문서들을 작성해보았습니다.</p>
+      <div class="post-date">2026-09-09</div>
+    </div>
+
+    <article class="post-body">
+<p>저번 포스팅에 이어 이번엔 강의 내용을 토대로 업무 분석표를 만들고자 한다.</p>
+<p>강의 내용은 Study 카테고리에 작성해두었다.<br><a href="https://choyeonik.github.io/my-blog/posts/Study/Learned/2026-09-08-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-%EA%B8%B0%ED%9A%8D%EC%9D%98-%EB%8F%84%EC%9A%B0%EB%AF%B8-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8.html">https://choyeonik.github.io/my-blog/posts/Study/Learned/2026-09-08-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-%EA%B8%B0%ED%9A%8D%EC%9D%98-%EB%8F%84%EC%9A%B0%EB%AF%B8-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8.html</a></p>
+<hr>
+<h2 id="01-problemmd">01-problem.md</h2>
+<p>일단 팀에서 현재 만들고자 하는 서비스에 대해 01-problem.md를 작성해주었다.</p>
+<p><img src="../assets/%EC%B2%AB-%EB%B2%88%EC%A7%B8-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%EC%9D%98-%EB%91%90-%EB%B2%88%EC%A7%B8-%EB%8B%A8%EA%B3%84-%EC%97%85%EB%AC%B4-%EB%B6%84%EC%84%9D/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202026-09-08%20110539.png" alt="스크린샷 2026-09-08 110539"></p>
+<p>기본적인 순서는 </p>
+<pre><code>자연어 → 키워드 매칭 → 템플릿 매핑
+</code></pre>
+<p>순으로 진행할 예정이다.</p>
+<p>대상은 AI를 사용할 때, 그때그때 떠오르는 말들을 그대로 자연어로 적는 사용자라고 작성하였다.<br>대상자는 AI 프롬프트 엔지니어링을 공부하여 문제를 해결할 수 있지만, 시간을 들여야한다는 불편이 있다.</p>
+<hr>
+<p>이를 토대로 클로드에게 02-workflow.md 작성을 요청하였다.</p>
+<p>클로드가 A1 설정을 위해 정의해 달라고 요청하였다.</p>
+<p><img src="../assets/%EC%B2%AB-%EB%B2%88%EC%A7%B8-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%EC%9D%98-%EB%91%90-%EB%B2%88%EC%A7%B8-%EB%8B%A8%EA%B3%84-%EC%97%85%EB%AC%B4-%EB%B6%84%EC%84%9D/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202026-09-08%20112013.png" alt="스크린샷 2026-09-08 112013"></p>
+<p>단계 설정도 진행하였다.</p>
+<pre><code>메인화면 접속 → 원하는 내용 입력 → 자동 분석된 옵션 확인 및 수정 → 생성된 프롬프트 확인 및 복사
+</code></pre>
+<p>순으로 작성하였다.</p>
+<p><img src="../assets/%EC%B2%AB-%EB%B2%88%EC%A7%B8-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%EC%9D%98-%EB%91%90-%EB%B2%88%EC%A7%B8-%EB%8B%A8%EA%B3%84-%EC%97%85%EB%AC%B4-%EB%B6%84%EC%84%9D/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202026-09-09%20124628.png" alt="스크린샷 2026-09-09 124628"></p>
+<hr>
+<p>그 이후 03, 04, 05 단계도 클로드와 상의하며 작성하였다.</p>
+<hr>
+<p>내일은 작성한 내용들을 팀원들 것도 전부 보고 병합 후 수정할 점을 상의하기로 했다.</p>
+
+    </article>
+
+    <div class="post-edit-bar">
+      <a class="post-edit-link" href="../../write.html?edit=2026-09-09-%EC%B2%AB-%EB%B2%88%EC%A7%B8-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%EC%9D%98-%EB%91%90-%EB%B2%88%EC%A7%B8-%EB%8B%A8%EA%B3%84-%EC%97%85%EB%AC%B4-%EB%B6%84%EC%84%9D.html">수정하기 →</a>
+    </div>
+
+    <nav class="post-nav">
+      <a class="post-nav-item " href="../Project/2026-09-08-AI-%ED%94%84%EB%A1%AC%ED%94%84%ED%8A%B8-%EC%9E%91%EC%84%B1-%EB%8F%84%EC%9A%B0%EB%AF%B8-%EA%B0%9C%EB%B0%9C-Start.html">
+         <span class="post-nav-label">이전 글</span>
+         <span class="post-nav-title">AI 프롬프트 작성 도우미 개발 Start</span>
+       </a>
+      <div class="post-nav-item is-next">
+         <span class="post-nav-label">다음 글</span>
+         <span class="post-nav-empty">없음</span>
+       </div>
+    </nav>
+
+    </div>
+  </main>
+
+</div>
+
+<script src="../../sidebar-motion.js"></script>
+</body>
+</html>
