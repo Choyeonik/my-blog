@@ -306,8 +306,7 @@
         const shown = items.slice(0, TOTAL_COLUMN_LIMIT);
         const cardsHtml = shown.map((p, i) => cardHTML(p, i)).join('');
         const nameBtn = `<button type="button" class="write-link total-column-name" data-more-filter="${escapeHtml(cat.name)}">${escapeHtml(cat.name)}</button>`;
-        // card-link의 두 영역(썸네일/글 정보) 폭에 맞춰 선도 두 조각으로 나눠 그림
-        const divider = `<div class="total-column-divider"><span class="total-column-divider-thumb"></span><span class="total-column-divider-body"></span></div>`;
+        const divider = `<hr class="total-column-divider">`;
         const moreBtn = items.length > TOTAL_COLUMN_LIMIT
           ? `<button type="button" class="write-link total-column-more" data-more-filter="${escapeHtml(cat.name)}">더보기 →</button>`
           : '';

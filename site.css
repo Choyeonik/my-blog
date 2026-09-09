@@ -634,23 +634,13 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   font-weight: 600;
 }
 
-/* 카테고리 이름 버튼 바로 아래 가로선. card-link(썸네일 25%/최대 220px + gap 40px + 글 정보)와
-   같은 비율로 두 조각을 내서, 아래 카드의 두 영역 폭에 맞춰 선이 나뉘어 보이게 함 */
+/* 카테고리 이름 버튼 바로 아래 가로선. 카테고리(총 열)마다 하나씩 이어진 선으로 그어서,
+   한 줄에 카테고리 2개가 나란히 있어도 선은 2개로만 나뉘어 보이게 함(카테고리별 1개) */
 .total-column-divider{
-  display: flex;
-  gap: 40px;
+  border: none;
+  border-top: 1px solid var(--line);
   width: 100%;
-}
-.total-column-divider-thumb{
-  width: 25%;
-  max-width: 220px;
-  flex-shrink: 0;
-  border-top: 1px solid var(--line);
-}
-.total-column-divider-body{
-  flex: 1;
-  min-width: 0;
-  border-top: 1px solid var(--line);
+  margin: 0 0 -26px;
 }
 
 /* 카드 전체(사진+글)를 감싸는 링크 — 실제 글(posts/*.html)로 이동.
