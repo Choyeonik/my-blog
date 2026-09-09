@@ -292,10 +292,11 @@
     `;
   }
 
-  const TOTAL_COLUMN_LIMIT = 5;
+  const TOTAL_COLUMN_LIMIT = 4;
 
   // Total 화면 전용: Photo를 제외한 상위 카테고리마다 세로 열 하나(.total-column)를
-  // 만들어 그 카테고리 글만 담고, 5개 넘으면 자르고 "더보기" 버튼을 붙임
+  // 만들어 그 카테고리 글만 담고, 4개 넘으면 자르고 "더보기" 버튼을 붙임.
+  // 맨 위에는 카테고리 이름 버튼(클릭 시 더보기와 동일하게 해당 카테고리로 이동)을 둠
   function totalColumnsHTML(normalCards){
     return categories
       .filter(cat => cat.name !== 'Photo')
@@ -304,10 +305,11 @@
         const items = normalCards.filter(p => names.includes(p.category));
         const shown = items.slice(0, TOTAL_COLUMN_LIMIT);
         const cardsHtml = shown.map((p, i) => cardHTML(p, i)).join('');
+        const nameBtn = `<button type="button" class="write-link total-column-name" data-more-filter="${escapeHtml(cat.name)}">${escapeHtml(cat.name)}</button>`;
         const moreBtn = items.length > TOTAL_COLUMN_LIMIT
           ? `<button type="button" class="write-link total-column-more" data-more-filter="${escapeHtml(cat.name)}">더보기 →</button>`
           : '';
-        return `<div class="total-column">${cardsHtml}${moreBtn}</div>`;
+        return `<div class="total-column">${nameBtn}${cardsHtml}${moreBtn}</div>`;
       })
       .join('');
   }

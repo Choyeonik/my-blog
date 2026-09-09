@@ -623,6 +623,16 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   cursor: pointer;
   font: inherit;
 }
+.total-column-name{
+  align-self: flex-start;
+  margin-bottom: 8px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+}
 
 /* 카드 전체(사진+글)를 감싸는 링크 — 실제 글(posts/*.html)로 이동.
    썸네일(왼쪽)과 글 정보(오른쪽)를 가로로 나란히 배치 */
