@@ -625,7 +625,7 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
 }
 .total-column-name{
   align-self: flex-start;
-  margin-bottom: 8px;
+  margin-bottom: -12px;
   background: none;
   border: none;
   padding: 0;
