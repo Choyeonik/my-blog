@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>백엔드 시작: Java — Portfolio Blog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500;700&family=EB+Garamond:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Gowun+Batang&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+
+<div class="layout">
+<aside class="sidebar">
+
+    <div class="brand">Yeonn</div>
+
+    <section class="categories">
+      <ul class="category-list">
+        <li>
+          <a class="category-total" href="../../../index.html">
+            <span class="cat-name">Total</span>
+            <span class="count">35</span>
+          </a>
+          <ul class="category-sub">
+      <li>
+        <a href="../../../index.html?filter=Project"><span class="cat-name">Project</span> <span class="count">2</span></a>
+        
+      </li>
+      <li>
+        <a href="../../../index.html?filter=Study"><span class="cat-name">Study</span> <span class="count">8</span></a>
+        
+        <ul class="category-sub-nested">
+          
+            <li><a href="../../../index.html?filter=Learned">Learned <span class="count">8</span></a></li>
+          
+        </ul>
+      </li>
+      <li>
+        <a href="../../../index.html?filter=Photo"><span class="cat-name">Photo</span> <span class="count">25</span></a>
+        
+      </li><li><a href="../../../index.html?filter=about"><span class="cat-name">About</span></a></li></ul>
+        </li>
+      </ul>
+    </section>
+
+    <div class="sidebar-links">
+      <a href="../../../write.html" class="write-link">새 글 쓰기 →</a>
+      <a href="../../../settings.html" class="write-link">설정 →</a>
+    </div>
+
+  </aside>
+
+  <main class="post-page">
+
+    <!-- 검정 고정 프레임 + 링바인더: 홈 화면(.main)과 같은 디자인이 개별 글 페이지에도 이어지도록 함 -->
+    <div class="main-frame-top" aria-hidden="true"></div>
+    <div class="main-frame-bottom" aria-hidden="true"></div>
+    <div class="main-frame-right" aria-hidden="true"></div>
+    <div class="ring-strip" aria-hidden="true">
+      <span class="ring"></span>
+      <span class="ring"></span>
+      <span class="ring"></span>
+    </div>
+
+    <div class="page-inner">
+
+    <div class="main-topbar">
+      <section class="search-box">
+        <form action="../../../index.html" method="get">
+          <input type="text" name="q" placeholder="검색어를 입력하세요">
+          <button type="submit" aria-label="검색">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+        </form>
+      </section>
+    </div>
+
+    <div class="post-header">
+      <div class="card-tag">Learned</div>
+      <h1>백엔드 시작: Java</h1>
+      <p class="post-desc">Java에 대해 첫 단계, IntellJ를 이용하여 연산자와 리터럴, 형변환 등 기초적인 부분에 대한 글</p>
+      <div class="post-date">2026-09-28</div>
+    </div>
+
+    <article class="post-body">
+<p>오늘은 백엔드 개발 전 개념에 대해 IntelliJ를 이용하여 배운 것을 포스팅하려한다.</p>
+<blockquote>
+<ol>
+<li>JDK 개념</li>
+<li>리터럴에 대해</li>
+<li>형변환에 대해</li>
+<li>연산자에 대해<br></li>
+</ol>
+</blockquote>
+<hr>
+
+<h2 id="jdk-설치">JDK 설치</h2>
+<p>윈도우 환경에 사용할 수 있는 JDK 21 LTS를 설치하였다.</p>
+<p>개발 환경에서는 JDK 개발 버전이 달라지면 현재 개발하던 서비스에 충돌 문제가 발생할 수 있어서, 최신버전이 나와도 원래 쓰던 고전 버전을 계속해서 사용한다고 한다.</p>
+<p>이번에 내가 사용할 JDK 버전은 JDK 21-LTS이다.</p>
+<hr>
+<h1 id="jdk에-대해서">JDK에 대해서</h1>
+<p><img src="../../assets/%EB%B0%B1%EC%97%94%EB%93%9C-%EC%8B%9C%EC%9E%91-Java/JDK%20%EA%B5%AC%EC%A1%B0%EA%B3%A0-2.png" alt="JDK 구조고"></p>
+<p>JDK는 &quot;자바 개발 키트&quot; 이다.<br>JDK 내에는 JRE, JVM 가 있고 JRE는 Java 애플리케이션을 실행하기 위한 환경이고 JRE 하위에 있는 JVM은 Java 바이트 코드를 실행하는 가상머신이다.</p>
+<p><img src="../../assets/%EB%B0%B1%EC%97%94%EB%93%9C-%EC%8B%9C%EC%9E%91-Java/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202026-09-28%20151855.png" alt="스크린샷 2026-09-28 151855"></p>
+<hr>
+<h2 id="intellij">IntelliJ</h2>
+<p>IntelliJ를 이용한 Java 강의가 진행되었다.<br>폴더 생성을 할 때에 3-STEP 구조를 이용하여 폴더를 만든다.<br>맨 위 폴더는 회사의 종류(com, org...)<br>두 번째는 회사명<br>세 번째는 프로젝트명으로 보통 만든다.</p>
+<pre><code>ex) 네이버에서 진행하는 네이버 스포츠 개발
+com.naver.sports
+</code></pre>
+<p>또한 Class를 생성 할땐 이름의 첫 글자는 항상 대문자로 만드는 것이 중요하다.<br>Java 프로그램은 보통 main 메서드가 시작점이 된다.</p>
+<p>main만 작성해도 자동완성으로 메서드가 작성된다.</p>
+<p><img src="../../assets/%EB%B0%B1%EC%97%94%EB%93%9C-%EC%8B%9C%EC%9E%91-Java/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202026-09-28%20152542.png" alt="스크린샷 2026-09-28 152542"></p>
+<h3 id="main-메서드-자동완성">[main 메서드 자동완성]</h3>
+<p>또한 모든 자바 기반 프로그램은 클래스 내부 { } 중괄호 내부에서 동작된다.</p>
+<hr>
+<h2 id="java-프로그램의-실행-과정">Java 프로그램의 실행 과정</h2>
+<ol>
+<li>Java 코드를 작성한다. (/java)</li>
+<li>JDK 설치 시 들어있는 javac(컴파일러) 가 .java 파일을 .class 파일로 번역한다.</li>
+<li>JVM 이 .class 파일을 로드하고 실행한다.</li>
+<li>JVM 은 바이트코드를 해석하여 각 OS에서 실행 가능한 기계어로 변환한다.</li>
+<li>변환 된 기계어를 실행한다.</li>
+</ol>
+<hr>
+<h1 id="리터럴에-대해서">리터럴에 대해서</h1>
+<ul>
+<li>리터럴은 &quot;값&quot; 을 의미한다.</li>
+<li>리터럴은 순수한 값으로서 정수, 실수, 문자, 문자열, 논리 등으로 구성이 되어 있다.</li>
+</ul>
+<p>리터럴은 변수와 함께 작성이 되는데, 프로그래밍 쪽에서 변수는 <strong>변하는 수</strong>만 의미하는 것이 아닌 <strong>값을 저장하는 공간</strong> 으로 보면 이해하기 쉬워진다.</p>
+<pre><code>int x = 10;
+</code></pre>
+<h2 id="이라는-코드를-보면int-라는-정수만-들어갈-수-있는-공간에-x라는-이름을-주고-그-안에-10을-넣는-방식이다">이라는 코드를 보면<br><strong>int</strong> 라는 정수만 들어갈 수 있는 공간에 <strong>x라는 이름</strong>을 주고, 그 안에 10을 넣는 방식이다.</h2>
+<h1 id="리터럴의-형태">리터럴의 형태</h1>
+<h2 id="이번-문단에서는-형태들에-대해-나열해보려고-한다">이번 문단에서는 형태들에 대해 나열해보려고 한다.</h2>
+<h2 id="숫자형--정수를-담는-자료형">숫자형 : 정수를 담는 자료형</h2>
+<pre><code>        byte b = 10;    // 1 byte
+        short s = 10;   // 2 byte
+        int i = 10;     // 4 byte
+        long l = 10;    // 8 byte
+</code></pre>
+<h2 id="숫자형--실수를-담는-자료형">숫자형 : 실수를 담는 자료형</h2>
+<pre><code>        float f = 3.14f;    // 4byte
+        double d = 3.14;    // 8byte
+</code></pre>
+<h2 id="문자형">문자형</h2>
+<pre><code>   char ch = &#39;ㅎ&#39;;
+</code></pre>
+<h2 id="논리형--참거짓">논리형 : 참/거짓</h2>
+<pre><code>  boolean bl = true;
+  boolean bl2 = false;
+</code></pre>
+<p>같은 영역 *(이하 중괄호 { })*에서 동일한 변수명을 사용하는 것은 불가능하다.</p>
+<h2 id="반대로-말해서-다른-영역일-경우-겹치는-변수명을-사용하는-것은-얼마든지-가능하다">반대로 말해서 다른 영역일 경우, 겹치는 변수명을 사용하는 것은 얼마든지 가능하다.</h2>
+<h2 id="변수의-선언과-초기화">변수의 선언과 초기화</h2>
+<br>
+
+<h3 id="변수의-선언">변수의 선언</h3>
+<pre><code>int num;
+</code></pre>
+<br>
+
+<h3 id="변수의-초기화">변수의 초기화</h3>
+<pre><code> num = 30;
+</code></pre>
+<h2 id="변수의-선언과-동시에-초기화int-num2--10">변수의 선언과 동시에 초기화<br><code>int num2 = 10</code></h2>
+<h1 id="형변환">형변환</h1>
+<p>형변환이란 데이터 타입(자료형)을 다른 데이터 타입으로 변환하는 과정을 의미한다.</p>
+<p>형변환에는 두가지 방식이 있다.</p>
+<ul>
+<li>암시적(묵시적) 형변환</li>
+<li>명시적 형변환</li>
+</ul>
+<hr>
+<h2 id="명시적-형변환">명시적 형변환</h2>
+<p>데이터 타입을 직접 변환하는 명시적 형변환의 경우, 대입연산자 오른쪽에 있는 값 앞에 ( )괄호와 함께 데이터 타입을 적으면 값을 직접 변환할 수 있다.</p>
+<pre><code>double dnum = 99.99;
+int inum = (int)dnum;
+</code></pre>
+<p>위 코드는 명시적 변환을 보여주며, double의 소수 부분은 int에 담을 수 없으므로 .99가 버려지게 된다.</p>
+<h2 id="명시적-형변환은-데이터-손실-가능성이-존재하기-때문에-컴파일러가-번역-시에-error-를-발생시킨다">명시적 형변환은 데이터 손실 가능성이 존재하기 때문에 컴파일러가 번역 시에 Error 를 발생시킨다.</h2>
+<h2 id="암시적묵시적-형변환">암시적(묵시적) 형변환</h2>
+<p>자바가 자동으로 자료형을 바꾸는 것이다.</p>
+<pre><code>int num2 = 100;      //4byte
+double dnum2 = num2; //8byte
+</code></pre>
+<p>위 코드는 int → double은 자바가 자동으로 변환해준다.</p>
+<hr>
+<h1 id="연산자">연산자</h1>
+<h2 id="산술연산">산술연산</h2>
+<p>+, -, *, %, /<br>산술 연산에는 위와 같은 연산자들이 쓰인다.</p>
+<h2 id="문자열이-포함된-더하기-연산은-유의해야-한다문자열은--연산을-만나면-피연산자를-문자열로-변환한다">문자열이 포함된 더하기 연산은 유의해야 한다.<br>문자열은 + 연산을 만나면 피연산자를 문자열로 변환한다.</h2>
+<h2 id="비교-연산">비교 연산</h2>
+<p>두 값을 비교하여 참/거짓을 반환하는 연산자이다.<br>==, !=, &lt;, &gt;, &lt;=, &gt;=</p>
+<h2 id="boolean-리터럴을-이용해-하나-이상의-조건을-결합하여-최종적인-참-또는-거짓을-평가한다">boolean 리터럴을 이용해 하나 이상의 &quot;조건을 결합&quot;하여 최종적인 참 또는 거짓을 평가한다.</h2>
+<h2 id="증감-연산">증감 연산</h2>
+<p>변수의 값을 1씩 증가시키거나 감소시키는 연산자</p>
+<p>++(증가), --(감소)</p>
+<p>증감연산에는 전위 연산과 후위 연산이 존재하며, 앞에 붙냐 뒤에 붙냐에 따라 다르다.</p>
+<ul>
+<li>전위 연산<br>시작하기 전에 연산하고 시작</li>
+<li>후위 연산<br>다 끝내고 난 후에 연산</li>
+</ul>
+<hr>
+<p>오늘은 Java 프로그램에 기초 중 한 단계를 배워보았고 정리해 보았다.</p>
+
+    </article>
+
+    <div class="post-edit-bar">
+      <a class="post-edit-link" href="../../../write.html?edit=2026-09-28-%EB%B0%B1%EC%97%94%EB%93%9C-%EC%8B%9C%EC%9E%91-Java.html">수정하기 →</a>
+    </div>
+
+    <nav class="post-nav">
+      <a class="post-nav-item " href="../../Project/2026-09-09-%EC%B2%AB-%EB%B2%88%EC%A7%B8-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%EC%9D%98-%EB%91%90-%EB%B2%88%EC%A7%B8-%EB%8B%A8%EA%B3%84-%EC%97%85%EB%AC%B4-%EB%B6%84%EC%84%9D.html">
+         <span class="post-nav-label">이전 글</span>
+         <span class="post-nav-title">첫 번째 프로젝트의 두 번째 단계: 업무 분석</span>
+       </a>
+      <div class="post-nav-item is-next">
+         <span class="post-nav-label">다음 글</span>
+         <span class="post-nav-empty">없음</span>
+       </div>
+    </nav>
+
+    </div>
+  </main>
+
+</div>
+
+<script src="../../../sidebar-motion.js"></script>
+</body>
+</html>
