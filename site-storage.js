@@ -455,7 +455,19 @@ ${fixedBodyHtml}
 
 </div>
 
-<script src="${toRoot}sidebar-motion.js"></script>
+<script src="${toRoot}sidebar-motion.js"></script>${/language-mermaid/.test(bodyHtml) ? `
+<script type="module">
+  // 본문의 \`\`\`mermaid 코드 블록을 다이어그램으로 바꿔 그림 (mermaid를 쓴 글에만 포함됨)
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.esm.min.mjs';
+  document.querySelectorAll('pre > code.language-mermaid').forEach(code => {
+    const div = document.createElement('div');
+    div.className = 'mermaid';
+    div.textContent = code.textContent;
+    code.parentElement.replaceWith(div);
+  });
+  mermaid.initialize({ startOnLoad: false });
+  mermaid.run();
+</script>` : ''}
 </body>
 </html>
 `;

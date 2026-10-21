@@ -154,105 +154,64 @@ sequenceDiagram
 
 ---
 
-## 5. GitHub Pages (Jekyll) 게시 규칙
+## 5. 게시 규칙 (manifest 방식)
 
-이 블로그는 **GitHub Pages + Jekyll** 기반이므로, 아래 양식을 지키지 않으면 글이 게시되지 않는다. Agent는 초안을 만들 때 반드시 이 규칙에 맞는 완성된 파일 형태로 제공한다.
+이 블로그는 Jekyll이 **아니다.** 홈 화면(`index.html`)은 `posts/manifest.json`만 읽고, 글 페이지는 `posts/<카테고리>/YYYY-MM-DD-슬러그.html`로 미리 생성된 정적 HTML이다. 사이드바 글 수·이전/다음 글 링크는 모든 글 HTML에 박혀 있으므로, 글 하나를 추가해도 **전체 글을 다시 생성**해야 한다. 이 일은 `publish.js`가 한다. 손으로 manifest나 HTML을 고치지 않는다.
 
-### 5.1 파일 위치와 파일명
+### 5.1 초안 파일
 
-- 모든 글은 **`_posts/` 디렉토리**에 저장한다.
-- 파일명은 반드시 다음 형식을 따른다.
-
-```
-YYYY-MM-DD-제목.md
-```
-
-| 규칙 | 설명 | 예시 |
-|------|------|------|
-| 날짜 | 게시일 기준, `YYYY-MM-DD` 형식 필수 | `2026-08-30` |
-| 제목 | 영문 소문자 + 하이픈(`-`) 사용, 공백·한글·특수문자 금지 | `react-query-caching` |
-| 확장자 | `.md` 또는 `.markdown` | `.md` 권장 |
-
-:흰색_확인_표시: 올바른 예: `_posts/2026-08-30-react-query-caching.md`
-:x: 잘못된 예: `_posts/리액트쿼리 정리.md` (날짜 없음, 한글, 공백 → 빌드에서 무시됨)
-
-### 5.2 Front Matter (필수)
-
-모든 글의 **최상단**에 YAML Front Matter를 작성한다. 이 블록이 없으면 Jekyll이 글로 인식하지 않는다.
+- 초안은 `drafts/YYYY-MM-DD-영문-슬러그.md`에 쓴다. (파일명은 초안 관리용, 게시 파일명은 제목에서 자동 생성)
+- 최상단 머리말:
 
 ```yaml
 ---
-layout: post
 title: "브라우저 캐싱 문제를 React Query로 해결하기"
-date: 2026-08-30 14:00:00 +0900
-categories: [Frontend]
-tags: [react, react-query, caching]
+category: Learned
+description: "카드와 글 상단에 보이는 한두 문장 요약"
+date: 2026-10-21
+thumbnail: assets/<슬러그>/thumbnail.png   # 선택
 ---
 ```
 
-| 항목 | 필수 여부 | 규칙 |
-|------|-----------|------|
-| `layout` | 필수 | 테마에서 제공하는 레이아웃 이름 (보통 `post`) |
-| `title` | 필수 | 글 제목. 콜론(`:`) 등 특수문자 포함 시 반드시 따옴표로 감싼다 |
-| `date` | 필수 | 파일명 날짜와 일치, 한국 시간대 `+0900` 명시 |
-| `categories` | 권장 | 1~2개, 대분류 중심 |
-| `tags` | 권장 | 3~5개, 소문자 |
+| 항목 | 규칙 |
+|------|------|
+| `title` | 필수. 콜론 등 특수문자가 있으면 따옴표로 감싼다. 게시 파일명·슬러그가 여기서 만들어진다 |
+| `category` | 필수. `site-config.json`에 있는 이름만 (현재 `Project`, `Study`, `Learned`, `Photo`) |
+| `description` | 필수. 홈 카드 요약 |
+| `date` | 필수. `YYYY-MM-DD` |
+| `thumbnail` | 선택. `posts` 기준 경로 |
 
-주의사항:
-- `date`가 **미래 시각**이면 기본 설정에서 글이 보이지 않는다.
-- Front Matter 위·아래의 `---` 구분선을 빠뜨리지 않는다.
+- `tags`, `layout` 같은 Jekyll 항목은 쓰지 않는다 (무시됨).
 
-### 5.3 이미지 및 리소스 경로
+### 5.2 본문 작성 시 주의
 
-- 이미지는 `assets/images/` (또는 테마가 지정한 디렉토리)에 저장한다.
-- 경로는 **사이트 루트 기준 절대 경로**로 작성하고, 프로젝트 페이지(`username.github.io/repo명`)라면 `baseurl` 문제를 피하기 위해 다음 형식을 권장한다.
+- 글 제목은 페이지 헤더에 자동으로 `<h1>`으로 들어가므로 본문은 `##`부터 시작한다.
+- 렌더러는 marked(`breaks: true`)다. 엔터 한 번이 줄바꿈이 된다.
+- 이미지는 `posts/assets/<슬러그>/`에 저장하고 본문에는 `![대체 텍스트](assets/<슬러그>/파일명.png)`로 쓴다. 경로에 공백·한글이 있으면 `encodeURIComponent`로 인코딩한다. 로컬 절대 경로(`C:\...`) 금지.
+- ` ```mermaid ` 코드 블록은 자동으로 다이어그램으로 렌더링된다. 별도 설정 불필요.
 
-```markdown
-![캐시 흐름도]({{ site.baseurl }}/assets/images/2026-08-30-cache-flow.png)
-```
-
-- 로컬 파일 경로(`C:\Users\...`, `/Users/...`)는 절대 사용하지 않는다.
-
-### 5.4 Mermaid 사용 시 주의
-
-Jekyll 기본 설정은 Mermaid를 렌더링하지 않는다. 아래 중 하나가 적용되어 있는지 확인한다.
-
-- 테마 설정에서 Mermaid 지원 활성화 (예: Chirpy 테마 → Front Matter에 `mermaid: true` 추가)
-- 또는 레이아웃에 Mermaid 스크립트 직접 추가
-
-```yaml
----
-layout: post
-title: "..."
-mermaid: true   # Mermaid 다이어그램을 쓰는 글에는 반드시 추가
----
-```
-
-렌더링이 지원되지 않는 환경이라면, 다이어그램을 이미지로 내보내 `assets/images/`에 넣는 방식으로 대체한다.
-
-### 5.5 게시 전 로컬 확인
-
-가능하면 로컬에서 빌드 확인 후 push 한다.
+### 5.3 게시
 
 ```bash
-bundle exec jekyll serve
-# http://localhost:4000 에서 확인
+node publish.js drafts/2026-10-21-react-query-caching.md   # 추가 (같은 제목·날짜면 수정)
+node publish.js                                            # 등록 없이 전체 재생성만
 ```
+
+- 결과: `posts/manifest.json` 갱신 + 모든 글 HTML 재생성 (카운트, 이전/다음 글 자동 반영)
+- 브라우저의 `write.html`로 쓴 글과 같은 결과물이 나온다.
 
 ---
 
 ## 6. 글 전체 템플릿
 
-Agent는 초안 작성 시 아래 골격을 따른다. **Front Matter를 포함한 완성된 `_posts` 파일 형태**로 제공한다.
+Agent는 초안 작성 시 아래 골격을 따른다. **머리말을 포함한 완성된 `drafts/` 파일 형태**로 제공한다.
 
 ```markdown
 ---
-layout: post
 title: "[문제 중심의 제목 — 'OO 기술 사용기'가 아닌 'OO 문제를 OO로 해결하기']"
-date: YYYY-MM-DD HH:MM:SS +0900
-categories: [카테고리]
-tags: [태그1, 태그2, 태그3]
-mermaid: true
+category: Learned
+description: "한두 문장 요약"
+date: YYYY-MM-DD
 ---
 
 ## 들어가며 (Situation)
@@ -282,7 +241,7 @@ mermaid: true
 
 ## 7. Agent 작업 방식
 
-1. **작성 전**: 작성자에게 STAR 각 단계에 해당하는 경험을 질문으로 끌어낸다. 정보가 부족한 상태에서 지어내지 않는다.
+1. **작성 전**: 작성자가 준 실습 코드를 먼저 읽고 STAR를 재구성한다 (`/note` 스킬 1단계). 코드로 알 수 없는 경험·수치는 지어내지 않고 `<!-- TODO -->`로 남겨, 리뷰 때 한 번에 묻는다.
 2. **작성 중**: 코드 예시는 실제 작성자의 코드를 기반으로 하고, 임의로 생성한 코드는 "예시 코드"임을 명시한다.
 3. **작성 후**: 아래 체크리스트로 셀프 리뷰 결과를 함께 제공한다.
 
@@ -296,7 +255,7 @@ mermaid: true
 - [ ] "더 학습하면 좋은 개념" 섹션이 있는가?
 - [ ] 공식 문서 링크가 참고 자료에 포함되어 있는가?
 - [ ] 결과에 정량적 지표가 있는가?
-- [ ] 파일명이 `_posts/YYYY-MM-DD-제목.md` 형식인가?
-- [ ] Front Matter가 올바르게 작성되어 있는가? (layout, title, date)
-- [ ] Mermaid 사용 시 `mermaid: true`가 Front Matter에 있는가?
-- [ ] 이미지 경로가 `{{ site.baseurl }}/assets/...` 형식인가?
+- [ ] 초안이 `drafts/YYYY-MM-DD-슬러그.md`에 있는가?
+- [ ] 머리말에 title, category, description, date가 있는가?
+- [ ] 이미지 경로가 `assets/<슬러그>/...` 형식인가?
+- [ ] 본문에 `#`(h1)이 없는가?
