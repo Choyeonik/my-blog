@@ -34,6 +34,12 @@
       </ul>
     </section>
 
+    <!-- 방명록: GitHub 계정으로 글·답글을 남기는 giscus 위젯 (아래 스크립트의 mountGuestbook이 채움) -->
+    <section class="guestbook" id="guestbook">
+      <div class="guestbook-title">Guestbook</div>
+      <div class="giscus"></div>
+    </section>
+
     <!-- 작업 폴더(posts) 연결 상태 —
          버튼을 누르면 실제 작업 폴더를 선택하고, 그 안의 posts/manifest.json을
          읽어서 아래 예시 글 대신 실제로 작성한 글들을 보여줍니다.
@@ -182,7 +188,6 @@
   function labelFor(filter){
     if (filter === 'total') return 'Total';
     if (filter === 'about') return 'About';
-    if (filter === 'guestbook') return 'Guestbook';
     return filter;
   }
 
@@ -193,8 +198,7 @@
     Study: 'Often What I Study.',
     Learned: 'What I Learned.',
     Photo: 'Often What I See.',
-    about: 'About me.',
-    guestbook: 'Leave a note.'
+    about: 'About me.'
   };
 
   function heroTitleFor(filter){
@@ -234,8 +238,7 @@
           </ul>
         ` : ''}
       </li>
-    `).join('') + `<li><a href="#" data-filter="about"><span class="cat-name">About</span></a></li>`
-      + `<li><a href="#" data-filter="guestbook"><span class="cat-name">Guestbook</span></a></li>`;
+    `).join('') + `<li><a href="#" data-filter="about"><span class="cat-name">About</span></a></li>`;
     sub.querySelectorAll('a').forEach(a => {
       a.addEventListener('click', (e) => {
         e.preventDefault();
@@ -339,32 +342,8 @@
     `;
   }
 
-  // "Guestbook"을 선택했을 때 보여줄 방명록. giscus(GitHub Discussions 기반 댓글 위젯)를 씀
-  // - 방문자는 GitHub 계정으로 로그인해 글·답글을 남기고, 본인 글은 GitHub에서 수정·삭제할 수 있음
-  // - 모든 방명록 글은 저장소 Discussions의 Announcements 카테고리 "guestbook" 토론 하나에 모임
-  // - 설정값은 https://giscus.app 에서 만든 것 (저장소에 giscus 앱 설치 필요)
-  function renderGuestbook(){
-    grid.innerHTML = `<div class="guestbook-card"><div class="giscus"></div></div>`;
-    const s = document.createElement('script');
-    s.src = 'https://giscus.app/client.js';
-    Object.entries({
-      repo: 'Choyeonik/my-blog',
-      repoId: 'R_kgDOUGl_FQ',
-      category: 'Announcements',
-      categoryId: 'DIC_kwDOUGl_Fc4DJPCB',
-      mapping: 'specific',
-      term: 'guestbook',
-      strict: '0',
-      reactionsEnabled: '1',
-      emitMetadata: '0',
-      inputPosition: 'top',
-      theme: 'light',
-      lang: 'ko'
-    }).forEach(([k, v]) => { s.dataset[k] = v; });
-    s.crossOrigin = 'anonymous';
-    s.async = true;
-    grid.querySelector('.guestbook-card').appendChild(s);
-  }
+  // 사이드바 방명록(giscus) 위젯 붙이기 — 설정값은 site-storage.js의 GISCUS_ATTRS
+  mountGuestbook(document.getElementById('guestbook'));
 
   // 현재 카테고리(currentFilter) + 검색어(searchInput)를 기준으로
   // posts를 걸러서 메인 그리드를 다시 그림. 카테고리/검색 버튼을 누를 때마다 호출됨
@@ -375,12 +354,6 @@
       // About은 카드 여러 개가 아니라 내용 하나이므로 다단(masonry) 모드를 잠시 끔
       grid.classList.add('grid--single');
       grid.innerHTML = aboutCardHTML();
-      return;
-    }
-
-    if (currentFilter === 'guestbook'){
-      grid.classList.add('grid--single');
-      renderGuestbook();
       return;
     }
 

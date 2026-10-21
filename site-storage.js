@@ -309,6 +309,39 @@ function renderMarkdown(md){
 // toRoot = 이 글 파일 -> 사이트 루트(index.html 등)
 // 검색/카테고리는 이 페이지 자체에 상태가 없으므로, index.html로 이동하면서
 // ?filter=이름 / ?q=검색어 형태로 조건을 넘기고 index.html이 그 값을 읽어 반영함
+/* ---------- 사이드바 방명록 (giscus) ---------- */
+// GitHub Discussions 기반 댓글 위젯. 방문자는 GitHub 계정으로 글·답글을 남기고,
+// 본인 글 삭제·수정은 댓글 시간을 눌러 이동한 GitHub 토론 페이지에서 함.
+// 모든 방명록 글은 Discussions의 Announcements 카테고리 "guestbook" 토론 하나에 모임.
+// 설정값은 https://giscus.app 에서 만든 것 (저장소에 giscus 앱 설치 필요)
+// 홈 화면(mountGuestbook)과 개별 글 페이지(buildSidebarHtml)가 이 값을 같이 씀
+const GISCUS_SRC = 'https://giscus.app/client.js';
+const GISCUS_ATTRS = {
+  'data-repo': 'Choyeonik/my-blog',
+  'data-repo-id': 'R_kgDOUGl_FQ',
+  'data-category': 'Announcements',
+  'data-category-id': 'DIC_kwDOUGl_Fc4DJPCB',
+  'data-mapping': 'specific',
+  'data-term': 'guestbook',
+  'data-strict': '0',
+  'data-reactions-enabled': '0',     // 좁은 사이드바에서 자리를 많이 차지하는 상단 반응(이모지) 영역은 끔
+  'data-emit-metadata': '0',
+  'data-input-position': 'top',
+  'data-theme': 'transparent_dark',   // 사이드바가 어두운 배경이라 투명+다크 테마
+  'data-lang': 'ko'
+};
+
+// 홈 화면처럼 사이드바가 HTML에 미리 적혀 있는 페이지에서, .guestbook 안에 위젯을 붙임
+// (innerHTML로 넣은 <script>는 실행되지 않으므로 createElement로 만들어야 함)
+function mountGuestbook(section){
+  const s = document.createElement('script');
+  s.src = GISCUS_SRC;
+  Object.entries(GISCUS_ATTRS).forEach(([k, v]) => s.setAttribute(k, v));
+  s.crossOrigin = 'anonymous';
+  s.async = true;
+  section.appendChild(s);
+}
+
 function buildSidebarHtml({ categories, manifest, toRoot }){
   const posts = Array.isArray(manifest) ? manifest : [];
   const counts = {};
@@ -328,8 +361,7 @@ function buildSidebarHtml({ categories, manifest, toRoot }){
         <a href="${toRoot}index.html?filter=${encodeURIComponent(cat.name)}"><span class="cat-name">${escapeHtml(cat.name)}</span> <span class="count">${catCount}</span></a>
         ${subHtml}
       </li>`;
-  }).join('') + `<li><a href="${toRoot}index.html?filter=about"><span class="cat-name">About</span></a></li>`
-    + `<li><a href="${toRoot}index.html?filter=guestbook"><span class="cat-name">Guestbook</span></a></li>`;
+  }).join('') + `<li><a href="${toRoot}index.html?filter=about"><span class="cat-name">About</span></a></li>`;
 
   return `<aside class="sidebar">
 
@@ -345,6 +377,12 @@ function buildSidebarHtml({ categories, manifest, toRoot }){
           <ul class="category-sub">${categoryItemsHtml}</ul>
         </li>
       </ul>
+    </section>
+
+    <section class="guestbook">
+      <div class="guestbook-title">Guestbook</div>
+      <div class="giscus"></div>
+      <script src="${GISCUS_SRC}" ${Object.entries(GISCUS_ATTRS).map(([k, v]) => `${k}="${v}"`).join(' ')} crossorigin="anonymous" async></script>
     </section>
 
     <div class="sidebar-links">
