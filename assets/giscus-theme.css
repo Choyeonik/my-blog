@@ -1,0 +1,15 @@
+/* 홈 화면 방명록(giscus) 사용자 지정 테마 — site-storage.js의 GISCUS_ATTRS['data-theme']가 이 파일을 가리킴
+   giscus 위젯은 다른 도메인의 iframe이라 site.css가 닿지 않으므로, giscus가 iframe 안에 불러가는 이 파일로 꾸밈
+   기본 light 테마를 그대로 쓰고, 위쪽 "댓글 N개 · 답글 N개" 문구만 안내 문구로 바꿈 */
+@import url('https://giscus.app/themes/light.css');
+
+.gsc-comments-count{ font-size: 0; }   /* 원래 글자("댓글 0개")는 숨기고 아래 ::before 문구만 보이게 함 */
+.gsc-comments-count::before{
+  content: '블로그에 대한 감상평을 남겨보세요.';
+  font-size: 14px;
+}
+.gsc-comments-count-separator,
+.gsc-replies-count{ display: none; }
+
+/* 글쓰기 창의 [작성하기][미리보기] 탭 중 미리보기(두 번째 버튼) 숨김 — 답글 창에도 똑같이 적용됨 */
+.gsc-comment-box-tabs > div:first-child > button:nth-child(2){ display: none; }

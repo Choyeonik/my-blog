@@ -34,12 +34,6 @@
       </ul>
     </section>
 
-    <!-- 방명록: GitHub 계정으로 글·답글을 남기는 giscus 위젯 (아래 스크립트의 mountGuestbook이 채움) -->
-    <section class="guestbook" id="guestbook">
-      <div class="guestbook-title">Guestbook</div>
-      <div class="giscus"></div>
-    </section>
-
     <!-- 작업 폴더(posts) 연결 상태 —
          버튼을 누르면 실제 작업 폴더를 선택하고, 그 안의 posts/manifest.json을
          읽어서 아래 예시 글 대신 실제로 작성한 글들을 보여줍니다.
@@ -94,6 +88,12 @@
           <img src="assets/memo-clip.png" alt="" class="hero-memo-img" aria-hidden="true">
           <h1 class="hero-title">Learning from the BootCamp</h1>
         </div>
+
+        <!-- 방명록: GitHub 계정으로 글·답글을 남기는 giscus 위젯 (아래 스크립트의 mountGuestbook이 채움) -->
+        <section class="guestbook" id="guestbook">
+          <div class="guestbook-title">Guestbook</div>
+          <div class="giscus"></div>
+        </section>
       </div>
 
       <div class="grid" id="grid">
@@ -342,7 +342,7 @@
     `;
   }
 
-  // 사이드바 방명록(giscus) 위젯 붙이기 — 설정값은 site-storage.js의 GISCUS_ATTRS
+  // 상단 메모 카드 옆 방명록(giscus) 위젯 붙이기 — 설정값은 site-storage.js의 GISCUS_ATTRS
   mountGuestbook(document.getElementById('guestbook'));
 
   // 현재 카테고리(currentFilter) + 검색어(searchInput)를 기준으로

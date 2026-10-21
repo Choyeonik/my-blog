@@ -15,7 +15,7 @@
   --line: #e6e4de;       /* 구분선 색 (진한 편) */
   --line-soft: #efeee9;  /* 구분선 색 (연한 편) */
   --accent: #3a3a38;     /* 포인트 색(카테고리 태그 등, 무채색 톤) */
-  --sidebar-w: 320px;    /* 왼쪽 사이드바(aside) 너비: 이 값만 바꾸면 폭이 조절됨 */
+  --sidebar-w: 240px;    /* 왼쪽 사이드바(aside) 너비: 이 값만 바꾸면 폭이 조절됨 */
   --paper-avg: #f4f4f1;  /* 메인 영역 종이 질감(assets/paper-texture.jpg) 픽셀 평균색. 카테고리 글씨 색으로 사용 */
   --sheet-margin: 20px;  /* 메인 영역에서 종이 시트 위/아래로 남기는 여백 높이 */
   --sheet-margin-right: 15px;  /* 메인 영역 오른쪽 여백 두께 (위/아래와 별도로 조절됨) */
@@ -471,14 +471,14 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   margin: 0 auto 0 150px;
 }
 
-/* 화면이 넓어질수록(1674px 이상) 사이드 메모지와의 간격이 계속 벌어지는 문제를 고치기 위해,
+/* 화면이 넓어질수록(1594px 이상) 사이드 메모지와의 간격이 계속 벌어지는 문제를 고치기 위해,
    이 지점부터는 게시글 영역 폭을 고정값(910px) 대신 화면 폭에 비례해서 계속 키움.
    "100vw - 사이드바 폭 - 444px"는 사이드 메모지 위치/크기 계산식(위 .side-memo, 여긴 손대지 않음)과는
    별개로, 넓은 화면에서 게시글 영역 오른쪽 끝이 사이드 메모지에 거의 20px까지 붙도록
-   직접 맞춰서 구한 값. 1674px(= 910 + 사이드바 320 + 444)는 910px 고정값과 정확히 이어지는
+   직접 맞춰서 구한 값. 1594px(= 910 + 사이드바 240 + 444)는 910px 고정값과 정확히 이어지는
    지점이라 화면을 늘려도 폭이 갑자기 튀지 않음.
-   ⚠️ 미디어쿼리에는 CSS 변수를 못 쓰므로 --sidebar-w를 바꾸면 1674도 같이 고쳐야 함 */
-@media (min-width: 1674px){
+   ⚠️ 미디어쿼리에는 CSS 변수를 못 쓰므로 --sidebar-w를 바꾸면 1594도 같이 고쳐야 함 */
+@media (min-width: 1594px){
   .main-inner{ max-width: calc(100vw - var(--sidebar-w) - 444px); }
 }
 
@@ -536,10 +536,10 @@ img{ max-width: 100%; display: block; filter: grayscale(100%); }
   padding: 40px 0 24px;
   margin-bottom: 16px;
   display: flex;
-  flex-direction: column;          /* 라벨 아래 큰 제목이 오도록 세로 배치 */
-  align-items: flex-start;         /* 왼쪽 정렬 */
+  flex-direction: row;             /* 메모 카드(왼쪽) 옆에 방명록(오른쪽)이 오도록 가로 배치 */
+  align-items: flex-start;
   text-align: left;
-  gap: 18px;
+  gap: 40px;
 }
 
 /* 큰 제목을 올려두는 메모지 — 종이 클립 사진(assets/memo-clip.png) 위에
@@ -893,8 +893,14 @@ body.lightbox-open{ overflow: hidden; }   /* 라이트박스가 떠 있는 동�
 .about-card p{ font-size: 14px; line-height: 1.9; color: var(--muted); max-width: 520px; margin: 0 auto; }
 .about-card .profile-links{ margin-top: 28px; }   /* 설명과 링크 사이 간격 (사이드바 쪽 간격에는 영향 없음) */
 
-/* 사이드바 카테고리 아래 방명록(giscus 위젯) 영역.
-   글이 많아져도 사이드바가 끝없이 길어지지 않도록 위젯 부분만 따로 스크롤됨 */
+/* 홈 화면 상단 "Learning from the BootCamp" 메모 카드 오른쪽 방명록(giscus 위젯) 영역.
+   글이 많아져도 상단 영역이 끝없이 길어지지 않도록 위젯 부분만 따로 스크롤됨 */
+.guestbook{
+  flex: 1;
+  min-width: 0;        /* 긴 댓글이 있어도 메모 카드 쪽을 밀어내지 않도록 */
+  max-width: 520px;
+  margin-top: 30px;
+}
 .guestbook-title{
   font-size: 11px;
   letter-spacing: 0.08em;
@@ -902,14 +908,13 @@ body.lightbox-open{ overflow: hidden; }   /* 라이트박스가 떠 있는 동�
   color: var(--muted);
   margin-bottom: 10px;
 }
-.guestbook{ flex-shrink: 0; }   /* 사이드바(세로 flex)가 화면 높이에 맞추느라 방명록을 눌러 잘리게 하지 않도록 */
 .guestbook .giscus{
-  max-height: 55vh;
+  max-height: 360px;   /* 메모 카드 높이와 비슷하게 맞춤 */
   overflow-y: auto;
 }
 @media (max-width: 980px){
-  .guestbook{ flex: 1 1 100%; }   /* 사이드바가 상단 가로 바가 되는 좁은 화면에선 한 줄 전체를 씀 */
-  .guestbook .giscus{ max-height: none; }
+  .main-header{ flex-direction: column; }   /* 좁은 화면에선 메모 카드 아래로 내려감 */
+  .guestbook{ max-width: none; width: 100%; margin-top: 0; }
 }
 
 .no-result{
