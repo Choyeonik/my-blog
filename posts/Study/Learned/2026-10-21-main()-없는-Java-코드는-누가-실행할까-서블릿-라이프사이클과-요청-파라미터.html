@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>main() 없는 Java 코드는 누가 실행할까: 서블릿 라이프사이클과 요청 파라미터 — Portfolio Blog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500;700&family=EB+Garamond:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Gowun+Batang&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+
+<div class="layout">
+<aside class="sidebar">
+
+    <div class="brand">Yeonn</div>
+
+    <section class="categories">
+      <ul class="category-list">
+        <li>
+          <a class="category-total" href="../../../index.html">
+            <span class="cat-name">Total</span>
+            <span class="count">37</span>
+          </a>
+          <ul class="category-sub">
+      <li>
+        <a href="../../../index.html?filter=Project"><span class="cat-name">Project</span> <span class="count">2</span></a>
+        
+      </li>
+      <li>
+        <a href="../../../index.html?filter=Study"><span class="cat-name">Study</span> <span class="count">10</span></a>
+        
+        <ul class="category-sub-nested">
+          
+            <li><a href="../../../index.html?filter=Learned">Learned <span class="count">10</span></a></li>
+          
+        </ul>
+      </li>
+      <li>
+        <a href="../../../index.html?filter=Photo"><span class="cat-name">Photo</span> <span class="count">25</span></a>
+        
+      </li><li><a href="../../../index.html?filter=about"><span class="cat-name">About</span></a></li></ul>
+        </li>
+      </ul>
+    </section>
+
+    <div class="sidebar-links">
+      <a href="../../../write.html" class="write-link">새 글 쓰기 →</a>
+      <a href="../../../settings.html" class="write-link">설정 →</a>
+    </div>
+
+  </aside>
+
+  <main class="post-page">
+
+    <!-- 검정 고정 프레임 + 링바인더: 홈 화면(.main)과 같은 디자인이 개별 글 페이지에도 이어지도록 함 -->
+    <div class="main-frame-top" aria-hidden="true"></div>
+    <div class="main-frame-bottom" aria-hidden="true"></div>
+    <div class="main-frame-right" aria-hidden="true"></div>
+    <div class="ring-strip" aria-hidden="true">
+      <span class="ring"></span>
+      <span class="ring"></span>
+      <span class="ring"></span>
+    </div>
+
+    <div class="page-inner">
+
+    <div class="main-topbar">
+      <section class="search-box">
+        <form action="../../../index.html" method="get">
+          <input type="text" name="q" placeholder="검색어를 입력하세요">
+          <button type="submit" aria-label="검색">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+        </form>
+      </section>
+    </div>
+
+    <div class="post-header">
+      <div class="card-tag">Learned</div>
+      <h1>main() 없는 Java 코드는 누가 실행할까: 서블릿 라이프사이클과 요청 파라미터</h1>
+      <p class="post-desc">06_Servlet 첫 실습. 서블릿이 언제 만들어지고 호출되는지, GET/POST 요청이 어떤 메서드로 가는지, 폼 데이터를 어떻게 꺼내는지 직접 확인하며 정리했다.</p>
+      <div class="post-date">2026-10-21</div>
+    </div>
+
+    <article class="post-body">
+<h2 id="들어가며-situation">들어가며 (Situation)</h2>
+<p>지금까지 Java 코드는 전부 <code>main()</code>에서 시작했다. JDBC 실습도 콘솔에서 <code>Scanner</code>로 입력받아 DB를 조회하는 프로그램이었다. 이번 <code>06_Servlet</code> 강의부터는 <strong>브라우저의 요청을 받아 처리하는 서버 쪽 코드</strong>를 다룬다.</p>
+<p>첫 프로젝트 <code>chap01-servlet</code>은 패키지 3개로 나뉘어 있고, <code>index.html</code>에서 각 실습으로 들어가는 구조다.</p>
+<table>
+<thead>
+<tr>
+<th>순서</th>
+<th>패키지</th>
+<th>서블릿</th>
+<th>URL</th>
+<th>확인한 것</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><code>a_lifecycle</code></td>
+<td><code>LifeCycleServlet</code></td>
+<td><code>/life-cycle</code></td>
+<td>서블릿 객체가 언제 만들어지고 메서드가 언제 호출되는지</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>b_service</code></td>
+<td><code>ServiceMethodServlet</code></td>
+<td><code>/request-service</code></td>
+<td>GET/POST 요청이 어떤 메서드로 들어오는지</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>c_parameter</code></td>
+<td><code>QueryStringServlet</code>, <code>FormDataServlet</code></td>
+<td><code>/querystring</code>, <code>/formdata</code></td>
+<td>사용자가 보낸 값을 어떻게 꺼내는지</td>
+</tr>
+</tbody></table>
+<pre><code class="language-java">// build.gradle (일부)
+plugins {
+    id &#39;java&#39;
+    id &#39;war&#39;
+}
+
+dependencies {
+    compileOnly(&#39;jakarta.servlet:jakarta.servlet-api:6.1.0&#39;)
+}
+</code></pre>
+<p><code>war</code> 플러그인으로 웹 애플리케이션으로 묶고, 서블릿 API는 <code>compileOnly</code>로 컴파일할 때만 쓴다. 실행할 때는 서버(Tomcat)가 API 구현체를 갖고 있기 때문이다.</p>
+<h2 id="문제-상황-task">문제 상황 (Task)</h2>
+<p>서블릿 코드를 처음 열었을 때 이상한 점이 많았다.</p>
+<table>
+<thead>
+<tr>
+<th>의문</th>
+<th>코드에서 보인 것</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>main()</code>이 없는데 누가 객체를 만들고 메서드를 부르나?</td>
+<td>클래스에 <code>@WebServlet</code>만 붙어 있고 <code>new</code>하는 곳이 없음</td>
+</tr>
+<tr>
+<td>요청이 GET인지 POST인지 어떻게 나누나?</td>
+<td><code>service()</code>를 쓴 버전과 <code>doGet()</code>/<code>doPost()</code>를 쓴 버전이 같이 있음</td>
+</tr>
+<tr>
+<td>폼에 입력한 값은 어떻게 받나?</td>
+<td><code>parameter.html</code>의 폼은 6개 항목을 보내는데 서블릿은 그중 일부만 꺼냄</td>
+</tr>
+<tr>
+<td>URL 매핑은 어디서 하나?</td>
+<td><code>web.xml</code>이 비어 있음</td>
+</tr>
+</tbody></table>
+<p>정리하면, 이번 실습의 과제는 <strong>&quot;브라우저 요청 하나가 내 Java 메서드에 도착하기까지 무슨 일이 일어나는지&quot;</strong> 를 이해하는 것이었다.</p>
+<h2 id="해결-과정-action">해결 과정 (Action)</h2>
+<h3 id="1-webservlet--url과-클래스를-연결하기">1. <code>@WebServlet</code> — URL과 클래스를 연결하기</h3>
+<p><code>web.xml</code>을 열어보면 <code>&lt;web-app&gt;</code> 태그만 있고 내용이 없다.</p>
+<pre><code class="language-xml">&lt;web-app xmlns=&quot;https://jakarta.ee/xml/ns/jakartaee&quot;
+         ...
+         version=&quot;6.1&quot;&gt;
+&lt;/web-app&gt;
+</code></pre>
+<p>예전에는 이 파일에 <code>&lt;servlet&gt;</code>, <code>&lt;servlet-mapping&gt;</code>으로 URL과 클래스를 하나하나 적었다고 한다. 이번 실습에서는 그 대신 클래스 위에 어노테이션을 붙였다.</p>
+<pre><code class="language-java">/* comment.
+*   @WebServlet 어노테이션.
+*   해당 클래스가 Servlet 임을 명시하는 어노테이션이다.
+*   value 속성 해당 서블릿이 처리할 url 패턴을 명시한다.
+*  */
+@WebServlet(value = &quot;/life-cycle&quot;)
+public class LifeCycleServlet extends HttpServlet {
+</code></pre>
+<p>서버가 시작될 때 <code>@WebServlet</code>이 붙은 클래스를 찾아 URL 매핑 표를 만든다. 그래서 서블릿 4개를 만들었는데도 <code>web.xml</code>에 매핑을 한 줄도 쓰지 않았다.</p>
+<h3 id="2-라이프사이클--객체는-한-번-service는-요청마다">2. 라이프사이클 — 객체는 한 번, <code>service()</code>는 요청마다</h3>
+<p><code>LifeCycleServlet</code>은 생성자와 라이프사이클 메서드 3개에 출력문과 호출 횟수 카운터를 넣어둔 클래스다.</p>
+<pre><code class="language-java">private int initCount = 1;
+private int serviceCount = 1;
+private int destroyCount = 1;
+
+public LifeCycleServlet() {
+    System.out.println(&quot;기본생성자 호출됨...&quot;);
+}
+
+@Override
+public void init(ServletConfig config) throws ServletException {
+    System.out.println(&quot;init() 호출됨... : &quot; + initCount++);
+}
+
+@Override
+protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    System.out.println(&quot;service() 호출됨... : &quot; + serviceCount++);
+}
+
+@Override
+public void destroy() {
+    System.out.println(&quot;destory() 호출됨... : &quot; + destroyCount++);
+}
+</code></pre>
+<p>카운터를 <strong>인스턴스 필드</strong>로 둔 게 핵심이다. 요청마다 새 객체가 만들어진다면 카운터는 매번 1부터 다시 시작해야 한다. 반대로 숫자가 계속 올라간다면 같은 객체가 계속 쓰이고 있다는 뜻이 된다.</p>
+<p><code>/life-cycle</code>에 여러 번 접속하고 서버를 끄면, 스펙대로라면 콘솔에는 아래처럼 찍힌다.</p>
+<pre><code class="language-text">기본생성자 호출됨...
+init() 호출됨... : 1
+service() 호출됨... : 1
+service() 호출됨... : 2
+service() 호출됨... : 3
+destory() 호출됨... : 1
+</code></pre>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant B as 브라우저
+    participant T as Tomcat(서블릿 컨테이너)
+    participant S as LifeCycleServlet
+    B-&gt;&gt;T: GET /life-cycle (첫 요청)
+    T-&gt;&gt;S: new LifeCycleServlet()
+    T-&gt;&gt;S: init(config)
+    T-&gt;&gt;S: service(req, resp)
+    B-&gt;&gt;T: GET /life-cycle (두 번째 요청)
+    T-&gt;&gt;S: service(req, resp)
+    Note over T,S: 객체를 새로 만들지 않고 재사용
+    T-&gt;&gt;S: destroy() (서버 종료 시)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>메서드</th>
+<th>호출 시점</th>
+<th>호출 횟수</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>생성자</td>
+<td>첫 요청 때 (또는 설정에 따라 서버 시작 때)</td>
+<td>1번</td>
+</tr>
+<tr>
+<td><code>init()</code></td>
+<td>생성 직후</td>
+<td>1번</td>
+</tr>
+<tr>
+<td><code>service()</code></td>
+<td>요청이 올 때마다</td>
+<td>요청 수만큼</td>
+</tr>
+<tr>
+<td><code>destroy()</code></td>
+<td>서버 종료·재배포 때</td>
+<td>1번</td>
+</tr>
+</tbody></table>
+<p>Servlet 스펙도 분산 환경이 아니면 <strong>서블릿 선언 하나당 인스턴스 하나만</strong> 쓴다고 정해두고 있다. <code>main()</code>이 없던 이유가 여기서 풀렸다. 객체를 만들고 메서드를 부르는 일은 내가 아니라 <strong>컨테이너(Tomcat)</strong> 가 한다.</p>
+<h4 id="다시-보니-고칠-점-initservletconfig-재정의">다시 보니 고칠 점: <code>init(ServletConfig)</code> 재정의</h4>
+<p>공식 문서를 찾아보다가 실습 코드에서 놓친 부분을 발견했다. <code>GenericServlet</code>의 <code>init(ServletConfig)</code> 문서에는 이렇게 적혀 있다.</p>
+<blockquote>
+<p>This implementation stores the ServletConfig object it receives from the servlet container for later use. When overriding this form of the method, call <code>super.init(config)</code>.<br>— <a href="https://jakarta.ee/specifications/servlet/6.0/apidocs/jakarta.servlet/jakarta/servlet/GenericServlet.html">Jakarta Servlet API - GenericServlet</a></p>
+</blockquote>
+<p>실습 코드는 <code>super.init(config)</code>를 부르지 않는다. 이러면 부모가 <code>config</code>를 저장하지 못해서, 나중에 <code>getServletConfig()</code>나 <code>getInitParameter()</code>를 쓸 때 값을 얻을 수 없다. 지금은 출력만 해서 문제가 드러나지 않았을 뿐이다. 문서는 매개변수 없는 <code>init()</code>을 재정의하면 <code>super</code> 호출을 신경 쓰지 않아도 된다고 안내한다.</p>
+<pre><code class="language-java">// 예시 코드 — 초기화 로직만 필요하면 매개변수 없는 init()을 재정의
+@Override
+public void init() throws ServletException {
+    System.out.println(&quot;init() 호출됨... : &quot; + initCount++);
+}
+</code></pre>
+<h3 id="3-service-대신-doget--dopost">3. <code>service()</code> 대신 <code>doGet()</code> / <code>doPost()</code></h3>
+<p><code>ServiceMethodServlet</code>에는 <strong>주석 처리된 첫 번째 시도</strong>가 남아 있다.</p>
+<pre><code class="language-java">//    @Override
+//    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+//
+//        /* comment.
+//        *   a 태그의 href 속성은 화면의 URL 을 변경하는 속성이다.
+//        *   URL 이 변경되는 방식은 GET 방식의 요청에 해당한다.
+//        *  */
+//        System.out.println(&quot;req : &quot; + req);
+//        String httpMethod = req.getMethod();
+//        System.out.println(&quot;httpMethod = &quot; + httpMethod);
+//
+//    }
+</code></pre>
+<p>처음에는 <code>service()</code>를 직접 재정의해서 <code>req.getMethod()</code>로 요청 방식(GET/POST)을 출력해봤다. 이 방식이면 GET과 POST를 나누려면 <code>service()</code> 안에서 <code>if</code>로 직접 분기해야 한다.</p>
+<p>그런데 <code>HttpServlet</code>의 <code>service()</code>가 이미 그 분기를 해준다. 그래서 <code>service()</code>를 주석 처리하고 <code>doGet()</code>, <code>doPost()</code>만 재정의했다.</p>
+<pre><code class="language-java">@Override
+protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    System.out.println(&quot;GET 요청을 처리할 메소드 호출됨...&quot;);
+}
+
+@Override
+protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    System.out.println(&quot;POST 요청을 처리할 메소드 호출됨...&quot;);
+}
+</code></pre>
+<pre><code class="language-mermaid">flowchart LR
+    A[요청 도착] --&gt; B[&quot;HttpServlet.service()&quot;]
+    B --&gt; C{&quot;req.getMethod()&quot;}
+    C --&gt;|GET| D[&quot;doGet()&quot;]
+    C --&gt;|POST| E[&quot;doPost()&quot;]
+    C --&gt;|그 외| F[&quot;doPut(), doDelete() ...&quot;]
+</code></pre>
+<p><a href="https://jakarta.ee/specifications/servlet/6.0/apidocs/jakarta.servlet/jakarta/servlet/http/HttpServlet.html">HttpServlet 공식 문서</a>에도 같은 내용이 있다.</p>
+<blockquote>
+<p>There&#39;s almost no reason to override the service method.</p>
+</blockquote>
+<p>주의할 점은 <strong><code>service()</code>를 재정의하면 이 분기가 사라진다</strong>는 것이다. 주석을 풀어 두 방식을 같이 두면 내가 만든 <code>service()</code>가 부모 것을 덮어써서 <code>doGet()</code>/<code>doPost()</code>는 호출되지 않는다. 주석 처리한 게 맞는 선택이었다.</p>
+<p><code>service.html</code>에서는 같은 URL로 요청 방식만 바꿔 보내봤다.</p>
+<table>
+<thead>
+<tr>
+<th>HTML 요소</th>
+<th>요청 방식</th>
+<th>호출된 메서드</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>&lt;a href=&quot;/request-service&quot;&gt;</code></td>
+<td>GET</td>
+<td><code>doGet()</code></td>
+</tr>
+<tr>
+<td><code>&lt;form method=&quot;get&quot;&gt;</code></td>
+<td>GET</td>
+<td><code>doGet()</code></td>
+</tr>
+<tr>
+<td><code>&lt;form method=&quot;post&quot;&gt;</code></td>
+<td>POST</td>
+<td><code>doPost()</code></td>
+</tr>
+</tbody></table>
+<p><code>&lt;a&gt;</code> 태그 링크를 누르는 것도 GET 요청이라는 게 의외였다. 주소창에 URL을 치는 것과 똑같이 &quot;이 주소의 페이지를 달라&quot;는 요청이기 때문이다.</p>
+<h3 id="4-요청-파라미터-꺼내기--getparameter">4. 요청 파라미터 꺼내기 — <code>getParameter()</code></h3>
+<p><code>parameter.html</code>은 같은 입력 폼을 GET용과 POST용으로 하나씩 갖고 있다. 폼이 보내는 항목과, 서블릿에서 실제로 꺼낸 항목을 비교해보면 이렇다.</p>
+<table>
+<thead>
+<tr>
+<th><code>name</code> 속성</th>
+<th>입력 방식</th>
+<th align="center"><code>QueryStringServlet</code> (GET)</th>
+<th align="center"><code>FormDataServlet</code> (POST)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>name</code></td>
+<td>text</td>
+<td align="center">O</td>
+<td align="center">O</td>
+</tr>
+<tr>
+<td><code>age</code></td>
+<td>number</td>
+<td align="center">O (<code>int</code>로 변환)</td>
+<td align="center">-</td>
+</tr>
+<tr>
+<td><code>birthday</code></td>
+<td>date</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+<tr>
+<td><code>gender</code></td>
+<td>radio</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+<tr>
+<td><code>national</code></td>
+<td>select</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+<tr>
+<td><code>hobbies</code></td>
+<td>checkbox (여러 개)</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+</tbody></table>
+<p>GET 쪽 서블릿 코드:</p>
+<pre><code class="language-java">@WebServlet(value = &quot;/querystring&quot;)
+public class QueryStringServlet extends HttpServlet {
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+        String name = req.getParameter(&quot;name&quot;);
+        System.out.println(&quot;name = &quot; + name);
+
+        /* comment.
+            URL 로 전달되는 데이터는 모두 String 타입이다.
+            따라서 원하는 자료형으로 담기 위해서는 파싱이 필요하다.
+        */
+        int age = Integer.parseInt(req.getParameter(&quot;age&quot;));
+        System.out.println(&quot;age = &quot; + age);
+    }
+}
+</code></pre>
+<p>폼의 <code>name</code> 속성값이 그대로 <code>getParameter()</code>의 키가 된다. <code>&lt;input type=&quot;number&quot;&gt;</code>로 받았어도 서버에 도착하면 문자열이라 <code>Integer.parseInt()</code>로 변환해야 한다.</p>
+<p>GET 요청은 폼 대신 <code>&lt;a&gt;</code> 태그에 값을 직접 붙여서 보낼 수도 있다.</p>
+<pre><code class="language-html">&lt;a href=&quot;/querystring?name=홍길동&amp;age=20&amp;birthday=2021-01-08&amp;gender=M&amp;national=ko&amp;hobbies=movie&amp;hobbies=music&amp;hobbies=sleep&quot;&gt;쿼리스트링을 이용한 값 전달&lt;/a&gt;
+</code></pre>
+<p><code>?</code> 뒤가 쿼리스트링이고, <code>키=값</code>을 <code>&amp;</code>로 이어 붙인다. GET 폼을 제출해도 브라우저가 똑같은 모양의 URL을 만든다.</p>
+<h4 id="다-꺼내지-못한-값들">다 꺼내지 못한 값들</h4>
+<p>이 URL을 보다가 <code>hobbies</code>가 3번 들어 있는 걸 봤다. 체크박스는 값이 여러 개일 수 있다. <a href="https://jakarta.ee/specifications/servlet/6.0/apidocs/jakarta.servlet/jakarta/servlet/ServletRequest.html">ServletRequest 공식 문서</a>를 보면 <code>getParameter()</code>는 값이 하나일 때만 쓰라고 되어 있다.</p>
+<blockquote>
+<p>If you use this method with a multivalued parameter, the value returned is equal to the first value in the array returned by <code>getParameterValues</code>.</p>
+</blockquote>
+<p><code>getParameter(&quot;hobbies&quot;)</code>를 쓰면 <code>movie</code>만 나오고 나머지는 버려진다. 여러 값은 <code>getParameterValues()</code>로 배열로 받아야 한다.</p>
+<pre><code class="language-java">// 예시 코드 — 체크박스처럼 값이 여러 개인 파라미터
+String[] hobbies = req.getParameterValues(&quot;hobbies&quot;);
+System.out.println(&quot;hobbies = &quot; + Arrays.toString(hobbies)); // [movie, music, sleep]
+</code></pre>
+<p>또 <code>getParameter()</code>는 그 이름의 파라미터가 아예 없으면 <code>null</code>을 돌려준다. 그래서 <code>age</code> 없이 <code>/querystring?name=홍길동</code>으로 요청하거나 나이 칸을 비워 폼을 보내면 <code>Integer.parseInt()</code>가 <code>NumberFormatException</code>을 던진다. 실습 코드는 값이 항상 들어온다고 가정하고 있다.</p>
+<h3 id="5-get과-post--코드-주석을-공식-문서로-다시-확인하기">5. GET과 POST — 코드 주석을 공식 문서로 다시 확인하기</h3>
+<p><code>FormDataServlet</code>에는 GET과 POST의 차이를 정리한 긴 주석이 있다.</p>
+<pre><code class="language-java">/* comment.
+*   - GET 요청
+*   URL에 데이터가 노출이 되며, 데이터의 크기도 한정된다.
+*   ...
+*   또한 대략 200자 내의 데이터만 전달할 수 있기 때문에
+*   게시글 등을 Insert 하는 것에는 적합하지 않다.
+*   다만, GET 은 속도가 빠르기 때문에 조회 시 많이 사용된다.
+*   - POST 요청
+*   데이터가 URL에 노출되지 않고 Payload(Body) 라고 불리는 영역에
+*   데이터를 담아서 Server 에 전달한다.
+*   ...
+*   */
+</code></pre>
+<p>&quot;200자&quot;라는 숫자가 마음에 걸려서 HTTP 표준 문서(RFC 9110)를 찾아봤다.</p>
+<table>
+<thead>
+<tr>
+<th>주석 내용</th>
+<th>RFC 9110 기준</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GET은 URL에 데이터가 노출된다</td>
+<td>맞다. 그래서 비밀번호 같은 값은 GET으로 보내면 안 된다 (주소창, 방문 기록, 서버 로그에 남는다)</td>
+</tr>
+<tr>
+<td>GET은 대략 200자까지만 보낼 수 있다</td>
+<td>표준이 정한 상한은 없다. 오히려 URI를 <strong>최소 8000 옥텟</strong>까지는 지원하라고 권장한다 (<a href="https://www.rfc-editor.org/rfc/rfc9110.html#section-4.1">§4.1</a>). 실제 한도는 브라우저와 서버 설정마다 다르다</td>
+</tr>
+<tr>
+<td>POST는 Body에 데이터를 담는다</td>
+<td>맞다. <code>FormDataServlet</code>의 URL은 <code>/formdata</code>뿐이고 값은 Body로 간다</td>
+</tr>
+<tr>
+<td>GET은 빨라서 조회에 쓴다</td>
+<td>속도보다는 <strong>의미</strong> 차이다. GET은 &quot;읽기 전용&quot;인 안전한(safe) 메서드이고(<a href="https://www.rfc-editor.org/rfc/rfc9110.html#section-9.2.1">§9.2.1</a>), 응답을 캐시할 수 있다(<a href="https://www.rfc-editor.org/rfc/rfc9110.html#section-9.3.1">§9.3.1</a>)</td>
+</tr>
+</tbody></table>
+<p>RFC 9110 §9.3.1은 GET 응답을 이렇게 설명한다.</p>
+<blockquote>
+<p>The response to a GET request is cacheable; a cache MAY use it to satisfy subsequent GET and HEAD requests</p>
+</blockquote>
+<p>정리하면 &quot;GET은 짧고 빠르니까 조회용&quot;이 아니다. <strong>서버 상태를 바꾸지 않는 조회는 GET, 데이터를 생성·변경하는 요청은 POST</strong>로 고르는 게 기준이다. 게시글 등록에 GET이 안 맞는 진짜 이유는 길이 제한보다, GET이 &quot;읽기만 하는 요청&quot;이라는 약속을 깨기 때문이다.</p>
+<h2 id="결과-result">결과 (Result)</h2>
+<p><code>chap01-servlet</code>에서 만든 것을 숫자로 정리하면 이렇다.</p>
+<table>
+<thead>
+<tr>
+<th>항목</th>
+<th>수치</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>서블릿 클래스</td>
+<td>4개 (총 149줄)</td>
+</tr>
+<tr>
+<td>테스트용 HTML</td>
+<td>3개 (<code>index</code>, <code>service</code>, <code>parameter</code>)</td>
+</tr>
+<tr>
+<td><code>web.xml</code> URL 매핑</td>
+<td><strong>0줄</strong> (전부 <code>@WebServlet</code>으로 대체)</td>
+</tr>
+<tr>
+<td><code>init()</code> 호출 횟수</td>
+<td>요청 수와 상관없이 1번</td>
+</tr>
+<tr>
+<td>서블릿이 받은 파라미터</td>
+<td>폼이 보낸 6개 중 GET 2개, POST 1개</td>
+</tr>
+</tbody></table>
+<p>JDBC 콘솔 실습과 비교하면 프로그램의 시작점 자체가 바뀌었다.</p>
+<table>
+<thead>
+<tr>
+<th>비교</th>
+<th>JDBC 콘솔 실습</th>
+<th>서블릿 실습</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>시작점</td>
+<td>내가 작성한 <code>main()</code></td>
+<td>컨테이너가 부르는 <code>service()</code></td>
+</tr>
+<tr>
+<td>객체 생성</td>
+<td>내가 <code>new</code></td>
+<td>컨테이너가 첫 요청 때 1번</td>
+</tr>
+<tr>
+<td>입력</td>
+<td><code>Scanner</code></td>
+<td><code>req.getParameter()</code></td>
+</tr>
+<tr>
+<td>입력 타입</td>
+<td><code>nextInt()</code> 등으로 바로 받음</td>
+<td>항상 <code>String</code> → 직접 변환</td>
+</tr>
+</tbody></table>
+<p><strong>배운 점</strong></p>
+<ul>
+<li>서블릿은 내가 실행하는 프로그램이 아니라 <strong>컨테이너가 필요할 때 호출하는 부품</strong>이다. 그래서 <code>main()</code>이 없다.</li>
+<li><code>service()</code>는 직접 재정의하지 말고 <code>doGet()</code>/<code>doPost()</code>만 재정의한다. 실습 코드에 주석으로 남은 첫 시도가 그 이유를 보여준다.</li>
+<li>강의 주석도 그대로 믿지 않고 공식 문서와 대조해보니, <code>init(ServletConfig)</code> 재정의와 GET 길이 제한에서 바로잡을 부분이 나왔다.</li>
+</ul>
+<h2 id="더-학습하면-좋은-개념">더 학습하면 좋은 개념</h2>
+<ul>
+<li><strong>서블릿의 스레드 안전성</strong> — 서블릿 객체는 하나인데 요청은 동시에 여러 개 들어온다. <code>serviceCount++</code> 같은 인스턴스 필드 수정은 동시 요청에서 값이 꼬일 수 있다. 서블릿에 상태를 두면 안 되는 이유를 이해하면 이후 Spring의 싱글톤 빈도 같은 원리로 이해된다.</li>
+<li><strong>요청·응답 문자 인코딩 (<code>setCharacterEncoding</code>)</strong> — POST Body로 오는 한글이 깨지는 문제와 연결된다. 서버가 어떤 인코딩으로 Body를 읽는지 알아두면 나중에 필터로 한 번에 처리하는 이유가 보인다.</li>
+<li><strong>응답 보내기 (<code>HttpServletResponse</code>)</strong> — 이번 실습은 콘솔 출력만 했다. 브라우저에 실제 결과를 돌려주는 방법(<code>getWriter()</code>, <code>setContentType()</code>)이 다음 단계다.</li>
+<li><strong>forward와 redirect</strong> — 서블릿끼리, 또는 서블릿에서 JSP로 요청을 넘기는 두 방식이다. 요청이 하나로 이어지는지 새로 생기는지가 다르다.</li>
+<li><strong><code>ServletConfig</code>와 <code>ServletContext</code></strong> — <code>init(config)</code>로 받는 설정 객체와, 애플리케이션 전체가 공유하는 객체다. <code>super.init(config)</code>가 왜 필요한지 더 정확히 이해할 수 있다.</li>
+</ul>
+<h2 id="참고-자료">참고 자료</h2>
+<ul>
+<li><a href="https://jakarta.ee/specifications/servlet/6.1/jakarta-servlet-spec-6.1">Jakarta Servlet 6.1 Specification</a></li>
+<li><a href="https://jakarta.ee/specifications/servlet/6.0/apidocs/jakarta.servlet/jakarta/servlet/http/HttpServlet.html">Jakarta Servlet API - HttpServlet</a></li>
+<li><a href="https://jakarta.ee/specifications/servlet/6.0/apidocs/jakarta.servlet/jakarta/servlet/GenericServlet.html">Jakarta Servlet API - GenericServlet</a></li>
+<li><a href="https://jakarta.ee/specifications/servlet/6.0/apidocs/jakarta.servlet/jakarta/servlet/ServletRequest.html">Jakarta Servlet API - ServletRequest</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc9110.html">RFC 9110 - HTTP Semantics</a></li>
+<li><a href="https://jakarta.ee/learn/docs/jakartaee-tutorial/current/web/servlets/servlets.html">Jakarta EE Tutorial - Jakarta Servlet</a></li>
+</ul>
+
+    </article>
+
+    <div class="post-edit-bar">
+      <a class="post-edit-link" href="../../../write.html?edit=2026-10-21-main()-%EC%97%86%EB%8A%94-Java-%EC%BD%94%EB%93%9C%EB%8A%94-%EB%88%84%EA%B0%80-%EC%8B%A4%ED%96%89%ED%95%A0%EA%B9%8C-%EC%84%9C%EB%B8%94%EB%A6%BF-%EB%9D%BC%EC%9D%B4%ED%94%84%EC%82%AC%EC%9D%B4%ED%81%B4%EA%B3%BC-%EC%9A%94%EC%B2%AD-%ED%8C%8C%EB%9D%BC%EB%AF%B8%ED%84%B0.html">수정하기 →</a>
+    </div>
+
+    <nav class="post-nav">
+      <a class="post-nav-item " href="../../Study/Learned/2026-10-19-%EB%AC%B8%EC%9E%90%EC%97%B4-SQL%EC%9D%98-%EC%9C%84%ED%97%98%EC%9D%84-PreparedStatement%EC%99%80-%EA%B3%84%EC%B8%B5-%EB%B6%84%EB%A6%AC%EB%A1%9C-%ED%95%B4%EA%B2%B0%ED%95%98%EA%B8%B0.html">
+         <span class="post-nav-label">이전 글</span>
+         <span class="post-nav-title">문자열 SQL의 위험을 PreparedStatement와 계층 분리로 해결하기</span>
+       </a>
+      <div class="post-nav-item is-next">
+         <span class="post-nav-label">다음 글</span>
+         <span class="post-nav-empty">없음</span>
+       </div>
+    </nav>
+
+    </div>
+  </main>
+
+</div>
+
+<script src="../../../sidebar-motion.js"></script>
+<script type="module">
+  // 본문의 ```mermaid 코드 블록을 다이어그램으로 바꿔 그림 (mermaid를 쓴 글에만 포함됨)
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.esm.min.mjs';
+  document.querySelectorAll('pre > code.language-mermaid').forEach(code => {
+    const div = document.createElement('div');
+    div.className = 'mermaid';
+    div.textContent = code.textContent;
+    code.parentElement.replaceWith(div);
+  });
+  mermaid.initialize({ startOnLoad: false });
+  mermaid.run();
+</script>
+</body>
+</html>

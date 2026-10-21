@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>문자열 SQL의 위험을 PreparedStatement와 계층 분리로 해결하기 — Portfolio Blog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500;700&family=EB+Garamond:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Gowun+Batang&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+
+<div class="layout">
+<aside class="sidebar">
+
+    <div class="brand">Yeonn</div>
+
+    <section class="categories">
+      <ul class="category-list">
+        <li>
+          <a class="category-total" href="../../../index.html">
+            <span class="cat-name">Total</span>
+            <span class="count">37</span>
+          </a>
+          <ul class="category-sub">
+      <li>
+        <a href="../../../index.html?filter=Project"><span class="cat-name">Project</span> <span class="count">2</span></a>
+        
+      </li>
+      <li>
+        <a href="../../../index.html?filter=Study"><span class="cat-name">Study</span> <span class="count">10</span></a>
+        
+        <ul class="category-sub-nested">
+          
+            <li><a href="../../../index.html?filter=Learned">Learned <span class="count">10</span></a></li>
+          
+        </ul>
+      </li>
+      <li>
+        <a href="../../../index.html?filter=Photo"><span class="cat-name">Photo</span> <span class="count">25</span></a>
+        
+      </li><li><a href="../../../index.html?filter=about"><span class="cat-name">About</span></a></li></ul>
+        </li>
+      </ul>
+    </section>
+
+    <div class="sidebar-links">
+      <a href="../../../write.html" class="write-link">새 글 쓰기 →</a>
+      <a href="../../../settings.html" class="write-link">설정 →</a>
+    </div>
+
+  </aside>
+
+  <main class="post-page">
+
+    <!-- 검정 고정 프레임 + 링바인더: 홈 화면(.main)과 같은 디자인이 개별 글 페이지에도 이어지도록 함 -->
+    <div class="main-frame-top" aria-hidden="true"></div>
+    <div class="main-frame-bottom" aria-hidden="true"></div>
+    <div class="main-frame-right" aria-hidden="true"></div>
+    <div class="ring-strip" aria-hidden="true">
+      <span class="ring"></span>
+      <span class="ring"></span>
+      <span class="ring"></span>
+    </div>
+
+    <div class="page-inner">
+
+    <div class="main-topbar">
+      <section class="search-box">
+        <form action="../../../index.html" method="get">
+          <input type="text" name="q" placeholder="검색어를 입력하세요">
+          <button type="submit" aria-label="검색">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+        </form>
+      </section>
+    </div>
+
+    <div class="post-header">
+      <div class="card-tag">Learned</div>
+      <h1>문자열 SQL의 위험을 PreparedStatement와 계층 분리로 해결하기</h1>
+      <p class="post-desc">Statement의 SQL 인젝션 위험을 PreparedStatement로 막고, main() 하나에 몰린 JDBC 코드를 View·Controller·Service·DAO 계층으로 나눈 과정을 정리했다.</p>
+      <div class="post-date">2026-10-19</div>
+    </div>
+
+    <article class="post-body">
+<h2 id="들어가며-situation">들어가며 (Situation)</h2>
+<p>JDBC 첫 챕터에서 <code>DriverManager</code>로 MySQL(<code>menudb</code>)에 연결하는 것까지 해봤다. 이번에는 그 연결 위에서 <strong>실제로 SQL을 실행하고 결과를 Java 객체로 받아오는 것</strong>이 목표였다.</p>
+<ul>
+<li><code>chap02-statement</code> : <code>Statement</code> → <code>PreparedStatement</code> → XML로 쿼리 분리 → <code>executeUpdate()</code></li>
+<li><code>chap03-crud</code> : 지금까지 <code>main()</code> 하나에 몰아 쓰던 코드를 View / Controller / Service / DAO 계층으로 쪼개기</li>
+</ul>
+<h2 id="문제-상황-task">문제 상황 (Task)</h2>
+<p>처음 작성한 코드는 &quot;돌아가긴&quot; 했지만, 하나씩 짚어보니 문제가 많았다.</p>
+<table>
+<thead>
+<tr>
+<th>문제</th>
+<th>어디서 드러났나</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>사용자 입력을 SQL 문자열에 그대로 이어 붙임</td>
+<td><code>&quot;... WHERE MENU_NAME = &#39;&quot; + menuName + &quot;&#39;&quot;</code></td>
+</tr>
+<tr>
+<td>쿼리가 길어지면 문자열 합치기가 지저분해짐</td>
+<td>JOIN, WHERE 조건이 늘어날 때</td>
+</tr>
+<tr>
+<td><code>finally</code>에서 자원 3개를 매번 수동으로 <code>close()</code></td>
+<td>모든 <code>Application</code> 클래스</td>
+</tr>
+<tr>
+<td>입력·DB 접근·출력이 <code>main()</code> 하나에 섞여 있음</td>
+<td>기능이 늘어날수록 수정 범위가 커짐</td>
+</tr>
+</tbody></table>
+<h2 id="해결-과정-action">해결 과정 (Action)</h2>
+<h3 id="1-statement와-resultset--일단-조회해보기">1. Statement와 ResultSet — 일단 조회해보기</h3>
+<p>JDBC의 핵심 인터페이스 두 개부터 시작했다.</p>
+<table>
+<thead>
+<tr>
+<th>인터페이스</th>
+<th>역할</th>
+<th>얻는 방법</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Statement</code></td>
+<td>SQL을 담아서 실행</td>
+<td><code>con.createStatement()</code></td>
+</tr>
+<tr>
+<td><code>ResultSet</code></td>
+<td>실행 결과(결과 집합)</td>
+<td><code>stmt.executeQuery(sql)</code>의 반환값</td>
+</tr>
+</tbody></table>
+<p>둘 다 인터페이스라서 <code>new</code>로 만들 수 없고, <code>Connection</code>이 만들어 준다.</p>
+<pre><code class="language-java">Connection con = getConnection();
+Statement stmt = null;
+ResultSet rset = null;
+
+try {
+    stmt = con.createStatement();
+    rset = stmt.executeQuery(&quot;SELECT * FROM TBL_MENU&quot;);
+
+    // next() : 다음 행이 있으면 커서를 옮기고 true, 없으면 false
+    while (rset.next()) {
+        System.out.println(
+                rset.getString(&quot;MENU_NAME&quot;) + &quot; 은/는 &quot;
+                + rset.getString(&quot;MENU_PRICE&quot;) + &quot;원 입니다. &quot;
+        );
+    }
+} catch (SQLException e) {
+    throw new RuntimeException(e);
+} finally {
+    close(con);
+    close(rset);
+    close(stmt);
+}
+</code></pre>
+<p><code>ResultSet</code>의 커서는 처음에 <strong>첫 행 바로 앞</strong>에 있다. 그래서 <code>next()</code>를 먼저 호출해야 첫 행을 읽을 수 있고, 결과가 여러 행이면 <code>while</code>, 한 행이면 <code>if</code>를 쓴다.</p>
+<pre><code class="language-mermaid">flowchart LR
+    A[커서: 첫 행 이전] --&gt;|next = true| B[1행 읽기]
+    B --&gt;|next = true| C[2행 읽기]
+    C --&gt;|...| D[마지막 행]
+    D --&gt;|next = false| E[반복 종료]
+</code></pre>
+<h3 id="2-출력에서-끝내지-않고-dto에-담기">2. 출력에서 끝내지 않고 DTO에 담기</h3>
+<p>출력만 하면 그 데이터로 아무것도 할 수 없다. 한 행을 <code>MenuDTO</code> 하나에 담고, 여러 행은 <code>List&lt;MenuDTO&gt;</code>에 모았다.</p>
+<pre><code class="language-java">List&lt;MenuDTO&gt; menuAll = new ArrayList&lt;&gt;();
+
+while (rset.next()) {
+    MenuDTO menu = new MenuDTO();
+    menu.setMenuCode(rset.getInt(&quot;MENU_CODE&quot;));
+    menu.setMenuName(rset.getString(&quot;MENU_NAME&quot;));
+    menu.setMenuPrice(rset.getInt(&quot;MENU_PRICE&quot;));
+    menu.setCategoryCode(rset.getInt(&quot;CATEGORY_CODE&quot;));
+    menu.setOrderableStatus(rset.getString(&quot;ORDERABLE_STATUS&quot;).charAt(0));
+    menuAll.add(menu);
+}
+</code></pre>
+<p>DTO의 기본 구성은 <strong>필드 / 기본 생성자 / 전체 필드 생성자 / Getter·Setter / toString</strong> 다섯 가지로 정리했다.</p>
+<h3 id="3-시행착오--문자열-연결-sql의-함정">3. 시행착오 — 문자열 연결 SQL의 함정</h3>
+<p>메뉴 이름을 입력받아 조회하는 실습에서 처음엔 이렇게 썼다.</p>
+<pre><code class="language-java">rset = stmt.executeQuery(
+    &quot;SELECT MENU_CODE, MENU_PRICE, ORDERABLE_STATUS FROM TBL_MENU WHERE MENU_NAME = &#39;&quot;
+    + menuName + &quot;&#39;&quot;
+);
+</code></pre>
+<p>작은따옴표를 직접 붙여야 해서 불편한 것도 문제지만, 더 큰 문제는 <strong>입력값이 SQL 문법의 일부가 된다</strong>는 점이다. 예를 들어 사용자가 아래처럼 입력하면(예시 입력),</p>
+<pre><code class="language-text">&#39; OR &#39;1&#39;=&#39;1
+</code></pre>
+<p>실제로 실행되는 SQL은 다음과 같이 바뀐다.</p>
+<pre><code class="language-sql">SELECT ... FROM TBL_MENU WHERE MENU_NAME = &#39;&#39; OR &#39;1&#39;=&#39;1&#39;
+</code></pre>
+<p>조건이 항상 참이 되어 모든 행이 조회된다. 이것이 <strong>SQL Injection</strong>이다.</p>
+<h3 id="4-preparedstatement와-placeholder">4. PreparedStatement와 placeholder(<code>?</code>)</h3>
+<p><code>PreparedStatement</code>는 SQL의 틀을 먼저 만들고, 값은 <code>?</code> 자리에 <code>setXxx()</code>로 따로 채운다.</p>
+<pre><code class="language-java">pstmt = con.prepareStatement(
+    &quot;SELECT MENU_CODE, MENU_PRICE, ORDERABLE_STATUS FROM TBL_MENU WHERE MENU_NAME = ?&quot;
+);
+pstmt.setString(1, menuName);   // parameterIndex는 1부터 시작
+rset = pstmt.executeQuery();    // 인자 없이 실행
+</code></pre>
+<p>값은 SQL 문법이 아니라 <strong>데이터로만</strong> 바인딩되므로 <code>&#39; OR &#39;1&#39;=&#39;1</code>을 넣어도 &quot;그런 이름의 메뉴&quot;를 찾을 뿐이다.</p>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant App as Java App
+    participant DB as MySQL
+    Note over App,DB: Statement
+    App-&gt;&gt;DB: SQL + 값이 합쳐진 문자열 전송
+    DB--&gt;&gt;App: 결과 (입력값이 문법으로 해석될 수 있음)
+    Note over App,DB: PreparedStatement
+    App-&gt;&gt;App: SQL 틀(?) 준비
+    App-&gt;&gt;App: setString(1, 값) 바인딩
+    App-&gt;&gt;DB: 실행
+    DB--&gt;&gt;App: 결과 (값은 항상 데이터로 취급)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>항목</th>
+<th>Statement</th>
+<th>PreparedStatement</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>값 삽입 방식</td>
+<td>문자열 연결</td>
+<td><code>?</code> + <code>setXxx()</code></td>
+</tr>
+<tr>
+<td>따옴표 처리</td>
+<td>직접</td>
+<td>드라이버가 처리</td>
+</tr>
+<tr>
+<td>SQL Injection</td>
+<td>취약</td>
+<td>방어</td>
+</tr>
+<tr>
+<td>실행 메서드</td>
+<td><code>executeQuery(sql)</code></td>
+<td><code>executeQuery()</code></td>
+</tr>
+<tr>
+<td>같은 SQL 반복 실행</td>
+<td>매번 새 문자열</td>
+<td>객체 재사용 가능</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>성능에 대해 한 가지 짚고 넘어갈 점</strong><br>수업에서는 &quot;PreparedStatement는 최초 1회 컴파일 후 재사용하므로 빠르다&quot;고 배웠다. 개념적으로는 맞지만, MySQL Connector/J는 기본값이 <code>useServerPrepStmts=false</code>라서 <strong>기본 설정에서는 클라이언트 측에서 값을 치환해 전송</strong>한다. 서버 측 컴파일·재사용 효과를 얻으려면 <code>useServerPrepStmts=true</code> 같은 연결 옵션을 따로 켜야 한다. (<a href="https://dev.mysql.com/doc/connector-j/en/connector-j-connp-props-prepared-statements.html">Connector/J 설정 문서</a>)<br>그래서 PreparedStatement를 쓰는 1순위 이유는 성능보다 <strong>보안과 가독성</strong>이라고 정리했다.</p>
+</blockquote>
+<h3 id="5-긴-sql은-xml로-분리하기">5. 긴 SQL은 XML로 분리하기</h3>
+<p>쿼리에 JOIN이나 조건이 붙으면 Java 문자열 안에서 줄바꿈·공백 관리가 괴롭다. <code>java.util.Properties</code>는 XML 형식도 읽을 수 있어서(<code>loadFromXML</code>), 쿼리를 파일로 뺐다.</p>
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+&lt;!DOCTYPE properties SYSTEM &quot;http://java.sun.com/dtd/properties.dtd&quot;&gt;
+&lt;properties&gt;
+    &lt;entry key=&quot;findMenuByMenuName&quot;&gt;
+        SELECT * FROM TBL_MENU WHERE MENU_NAME = ?
+    &lt;/entry&gt;
+    &lt;entry key=&quot;modifyMenuPriceByMenuName&quot;&gt;
+        UPDATE TBL_MENU SET MENU_PRICE = ? WHERE MENU_NAME = ?
+    &lt;/entry&gt;
+&lt;/properties&gt;
+</code></pre>
+<pre><code class="language-java">Properties prop = new Properties();
+prop.loadFromXML(new FileInputStream(
+        &quot;src/main/java/com/wanted/b_preparedstatements/menu-query.xml&quot;));
+String query = prop.getProperty(&quot;findMenuByMenuName&quot;);
+pstmt = con.prepareStatement(query);
+</code></pre>
+<h3 id="6-조회와-변경은-실행-메서드가-다르다">6. 조회와 변경은 실행 메서드가 다르다</h3>
+<table>
+<thead>
+<tr>
+<th>구분</th>
+<th>SQL</th>
+<th>메서드</th>
+<th>반환</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Read</td>
+<td><code>SELECT</code></td>
+<td><code>executeQuery()</code></td>
+<td><code>ResultSet</code></td>
+</tr>
+<tr>
+<td>Create / Update / Delete (DML)</td>
+<td><code>INSERT</code> / <code>UPDATE</code> / <code>DELETE</code></td>
+<td><code>executeUpdate()</code></td>
+<td><code>int</code> (영향받은 행 수)</td>
+</tr>
+</tbody></table>
+<pre><code class="language-java">pstmt = con.prepareStatement(prop.getProperty(&quot;modifyMenuPriceByMenuName&quot;));
+pstmt.setInt(1, price);
+pstmt.setString(2, menuName);
+
+int result = pstmt.executeUpdate();
+
+if (result &gt; 0) {
+    System.out.println(menuName + &quot; 메뉴 가격 수정 성공!! (영향 받은 행 : &quot; + result + &quot;)&quot;);
+} else {
+    System.out.println(menuName + &quot; 메뉴 가격 변경 실패!! 메뉴 이름을 다시 확인해주세요&quot;);
+}
+</code></pre>
+<p>없는 메뉴 이름을 넣으면 예외가 나는 게 아니라 <strong>0이 반환</strong>된다. 성공 여부를 반환값으로 판단해야 하는 이유다.</p>
+<h3 id="7-시행착오--자원-해제-순서와-try-with-resources">7. 시행착오 — 자원 해제 순서와 try-with-resources</h3>
+<p>chap02 코드를 다시 보니 <code>finally</code>에서 <code>close(con)</code>을 가장 먼저 호출하고 있었다. 자원은 <strong>만든 순서의 역순</strong>(<code>ResultSet</code> → <code>Statement</code> → <code>Connection</code>)으로 닫는 것이 원칙인데, 매번 손으로 쓰다 보니 순서를 신경 쓰지 못했다.</p>
+<p>chap03에서는 <code>try-with-resources</code>로 이 문제를 없앴다. <code>try()</code> 괄호 안에 선언한 <code>AutoCloseable</code> 자원은 블록이 끝날 때 <strong>선언의 역순으로 자동으로</strong> 닫힌다.</p>
+<pre><code class="language-java">// MenuService
+try (Connection con = JDBCTemplate.getConnection()) {
+    return new MenuDAO(con).findAll();
+} catch (SQLException e) {
+    throw new RuntimeException(e);
+}
+</code></pre>
+<pre><code class="language-java">// MenuDAO
+try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+    ResultSet rset = pstmt.executeQuery();
+    while (rset.next()) { ... }
+}
+</code></pre>
+<p>DAO에서 <code>ResultSet</code>을 따로 닫지 않은 이유는, <code>Statement</code>가 닫힐 때 그 <code>Statement</code>가 만든 <code>ResultSet</code>도 함께 닫히기 때문이다. (<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.sql/java/sql/Statement.html#close()">Statement.close() Javadoc</a>)</p>
+<p>설정 파일 경로도 바꿨다. chap02는 <code>&quot;src/main/java/...&quot;</code> 같은 <strong>작업 디렉토리 기준 상대 경로</strong>라서 실행 위치가 바뀌면 깨진다. chap03은 <code>src/main/resources</code>에 두고 클래스패스에서 읽는다.</p>
+<pre><code class="language-java">// QueryUtil — 클래스가 로드될 때 1번만 실행
+static {
+    try (InputStream inputStream =
+             QueryUtil.class.getClassLoader().getResourceAsStream(&quot;queries.xml&quot;)) {
+        queries.loadFromXML(inputStream);
+    } catch (Exception e) {
+        throw new RuntimeException(&quot;쿼리 로딩 중 오류 발생&quot;, e);
+    }
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>항목</th>
+<th>chap02</th>
+<th>chap03</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>자원 해제</td>
+<td><code>finally</code> + 수동 <code>close()</code> 3회</td>
+<td><code>try-with-resources</code> 자동</td>
+</tr>
+<tr>
+<td>설정·쿼리 파일 위치</td>
+<td><code>src/main/java</code> 하위, 상대 경로</td>
+<td><code>src/main/resources</code>, 클래스패스</td>
+</tr>
+<tr>
+<td>파일 로딩 시점</td>
+<td>호출할 때마다</td>
+<td><code>static</code> 블록에서 1회</td>
+</tr>
+</tbody></table>
+<h3 id="8-계층-분리--main-하나를-다섯-조각으로">8. 계층 분리 — main() 하나를 다섯 조각으로</h3>
+<p>마지막으로 chap03에서는 역할별로 클래스를 나눴다.</p>
+<pre><code class="language-mermaid">flowchart LR
+    U[사용자] --&gt; IV[MenuInputView]
+    IV --&gt; C[MenuController]
+    C --&gt; S[MenuService]
+    S --&gt;|Connection 생성| D[MenuDAO]
+    D --&gt;|PreparedStatement| DB[(menudb)]
+    DB --&gt; D
+    D --&gt;|List of MenuDTO| S
+    S --&gt; C
+    C --&gt; IV
+    IV --&gt; OV[MenuOutputView]
+    OV --&gt; U
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>계층</th>
+<th>해야 할 일</th>
+<th>하면 안 되는 일</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>View (Input/Output)</td>
+<td><code>Scanner</code> 입력, 결과 출력</td>
+<td>SQL 작성, 비즈니스 로직, commit/rollback</td>
+</tr>
+<tr>
+<td>Controller</td>
+<td>View 요청 받아 적절한 Service 호출, 간단한 유효성 검사</td>
+<td><code>Scanner</code> 처리, 비즈니스 로직, SQL</td>
+</tr>
+<tr>
+<td>Service</td>
+<td>비즈니스 로직, <strong>Connection 생성과 트랜잭션</strong>, 여러 DAO 조합</td>
+<td>SQL 직접 실행</td>
+</tr>
+<tr>
+<td>DAO</td>
+<td>SQL 실행, 파라미터 바인딩, <code>ResultSet</code> → DTO 변환</td>
+<td>비즈니스 판단</td>
+</tr>
+</tbody></table>
+<p><strong>Connection을 Service가 만드는 이유</strong>가 가장 인상 깊었다. &quot;메뉴 생성 시 카테고리도 같이 삽입&quot;처럼 여러 DAO 작업을 하나의 트랜잭션으로 묶으려면, 같은 <code>Connection</code>을 여러 DAO에 넘겨줘야 한다. 그래서 DAO는 생성자로 <code>Connection</code>을 받기만 한다.</p>
+<p>객체 조립은 <code>Application</code>에서 직접 했다. 나중에 Spring이 대신 해줄 일을 미리 손으로 해본 셈이다.</p>
+<pre><code class="language-java">MenuService service = new MenuService();
+MenuController controller = new MenuController(service);
+MenuOutputView outputView = new MenuOutputView();
+MenuInputView inputView = new MenuInputView(controller, outputView);
+
+inputView.displayMainView();
+</code></pre>
+<h2 id="결과-result">결과 (Result)</h2>
+<table>
+<thead>
+<tr>
+<th>항목</th>
+<th>Before (chap02 초반)</th>
+<th>After (chap03)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SQL 값 삽입</td>
+<td>문자열 연결 (Injection 취약)</td>
+<td><code>?</code> 바인딩</td>
+</tr>
+<tr>
+<td>SQL 위치</td>
+<td>Java 코드 안</td>
+<td><code>queries.xml</code></td>
+</tr>
+<tr>
+<td>자원 해제 코드</td>
+<td>클래스마다 <code>finally</code> + <code>close()</code> 3줄</td>
+<td>0줄 (<code>try-with-resources</code>)</td>
+</tr>
+<tr>
+<td>한 기능의 코드 위치</td>
+<td><code>main()</code> 1개에 전부</td>
+<td>5개 계층에 역할별 분산</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>성능 수치(응답 시간 등)는 이번 실습에서 측정하지 않았다. 다음에 <code>useServerPrepStmts</code> 옵션을 켜고 반복 실행 시간을 비교해볼 계획이다.</p>
+</blockquote>
+<p><strong>배운 점</strong></p>
+<ul>
+<li>PreparedStatement를 쓰는 진짜 이유는 &quot;빠르다&quot;보다 **&quot;입력값을 데이터로만 다룬다&quot;**는 것이다.</li>
+<li><code>executeUpdate()</code>는 실패해도 예외 없이 0을 줄 수 있으니, 반환값을 반드시 확인해야 한다.</li>
+<li>계층을 나누면 처음엔 파일이 많아져 번거롭지만, &quot;이 코드는 어디에 있어야 하나?&quot;에 대한 답이 생긴다.</li>
+</ul>
+<h2 id="더-학습하면-좋은-개념">더 학습하면 좋은 개념</h2>
+<ul>
+<li><strong>트랜잭션과 <code>setAutoCommit(false)</code></strong> — Service가 Connection을 쥐는 이유의 핵심이다. commit/rollback을 직접 다뤄봐야 계층 구조의 의미가 완성된다.</li>
+<li><strong>커넥션 풀 (HikariCP)</strong> — 지금은 <code>getConnection()</code>마다 물리 연결을 새로 맺는다. 풀을 쓰면 연결 비용을 얼마나 줄이는지 알 수 있다.</li>
+<li><strong>MyBatis</strong> — XML로 쿼리를 분리하고 결과를 DTO에 매핑하는, 지금 손으로 한 작업을 프레임워크가 해주는 형태다.</li>
+<li><strong>Spring의 의존성 주입(DI)</strong> — <code>Application</code>에서 손으로 하던 객체 조립을 컨테이너가 대신 한다.</li>
+<li><strong>SQL Injection과 OWASP Top 10</strong> — PreparedStatement로 막을 수 있는 것과 없는 것(테이블명·정렬 컬럼 등 동적 식별자)을 구분할 수 있게 된다.</li>
+</ul>
+<h2 id="참고-자료">참고 자료</h2>
+<ul>
+<li><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.sql/java/sql/Statement.html">Java SE 17 API - java.sql.Statement</a></li>
+<li><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.sql/java/sql/PreparedStatement.html">Java SE 17 API - java.sql.PreparedStatement</a></li>
+<li><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.sql/java/sql/ResultSet.html">Java SE 17 API - java.sql.ResultSet</a></li>
+<li><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Properties.html">Java SE 17 API - java.util.Properties (loadFromXML)</a></li>
+<li><a href="https://docs.oracle.com/javase/tutorial/essential/exceptions/tryResourceClose.html">Oracle Java Tutorials - The try-with-resources Statement</a></li>
+<li><a href="https://dev.mysql.com/doc/connector-j/en/connector-j-connp-props-prepared-statements.html">MySQL Connector/J - Prepared Statements 설정</a></li>
+<li><a href="https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html">OWASP - SQL Injection Prevention Cheat Sheet</a></li>
+</ul>
+
+    </article>
+
+    <div class="post-edit-bar">
+      <a class="post-edit-link" href="../../../write.html?edit=2026-10-19-%EB%AC%B8%EC%9E%90%EC%97%B4-SQL%EC%9D%98-%EC%9C%84%ED%97%98%EC%9D%84-PreparedStatement%EC%99%80-%EA%B3%84%EC%B8%B5-%EB%B6%84%EB%A6%AC%EB%A1%9C-%ED%95%B4%EA%B2%B0%ED%95%98%EA%B8%B0.html">수정하기 →</a>
+    </div>
+
+    <nav class="post-nav">
+      <a class="post-nav-item " href="../../Study/Learned/2026-09-28-%EB%B0%B1%EC%97%94%EB%93%9C-%EC%8B%9C%EC%9E%91-Java.html">
+         <span class="post-nav-label">이전 글</span>
+         <span class="post-nav-title">백엔드 시작: Java</span>
+       </a>
+      <a class="post-nav-item is-next" href="../../Study/Learned/2026-10-21-main()-%EC%97%86%EB%8A%94-Java-%EC%BD%94%EB%93%9C%EB%8A%94-%EB%88%84%EA%B0%80-%EC%8B%A4%ED%96%89%ED%95%A0%EA%B9%8C-%EC%84%9C%EB%B8%94%EB%A6%BF-%EB%9D%BC%EC%9D%B4%ED%94%84%EC%82%AC%EC%9D%B4%ED%81%B4%EA%B3%BC-%EC%9A%94%EC%B2%AD-%ED%8C%8C%EB%9D%BC%EB%AF%B8%ED%84%B0.html">
+         <span class="post-nav-label">다음 글</span>
+         <span class="post-nav-title">main() 없는 Java 코드는 누가 실행할까: 서블릿 라이프사이클과 요청 파라미터</span>
+       </a>
+    </nav>
+
+    </div>
+  </main>
+
+</div>
+
+<script src="../../../sidebar-motion.js"></script>
+<script type="module">
+  // 본문의 ```mermaid 코드 블록을 다이어그램으로 바꿔 그림 (mermaid를 쓴 글에만 포함됨)
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.esm.min.mjs';
+  document.querySelectorAll('pre > code.language-mermaid').forEach(code => {
+    const div = document.createElement('div');
+    div.className = 'mermaid';
+    div.textContent = code.textContent;
+    code.parentElement.replaceWith(div);
+  });
+  mermaid.initialize({ startOnLoad: false });
+  mermaid.run();
+</script>
+</body>
+</html>
