@@ -328,7 +328,8 @@ function buildSidebarHtml({ categories, manifest, toRoot }){
         <a href="${toRoot}index.html?filter=${encodeURIComponent(cat.name)}"><span class="cat-name">${escapeHtml(cat.name)}</span> <span class="count">${catCount}</span></a>
         ${subHtml}
       </li>`;
-  }).join('') + `<li><a href="${toRoot}index.html?filter=about"><span class="cat-name">About</span></a></li>`;
+  }).join('') + `<li><a href="${toRoot}index.html?filter=about"><span class="cat-name">About</span></a></li>`
+    + `<li><a href="${toRoot}index.html?filter=guestbook"><span class="cat-name">Guestbook</span></a></li>`;
 
   return `<aside class="sidebar">
 

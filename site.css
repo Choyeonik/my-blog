@@ -892,6 +892,12 @@ body.lightbox-open{ overflow: hidden; }   /* 라이트박스가 떠 있는 동�
 .about-card p{ font-size: 14px; line-height: 1.9; color: var(--muted); max-width: 520px; margin: 0 auto; }
 .about-card .profile-links{ margin-top: 28px; }   /* 설명과 링크 사이 간격 (사이드바 쪽 간격에는 영향 없음) */
 
+/* Guestbook 카테고리를 눌렀을 때 그리드 대신 보여주는 방명록(giscus 위젯) 영역 */
+.guestbook-card{
+  padding: 40px 6%;
+  border: 1px solid var(--line);
+}
+
 .no-result{
   text-align: center;
   padding: 80px 0;
