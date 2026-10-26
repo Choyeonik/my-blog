@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>redirect가 잊어버린 정보 지키기: 쿠키, 세션, 그리고 필터 — Portfolio Blog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500;700&family=EB+Garamond:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Gowun+Batang&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+
+<div class="layout">
+<aside class="sidebar">
+
+    <div class="brand">Yeonn</div>
+
+    <section class="categories">
+      <ul class="category-list">
+        <li>
+          <a class="category-total" href="../../../index.html">
+            <span class="cat-name">Total</span>
+            <span class="count">39</span>
+          </a>
+          <ul class="category-sub">
+      <li>
+        <a href="../../../index.html?filter=Project"><span class="cat-name">Project</span> <span class="count">2</span></a>
+        
+      </li>
+      <li>
+        <a href="../../../index.html?filter=Study"><span class="cat-name">Study</span> <span class="count">12</span></a>
+        
+        <ul class="category-sub-nested">
+          
+            <li><a href="../../../index.html?filter=Learned">Learned <span class="count">12</span></a></li>
+          
+        </ul>
+      </li>
+      <li>
+        <a href="../../../index.html?filter=Photo"><span class="cat-name">Photo</span> <span class="count">25</span></a>
+        
+      </li><li><a href="../../../index.html?filter=about"><span class="cat-name">About</span></a></li></ul>
+        </li>
+      </ul>
+    </section>
+
+    <div class="sidebar-links">
+      <a href="../../../write.html" class="write-link">새 글 쓰기 →</a>
+      <a href="../../../settings.html" class="write-link">설정 →</a>
+    </div>
+
+  </aside>
+
+  <main class="post-page">
+
+    <!-- 검정 고정 프레임 + 링바인더: 홈 화면(.main)과 같은 디자인이 개별 글 페이지에도 이어지도록 함 -->
+    <div class="main-frame-top" aria-hidden="true"></div>
+    <div class="main-frame-bottom" aria-hidden="true"></div>
+    <div class="main-frame-right" aria-hidden="true"></div>
+    <div class="ring-strip" aria-hidden="true">
+      <span class="ring"></span>
+      <span class="ring"></span>
+      <span class="ring"></span>
+    </div>
+
+    <div class="page-inner">
+
+    <div class="main-topbar">
+      <section class="search-box">
+        <form action="../../../index.html" method="get">
+          <input type="text" name="q" placeholder="검색어를 입력하세요">
+          <button type="submit" aria-label="검색">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+        </form>
+      </section>
+    </div>
+
+    <div class="post-header">
+      <div class="card-tag">Learned</div>
+      <h1>redirect가 잊어버린 정보 지키기: 쿠키, 세션, 그리고 필터</h1>
+      <p class="post-desc">06_Servlet 세 번째 실습. 요청이 끝나면 사라지는 정보를 쿠키와 세션으로 유지하고, 모든 서블릿에 반복되던 코드와 로그인 검사를 필터로 한 곳에 모으며 정리했다.</p>
+      <div class="post-date">2026-10-23</div>
+    </div>
+
+    <article class="post-body">
+<h2 id="들어가며-situation">들어가며 (Situation)</h2>
+<p><a href="2026-10-23-%EC%9D%91%EB%8B%B5%EC%9D%80-%EB%88%84%EA%B0%80-%ED%95%A0%EA%B9%8C-%EC%84%9C%EB%B8%94%EB%A6%BF-%EC%9D%91%EB%8B%B5%2C-%EC%97%90%EB%9F%AC-%ED%8E%98%EC%9D%B4%EC%A7%80%2C-forward%EC%99%80-redirect.html">앞 글</a>에서 forward와 redirect를 비교하면서 <code>RedirectServlet</code>의 마지막 주석으로 끝냈다.</p>
+<pre><code class="language-java">/* comment.
+    Redirect 는 이전 요청을 아예 모른다가 장점이자 단점이 된다.
+    이 단점을 극복하기 위해 나온 개념이 Cookie/Session 이다.
+    Coockie / Session 은 Redirect 를 하더라도 정보를 공유할 수 있게 해준다.
+ */
+</code></pre>
+<p><code>chap01-servlet</code>의 마지막 두 패키지가 그 이야기다.</p>
+<table>
+<thead>
+<tr>
+<th>순서</th>
+<th>패키지</th>
+<th>클래스</th>
+<th>화면</th>
+<th>확인한 것</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>8</td>
+<td><code>h_cookie_session</code></td>
+<td><code>CookieServlet</code>, <code>SessionServlet</code>, <code>ExpireServlet</code></td>
+<td><code>cookie.html</code>, <code>cookie-result.jsp</code>, <code>session-result.jsp</code></td>
+<td>요청이 바뀌어도 값을 기억하는 방법</td>
+</tr>
+<tr>
+<td>9</td>
+<td><code>i_filter</code></td>
+<td><code>EncodingFilter</code>, <code>LoginFilter</code>, <code>Performance</code>, <code>AuthServlet</code></td>
+<td><code>auth.jsp</code></td>
+<td>서블릿 앞에서 공통 작업을 처리하는 방법</td>
+</tr>
+</tbody></table>
+<p>이번 실습부터 응답 화면이 <code>StringBuilder</code>가 아니라 <strong>JSP</strong>로 바뀌었다.</p>
+<h2 id="문제-상황-task">문제 상황 (Task)</h2>
+<table>
+<thead>
+<tr>
+<th>문제</th>
+<th>어디서 드러났나</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>HTTP는 요청이 끝나면 이전 요청을 기억하지 못한다</td>
+<td>redirect하면 <code>req.setAttribute()</code>로 넣은 값이 사라짐</td>
+</tr>
+<tr>
+<td>로그인 상태를 여러 페이지에서 유지해야 한다</td>
+<td>로그인 후 다른 URL로 가면 누가 로그인했는지 모름</td>
+</tr>
+<tr>
+<td>응답 서블릿마다 같은 줄이 반복된다</td>
+<td><code>resp.setContentType(&quot;text/html; charset=UTF-8&quot;)</code>가 5개 서블릿에 반복</td>
+</tr>
+<tr>
+<td>로그인 확인 코드도 페이지마다 넣어야 한다</td>
+<td>로그인해야 볼 수 있는 페이지가 늘어날수록 같은 <code>if</code>가 늘어남</td>
+</tr>
+</tbody></table>
+<p><code>ExceptionServlet</code>에는 이 반복을 직접 지적한 주석이 남아 있다.</p>
+<pre><code class="language-java">// 해당 코드는 응답시에 항상 해주어야 한글이 깨지지 않게 된다.
+// == 계속 반복되는 코드
+//resp.setContentType(&quot;text/html; charset=UTF-8&quot;);
+</code></pre>
+<p>정리하면 과제는 두 가지였다. <strong>요청 사이에 정보를 유지하기</strong>, 그리고 <strong>모든 요청에 필요한 공통 작업을 한 곳에 모으기</strong>.</p>
+<h2 id="해결-과정-action">해결 과정 (Action)</h2>
+<h3 id="1-쿠키--브라우저에-값을-맡기기">1. 쿠키 — 브라우저에 값을 맡기기</h3>
+<p><code>cookie.html</code>의 첫 번째 폼은 입력값을 POST로 <code>/cookie</code>에 보낸다. <code>CookieServlet.doPost()</code>는 쿠키를 만들어 응답에 담는다.</p>
+<pre><code class="language-java">@Override
+protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    // 쿠키에 담을 사용자의 입력값 추출(사용자가 입력했던 abc 는 req에 담겨있음)
+    String cookieValue = req.getParameter(&quot;cookieValue&quot;);
+
+    // 쿠키 객체 생성!
+    Cookie cookie = new Cookie(&quot;userValue&quot;,&quot;cookieValue&quot;);
+    // 쿠키 만료 시간 설정
+    cookie.setMaxAge(60 * 60);      // 60초를 60번 반복한다. (60*60*24) =&gt; 1시간 * 24 = 하루
+
+    // 우리가 만든 쿠키를 브라우저에게 응답(response) / 브라우저에게 보내줄 쿠키 add
+    resp.addCookie(cookie);
+
+    // 아래에 있는 메서드를 호출
+    doGet(req,resp);        //포워드 방식임
+}
+</code></pre>
+<p><code>doGet()</code>은 요청에 실려 온 쿠키 중 <code>userValue</code>를 찾아 JSP로 forward한다.</p>
+<pre><code class="language-java">Cookie[] cookies = req.getCookies();
+if(cookies != null) {
+    for(Cookie cookie : cookies) {
+        if(&quot;userValue&quot;.equals(cookie.getName())) {
+            savedValue=cookie.getValue();
+            break;
+        }
+    }
+}
+
+req.setAttribute(&quot;savedValue&quot;, savedValue);
+
+RequestDispatcher rd = req.getRequestDispatcher(
+        &quot;/h_cookie_session/cookie-result.jsp&quot;
+);
+rd.forward(req,resp);
+</code></pre>
+<p><a href="https://jakarta.ee/specifications/servlet/6.0/apidocs/jakarta.servlet/jakarta/servlet/http/Cookie.html">Cookie 공식 문서</a>에 따르면 <code>setMaxAge()</code>의 단위는 <strong>초</strong>다. <code>60 * 60</code>은 1시간이고, 음수면 브라우저를 닫을 때 지워지며, 0이면 바로 삭제된다.</p>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant B as 브라우저
+    participant S as CookieServlet
+    B-&gt;&gt;S: POST /cookie (cookieValue=abc)
+    S--&gt;&gt;B: 응답 + Set-Cookie: userValue=...; Max-Age=3600
+    Note over B: 브라우저가 쿠키 저장
+    B-&gt;&gt;S: 다음 요청 (Cookie: userValue=...)
+    S-&gt;&gt;S: req.getCookies()로 읽기
+</code></pre>
+<h4 id="코드를-다시-보며-찾은-것-두-가지">코드를 다시 보며 찾은 것 두 가지</h4>
+<p><strong>① 입력값이 아니라 문자열 <code>&quot;cookieValue&quot;</code>가 저장된다.</strong></p>
+<pre><code class="language-java">String cookieValue = req.getParameter(&quot;cookieValue&quot;);
+Cookie cookie = new Cookie(&quot;userValue&quot;,&quot;cookieValue&quot;);   // 따옴표 때문에 변수가 아니라 글자 그대로
+</code></pre>
+<p><code>cookieValue</code> 변수를 만들어 놓고 쓰지 않았다. 쿠키에는 무엇을 입력하든 <code>cookieValue</code>라는 글자가 들어간다.</p>
+<pre><code class="language-java">// 예시 코드 — 입력값을 쿠키에 담기
+Cookie cookie = new Cookie(&quot;userValue&quot;, cookieValue);
+</code></pre>
+<p><strong>② 방금 만든 쿠키는 같은 요청에서 읽을 수 없다.</strong> <code>resp.addCookie()</code>는 응답 헤더(<code>Set-Cookie</code>)에 쿠키를 싣는 것이고, <code>req.getCookies()</code>는 브라우저가 <strong>이번 요청에 보낸</strong> <code>Cookie</code> 헤더를 읽는다. <code>doPost()</code> 안에서 <code>doGet()</code>을 바로 부르면 아직 브라우저가 쿠키를 받기 전이다. 그래서 처음 제출하면 <code>없음!</code>이 나오고, 다시 제출해야 이전에 저장된 값이 보인다.</p>
+<p>참고로 주석의 &quot;포워드 방식임&quot;은 정확히는 <strong>같은 클래스의 메서드를 직접 호출</strong>한 것이다. 실제 forward는 그다음 <code>doGet()</code> 안에서 JSP로 갈 때 일어난다. 앞 글 기준으로 보면 이 흐름은 POST 뒤에 forward라서 새로고침하면 POST가 재전송된다. POST에서 쿠키를 심은 뒤 <code>resp.sendRedirect(&quot;/cookie&quot;)</code>로 GET을 다시 부르면 ①과 ②가 함께 풀린다.</p>
+<pre><code class="language-java">// 예시 코드 — PRG: 쿠키 저장(POST) → redirect → 쿠키 읽기(GET)
+resp.addCookie(new Cookie(&quot;userValue&quot;, cookieValue));
+resp.sendRedirect(&quot;/cookie&quot;);
+</code></pre>
+<h3 id="2-jsp와-el--stringbuilder를-대신하는-응답-담당">2. JSP와 EL — <code>StringBuilder</code>를 대신하는 응답 담당</h3>
+<p>forward 대상이 서블릿이 아니라 JSP가 됐다.</p>
+<pre><code class="language-jsp">&lt;%@ page contentType=&quot;text/html;charset=UTF-8&quot; language=&quot;java&quot; %&gt;
+&lt;html&gt;
+  &lt;body&gt;
+       &lt;h1&gt; 쿠키에 저장 된 값 꺼내기! &lt;/h1&gt;
+       &lt;h3&gt; 쿠키에 저장 된 값 : ${savedValue} &lt;/h3&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p><code>${savedValue}</code>는 EL(Expression Language)로, <code>req.setAttribute(&quot;savedValue&quot;, ...)</code>로 넣은 값을 꺼낸다. 앞 글의 <code>ResponseLoginServlet</code>과 비교하면 차이가 크다.</p>
+<table>
+<thead>
+<tr>
+<th>비교</th>
+<th>서블릿 + <code>StringBuilder</code> (<code>ResponseLoginServlet</code>)</th>
+<th>JSP (<code>cookie-result.jsp</code>)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>HTML 작성</td>
+<td><code>.append(&quot;&lt;h3&gt;&quot;)</code> 한 줄씩</td>
+<td>HTML 그대로</td>
+</tr>
+<tr>
+<td>값 넣기</td>
+<td><code>.append(id)</code></td>
+<td><code>${savedValue}</code></td>
+</tr>
+<tr>
+<td>인코딩 설정</td>
+<td><code>resp.setContentType(...)</code></td>
+<td><code>&lt;%@ page contentType=... %&gt;</code></td>
+</tr>
+<tr>
+<td>응답 출력</td>
+<td><code>getWriter()</code> → <code>print</code> → <code>flush</code> → <code>close</code></td>
+<td>없음 (컨테이너가 처리)</td>
+</tr>
+</tbody></table>
+<p><code>auth.jsp</code> 주석에는 이렇게 적었다.</p>
+<pre><code class="language-jsp">&lt;%
+    //JSP 파일은 HTML 처럼 보이지만 실제로는 Java 로 이루어진 Servlet 이다.
+    // 태그는 내부에서 Java 소스코드를 입력할 수 있다.
+    String user = (String) session.getAttribute(&quot;loggedInUser&quot;);
+ %&gt;
+ &lt;h3&gt; &lt;%= user %&gt; &lt;/h3&gt;
+</code></pre>
+<p>JSP는 처음 요청될 때 서블릿 클래스로 변환·컴파일된다. 결국 앞 글에서 손으로 하던 <code>append</code>를 컨테이너가 대신 만들어주는 셈이다. 이후 화면은 <code>&lt;% %&gt;</code> 스크립틀릿보다 <code>${}</code> EL을 쓰는 쪽이 일반적이다.</p>
+<h3 id="3-세션--값은-서버에-열쇠만-브라우저에">3. 세션 — 값은 서버에, 열쇠만 브라우저에</h3>
+<p>쿠키는 값이 브라우저에 그대로 저장된다. 비밀번호 같은 값을 맡기기엔 위험하다. 세션은 값을 <strong>서버</strong>에 두고, 브라우저에는 세션을 찾는 ID(<code>JSESSIONID</code> 쿠키)만 준다.</p>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant B as 브라우저
+    participant S as SessionServlet
+    participant C as Tomcat 세션 저장소
+    B-&gt;&gt;S: POST /session (userId, userPwd)
+    S-&gt;&gt;C: getSession(true) → 새 세션 생성
+    S-&gt;&gt;C: setAttribute(&quot;loggedInUser&quot;, userId)
+    S--&gt;&gt;B: 응답 + Set-Cookie: JSESSIONID=ABC123
+    B-&gt;&gt;S: GET /session (Cookie: JSESSIONID=ABC123)
+    S-&gt;&gt;C: getSession(false) → ABC123 세션 찾기
+    C--&gt;&gt;S: loggedInUser 값
+</code></pre>
+<p><code>getSession()</code>의 인자에 따라 동작이 다르다. 코드 주석과 <a href="https://jakarta.ee/specifications/servlet/6.0/apidocs/jakarta.servlet/jakarta/servlet/http/HttpServletRequest.html">HttpServletRequest 공식 문서</a>가 같은 내용이다.</p>
+<table>
+<thead>
+<tr>
+<th>호출</th>
+<th>세션이 있을 때</th>
+<th>세션이 없을 때</th>
+<th>쓴 곳</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>getSession(true)</code> / <code>getSession()</code></td>
+<td>기존 세션 반환</td>
+<td>새로 만들어 반환</td>
+<td><code>SessionServlet.doPost()</code> (로그인)</td>
+</tr>
+<tr>
+<td><code>getSession(false)</code></td>
+<td>기존 세션 반환</td>
+<td><code>null</code></td>
+<td><code>doGet()</code>, <code>ExpireServlet</code>, <code>LoginFilter</code> (확인만)</td>
+</tr>
+</tbody></table>
+<p>로그인할 때만 세션을 만들고, 확인할 때는 만들지 않는다. 확인하다가 빈 세션을 만들어버리면 &quot;로그인 안 한 사람&quot;도 세션을 갖게 되기 때문이다.</p>
+<p>로그인 처리(<code>doPost</code>)의 핵심 부분이다.</p>
+<pre><code class="language-java">HttpSession session = req.getSession(true);
+String existUser = (String) session.getAttribute(&quot;loggedInUser&quot;);   // null 문자열이 됨
+
+if(existUser == null || existUser.equals(userId)) {
+    session.setAttribute(&quot;loggedInUser&quot;, userId);
+    if(userPwd != null &amp;&amp; !userPwd.isEmpty()) {
+        session.setAttribute(&quot;userPwd&quot;, userPwd);
+    }
+    session.setMaxInactiveInterval(30); // session 의 유효 기간 설정 30초!
+}
+</code></pre>
+<p><code>setMaxInactiveInterval(30)</code>도 단위가 초다. <strong>마지막 요청 후 30초 동안 요청이 없으면</strong> 세션이 만료된다. 만든 시점부터 30초가 아니라 &quot;비활성 시간&quot;이라는 점이 쿠키의 <code>setMaxAge()</code>와 다르다.</p>
+<p>로그아웃은 <code>ExpireServlet</code>이 맡는다. 세션을 무효화하고 redirect한다.</p>
+<pre><code class="language-java">HttpSession session = req.getSession(false);
+if(session != null) {
+    session.invalidate();       //세션을 무효화 시키는 메서드
+}
+resp.sendRedirect(&quot;/session&quot;);
+</code></pre>
+<h4 id="시행착오-tostring-대신-캐스트">시행착오: <code>.toString()</code> 대신 캐스트</h4>
+<p><code>doPost()</code>에는 처음 쓴 코드가 주석으로 남아 있다.</p>
+<pre><code class="language-java">// String existUser = session.getAttribute(&quot;loggedInUser&quot;).toString();
+/* comment. 위에 줄을 사용하면 오류나는 이유
+    위에서 세션 객체 처음 만들고 getAttribute 를 하면 값이 null 인데, null.toString() 으로 하면
+    .이 참조 연산이므로 nulll 포인트 exception 이 발생하게 된다. 따라서 이 위에 줄로 하면 500번대 에러가 발생함
+ */
+// null 발생 여부가 존재하는 변수를 형변환 시 메서드로 형변환 하는 것보다
+// () : 캐스트 연산자 == 형변환 연산자를 사용하는 것이 훨씬 안정적이다.
+String existUser = (String) session.getAttribute(&quot;loggedInUser&quot;);
+</code></pre>
+<p>새로 만든 세션에는 아무 속성도 없으니 <code>getAttribute()</code>가 <code>null</code>을 돌려주고, <code>null.toString()</code>에서 <code>NullPointerException</code>이 난다. 서블릿에서 처리되지 않은 예외는 500 에러가 된다. <code>(String)</code> 캐스트는 <code>null</code>을 그대로 <code>null</code>로 두기 때문에 안전하다.</p>
+<table>
+<thead>
+<tr>
+<th>방식</th>
+<th>값이 <code>&quot;user01&quot;</code>일 때</th>
+<th>값이 <code>null</code>일 때</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>getAttribute(...).toString()</code></td>
+<td><code>&quot;user01&quot;</code></td>
+<td><code>NullPointerException</code></td>
+</tr>
+<tr>
+<td><code>(String) getAttribute(...)</code></td>
+<td><code>&quot;user01&quot;</code></td>
+<td><code>null</code></td>
+</tr>
+<tr>
+<td><code>String.valueOf(getAttribute(...))</code></td>
+<td><code>&quot;user01&quot;</code></td>
+<td>문자열 <code>&quot;null&quot;</code></td>
+</tr>
+</tbody></table>
+<p>그런데 <code>doGet()</code>에는 아직 <code>.toString()</code>이 남아 있다.</p>
+<pre><code class="language-java">if(session != null) {
+    loggedInUser = session.getAttribute(&quot;loggedInUser&quot;).toString();
+    pwd = session.getAttribute(&quot;userPwd&quot;).toString();
+}
+</code></pre>
+<p>&quot;세션이 있으면 로그인한 것&quot;이라고 가정한 코드다. 하지만 세션이 있어도 속성이 없을 수 있다. 예를 들어 JSP는 기본값이 <code>session=&quot;true&quot;</code>라서 <code>cookie-result.jsp</code>를 거치기만 해도 세션이 생긴다. 쿠키 테스트를 먼저 하고 &quot;세션 확인&quot; 링크를 누르면 세션은 있는데 <code>loggedInUser</code>가 없어 같은 NPE가 날 수 있다. 비밀번호 없이 로그인한 경우의 <code>userPwd</code>도 마찬가지다. <code>doPost()</code>에서 고친 방식을 그대로 적용하면 된다.</p>
+<pre><code class="language-java">// 예시 코드 — doGet()에도 캐스트 적용
+if(session != null) {
+    loggedInUser = (String) session.getAttribute(&quot;loggedInUser&quot;);
+    pwd = (String) session.getAttribute(&quot;userPwd&quot;);
+}
+</code></pre>
+<p>그 밖에 <code>doPost()</code>의 <code>if</code>/<code>else</code> 두 블록은 내용이 똑같고, 바깥 조건 <code>userId != null &amp;&amp; !userPwd.isEmpty()</code>가 거짓이면(비밀번호를 비우고 제출하면) 아무 응답도 하지 않는다. &quot;다른 사용자가 로그인하면 어떻게 할지&quot;를 나누려다 남은 흔적으로 보인다.</p>
+<h4 id="쿠키-vs-세션">쿠키 vs 세션</h4>
+<table>
+<thead>
+<tr>
+<th>비교</th>
+<th>쿠키</th>
+<th>세션</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>값 저장 위치</td>
+<td>브라우저</td>
+<td>서버 (브라우저에는 <code>JSESSIONID</code>만)</td>
+</tr>
+<tr>
+<td>만드는 법</td>
+<td><code>new Cookie(이름, 값)</code> + <code>resp.addCookie()</code></td>
+<td><code>req.getSession(true)</code></td>
+</tr>
+<tr>
+<td>값 넣기/꺼내기</td>
+<td>생성자 / <code>req.getCookies()</code> 반복문</td>
+<td><code>setAttribute()</code> / <code>getAttribute()</code></td>
+</tr>
+<tr>
+<td>값 타입</td>
+<td>문자열만</td>
+<td>아무 객체</td>
+</tr>
+<tr>
+<td>만료</td>
+<td><code>setMaxAge(초)</code> — 생성 후 시간</td>
+<td><code>setMaxInactiveInterval(초)</code> — 마지막 요청 후 시간</td>
+</tr>
+<tr>
+<td>삭제</td>
+<td><code>setMaxAge(0)</code></td>
+<td><code>invalidate()</code></td>
+</tr>
+<tr>
+<td>실습 용도</td>
+<td>사용자가 입력한 값 기억</td>
+<td>로그인 사용자 기억</td>
+</tr>
+</tbody></table>
+<h3 id="4-필터--서블릿-앞에서-먼저-처리하기">4. 필터 — 서블릿 앞에서 먼저 처리하기</h3>
+<p><code>LoginFilter</code> 주석에 필터의 위치가 정리되어 있다.</p>
+<pre><code class="language-java">/* comment.
+    Filter 는 Http 요청이  Servlet 에 도달하기 전에 동작하는 생명주기를 갖는다.
+    서블릿에게 도달하기 전에 동작함!!
+    @WebFilter(&quot;필터가 동작하는 경로&quot;)
+    괄호 안에 있는 경로가 들어왔을 때만 필터가 동작함
+ */
+</code></pre>
+<p>실습에서 만든 필터는 3개이고, 등록 방식이 두 가지로 섞여 있다.</p>
+<table>
+<thead>
+<tr>
+<th>필터</th>
+<th>등록 방식</th>
+<th>적용 URL</th>
+<th>하는 일</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>EncodingFilter</code></td>
+<td><code>web.xml</code></td>
+<td><code>/*</code></td>
+<td>응답 <code>Content-Type</code> 설정</td>
+</tr>
+<tr>
+<td><code>Performance</code></td>
+<td><code>@WebFilter(&quot;/*&quot;)</code></td>
+<td><code>/*</code></td>
+<td>요청 처리 시간 측정</td>
+</tr>
+<tr>
+<td><code>LoginFilter</code></td>
+<td><code>@WebFilter(&quot;/auth/*&quot;)</code></td>
+<td><code>/auth/*</code></td>
+<td>세션 없으면 로그인 화면으로 redirect</td>
+</tr>
+</tbody></table>
+<pre><code class="language-mermaid">flowchart LR
+    B[브라우저] --&gt; F1[EncodingFilter]
+    F1 --&gt; F2[Performance]
+    F2 --&gt; F3{&quot;LoginFilter&lt;br/&gt;(/auth 요청만)&quot;}
+    F3 --&gt;|세션에 loggedInUser 있음| A[AuthServlet]
+    F3 --&gt;|없음| R[&quot;sendRedirect&lt;br/&gt;cookie.html&quot;]
+    A --&gt; J[auth.jsp]
+</code></pre>
+<h4 id="4-1-encodingfilter--반복되던-한-줄을-한-곳으로">4-1. <code>EncodingFilter</code> — 반복되던 한 줄을 한 곳으로</h4>
+<p>5개 서블릿에서 주석 처리된 <code>setContentType(...)</code>이 여기 하나로 모였다.</p>
+<pre><code class="language-java">public class EncodingFilter implements Filter {
+
+    private String encodingType;
+
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+        System.out.println(&quot;인코딩 필터의 init() 호출됨...&quot;);
+        encodingType = filterConfig.getInitParameter(&quot;encoding-type&quot;);
+    }
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+        response.setContentType(encodingType);
+        chain.doFilter(request, response);
+    }
+}
+</code></pre>
+<p>값은 코드에 박지 않고 <code>web.xml</code>의 <code>&lt;init-param&gt;</code>에서 받는다.</p>
+<pre><code class="language-xml">&lt;filter&gt;
+    &lt;filter-name&gt;encoding&lt;/filter-name&gt;
+    &lt;filter-class&gt;com.wanted.servlet.i_filter.EncodingFilter&lt;/filter-class&gt;
+    &lt;init-param&gt;
+        &lt;param-name&gt;encoding-type&lt;/param-name&gt;
+        &lt;param-value&gt;text/html; charset=UTF-8&lt;/param-value&gt;
+    &lt;/init-param&gt;
+&lt;/filter&gt;
+
+&lt;filter-mapping&gt;
+    &lt;filter-name&gt;encoding&lt;/filter-name&gt;
+    &lt;url-pattern&gt;/*&lt;/url-pattern&gt;
+&lt;/filter-mapping&gt;
+</code></pre>
+<p><code>init()</code>은 서블릿처럼 필터가 만들어질 때 한 번만 불리고, <code>doFilter()</code>는 요청마다 불린다. 첫 글에서 본 서블릿 라이프사이클과 같은 구조다. <code>d_response</code>의 <code>ResponseServlet</code>이 <code>resp.getContentType()</code>을 출력하던 것도 이 필터를 거치면 <code>null</code>이 아니라 설정된 값이 찍히게 된다.</p>
+<h4 id="4-2-performance--chaindofilter-앞뒤">4-2. <code>Performance</code> — <code>chain.doFilter()</code> 앞뒤</h4>
+<pre><code class="language-java">long startTime = System.currentTimeMillis();
+
+// 다음 서블릿 OR 필터 호출
+chain.doFilter(request, response);  //서블릿이나 필터가 다 거치고 되돌아옴.
+
+long endTime = System.currentTimeMillis();
+
+System.out.println(&quot;[&quot; + req.getRequestURI() + &quot;의 최종 수행 시간 : &quot; + (endTime-startTime) + &quot;(ms)&quot;);
+</code></pre>
+<p><code>chain.doFilter()</code>는 다음 필터(없으면 서블릿)를 부르는 <strong>메서드 호출</strong>이라, 서블릿까지 다 처리되면 다시 이 줄 아래로 돌아온다. 그래서 앞에 쓴 코드는 요청 전에, 뒤에 쓴 코드는 응답 후에 실행된다. 필터 하나로 요청과 응답을 모두 감쌀 수 있다.</p>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant P as Performance
+    participant L as LoginFilter
+    participant A as AuthServlet
+    P-&gt;&gt;P: startTime 기록
+    P-&gt;&gt;L: chain.doFilter()
+    L-&gt;&gt;A: chain.doFilter()
+    A--&gt;&gt;L: 처리 완료
+    L--&gt;&gt;P: 반환
+    P-&gt;&gt;P: endTime - startTime 출력
+</code></pre>
+<p>매개변수가 <code>HttpServletRequest</code>가 아니라 <code>ServletRequest</code>인 이유도 주석으로 남겨뒀다.</p>
+<pre><code class="language-java">//HttpRequest 로 받으면 되는거 아니야?? -&gt; 언젠가는 HTTP 보다 훨씬 좋은 것이
+//생길 수 있음. 따라서 부모로 받아버리면 괜찮으니까. ServletRequest 로 작성.
+</code></pre>
+<p><code>Filter</code> 인터페이스 자체가 HTTP에 묶이지 않게 설계되어 있다. 그래서 <code>getRequestURI()</code>, <code>getSession()</code>처럼 HTTP 전용 메서드를 쓰려면 <code>(HttpServletRequest) request</code>로 형변환해야 한다. <code>Performance</code>와 <code>LoginFilter</code> 둘 다 첫 줄에서 형변환하는 이유다.</p>
+<h4 id="4-3-loginfilter--로그인-검사를-서블릿-밖으로">4-3. <code>LoginFilter</code> — 로그인 검사를 서블릿 밖으로</h4>
+<pre><code class="language-java">HttpServletRequest req = (HttpServletRequest) request;
+HttpServletResponse resp = (HttpServletResponse) response;
+
+// 기존 세션 유무 확인!
+HttpSession session = req.getSession(false);
+
+if(session == null || session.getAttribute(&quot;loggedInUser&quot;) == null) {
+    resp.sendRedirect(&quot;/h_cookie_session/cookie.html&quot;);
+} else {
+    // ⭕ 통과! 다음 필터 또는 목표 서블릿으로 요청을 넘깁니다.
+    chain.doFilter(req, resp);
+}
+</code></pre>
+<p><strong><code>chain.doFilter()</code>를 부르지 않으면 요청은 서블릿에 도착하지 않는다.</strong> 로그인 안 한 사용자는 <code>AuthServlet</code>에 가지 못하고 로그인 화면으로 redirect된다.</p>
+<p>그 덕분에 <code>AuthServlet</code>은 세션 검사를 하지 않는다.</p>
+<pre><code class="language-java">HttpSession session = req.getSession(false);
+
+// 기존에 로그인 유저 정보 세션에서 꺼내오기
+String existUser = (String)session.getAttribute(&quot;loggedInUser&quot;);
+session.setAttribute(&quot;loggedInUser&quot;, existUser);
+</code></pre>
+<p><code>getSession(false)</code>는 <code>null</code>일 수 있는데 바로 <code>.getAttribute()</code>를 부른다. 필터가 앞에서 막아준다는 전제가 있어야 안전한 코드다. 필터 매핑이 빠지면 바로 NPE가 된다. 또 <code>auth.jsp</code>가 세션에서 직접 <code>loggedInUser</code>를 꺼내므로, 같은 값을 다시 <code>setAttribute()</code>하는 두 줄은 없어도 결과가 같다.</p>
+<h4 id="필터-실행-순서">필터 실행 순서</h4>
+<p><code>EncodingFilter</code>는 <code>web.xml</code>, 나머지 둘은 어노테이션으로 등록했다. Servlet 스펙에서 필터 순서는 <code>web.xml</code>의 <code>&lt;filter-mapping&gt;</code> 선언 순서로 정해지고, <strong>어노테이션(<code>@WebFilter</code>)만으로는 순서를 지정할 수 없다.</strong> 순서가 중요하면(예: 인코딩을 다른 필터보다 먼저) <code>web.xml</code>에 매핑을 적어야 한다. EncodingFilter 주석에 &quot;xml → 옛날 프로젝트 방식&quot;이라고 적었지만, 순서 제어와 <code>&lt;init-param&gt;</code> 때문에 지금도 <code>web.xml</code>을 쓰는 이유가 있는 셈이다.</p>
+<h2 id="결과-result">결과 (Result)</h2>
+<table>
+<thead>
+<tr>
+<th>항목</th>
+<th>Before (앞 글까지)</th>
+<th>After (이번 실습)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>setContentType(...)</code></td>
+<td>5개 서블릿에 반복</td>
+<td><code>EncodingFilter</code> 1곳 (5줄 → 1줄)</td>
+</tr>
+<tr>
+<td>응답 HTML 작성</td>
+<td><code>StringBuilder</code> 서블릿 4개</td>
+<td>JSP 3개 (<code>cookie-result</code>, <code>session-result</code>, <code>auth</code>)</td>
+</tr>
+<tr>
+<td>redirect 후 정보</td>
+<td>사라짐</td>
+<td>쿠키(3600초) / 세션(비활성 30초) 동안 유지</td>
+</tr>
+<tr>
+<td>로그인 확인 코드</td>
+<td>페이지마다 필요</td>
+<td><code>LoginFilter</code> 1곳 (<code>/auth/*</code>)</td>
+</tr>
+<tr>
+<td>새로 만든 클래스</td>
+<td>-</td>
+<td>서블릿 4개 + 필터 3개 (총 360줄)</td>
+</tr>
+</tbody></table>
+<p><code>chap01-servlet</code> 전체로 보면 <code>web.xml</code>이 0줄에서 에러 페이지 2개 + 필터 1개로 늘었고, 서블릿 16개 · 필터 3개 · JSP 3개(실습용 <code>index.jsp</code> 제외)가 됐다.</p>
+<p><strong>배운 점</strong></p>
+<ul>
+<li>HTTP는 요청끼리 서로를 모른다. 쿠키는 브라우저에, 세션은 서버에 값을 두고 <code>JSESSIONID</code>로 이어 붙여 그 공백을 메운다.</li>
+<li><code>getSession(true)</code>는 만들 때만, 확인할 때는 <code>getSession(false)</code>. 세션이 있다고 속성이 있는 건 아니다.</li>
+<li><code>null</code>일 수 있는 값에 <code>.</code>을 찍지 않는다. 내 코드 주석에 적은 이 원칙을 같은 클래스의 <code>doGet()</code>에는 아직 적용하지 못했다.</li>
+<li>필터는 &quot;서블릿 앞의 서블릿&quot;이다. 모든 요청에 필요한 일(인코딩, 시간 측정, 로그인 검사)은 서블릿이 아니라 필터에 둔다.</li>
+</ul>
+<h2 id="더-학습하면-좋은-개념">더 학습하면 좋은 개념</h2>
+<ul>
+<li><strong>쿠키 보안 속성 (<code>HttpOnly</code>, <code>Secure</code>, <code>SameSite</code>)</strong> — <code>JSESSIONID</code>가 탈취되면 로그인이 통째로 넘어간다. 자바스크립트 접근 차단, HTTPS 전용, 다른 사이트 요청 차단 속성을 알아야 세션을 안전하게 쓸 수 있다.</li>
+<li><strong>세션 고정 공격과 <code>changeSessionId()</code></strong> — 로그인 성공 시 세션 ID를 바꿔야 하는 이유. <code>HttpServletRequest.changeSessionId()</code>가 이 용도로 있다.</li>
+<li><strong><code>request-character-encoding</code> / <code>response-character-encoding</code></strong> — Servlet 4.0부터 <code>web.xml</code>에 기본 인코딩을 선언할 수 있다. 인코딩 필터 없이 같은 효과를 내는 방법이다.</li>
+<li><strong><code>HttpFilter</code></strong> — <code>Filter</code>를 HTTP 전용으로 감싼 추상 클래스(Servlet 4.0+). 매번 하던 <code>(HttpServletRequest)</code> 형변환이 필요 없다.</li>
+<li><strong>Spring Security의 필터 체인</strong> — <code>LoginFilter</code>처럼 필터로 인증을 처리하는 구조를 크게 확장한 것이다. 이번 실습의 <code>chain.doFilter()</code> 흐름이 그대로 이어진다.</li>
+</ul>
+<h2 id="참고-자료">참고 자료</h2>
+<ul>
+<li><a href="https://jakarta.ee/specifications/servlet/6.0/apidocs/jakarta.servlet/jakarta/servlet/http/Cookie.html">Jakarta Servlet API - Cookie</a></li>
+<li><a href="https://jakarta.ee/specifications/servlet/6.0/apidocs/jakarta.servlet/jakarta/servlet/http/HttpSession.html">Jakarta Servlet API - HttpSession</a></li>
+<li><a href="https://jakarta.ee/specifications/servlet/6.0/apidocs/jakarta.servlet/jakarta/servlet/http/HttpServletRequest.html">Jakarta Servlet API - HttpServletRequest</a></li>
+<li><a href="https://jakarta.ee/specifications/servlet/6.0/apidocs/jakarta.servlet/jakarta/servlet/Filter.html">Jakarta Servlet API - Filter</a></li>
+<li><a href="https://jakarta.ee/specifications/servlet/6.0/apidocs/jakarta.servlet/jakarta/servlet/FilterChain.html">Jakarta Servlet API - FilterChain</a></li>
+<li><a href="https://jakarta.ee/specifications/servlet/6.1/jakarta-servlet-spec-6.1">Jakarta Servlet 6.1 Specification</a></li>
+<li><a href="https://jakarta.ee/specifications/expression-language/">Jakarta Expression Language</a></li>
+<li><a href="https://developer.mozilla.org/ko/docs/Web/HTTP/Cookies">MDN - HTTP 쿠키</a></li>
+</ul>
+
+    </article>
+
+    <div class="post-edit-bar">
+      <a class="post-edit-link" href="../../../write.html?edit=2026-10-23-redirect%EA%B0%80-%EC%9E%8A%EC%96%B4%EB%B2%84%EB%A6%B0-%EC%A0%95%EB%B3%B4-%EC%A7%80%ED%82%A4%EA%B8%B0-%EC%BF%A0%ED%82%A4%2C-%EC%84%B8%EC%85%98%2C-%EA%B7%B8%EB%A6%AC%EA%B3%A0-%ED%95%84%ED%84%B0.html">수정하기 →</a>
+    </div>
+
+    <nav class="post-nav">
+      <a class="post-nav-item " href="../../Study/Learned/2026-10-23-%EC%9D%91%EB%8B%B5%EC%9D%80-%EB%88%84%EA%B0%80-%ED%95%A0%EA%B9%8C-%EC%84%9C%EB%B8%94%EB%A6%BF-%EC%9D%91%EB%8B%B5%2C-%EC%97%90%EB%9F%AC-%ED%8E%98%EC%9D%B4%EC%A7%80%2C-forward%EC%99%80-redirect.html">
+         <span class="post-nav-label">이전 글</span>
+         <span class="post-nav-title">응답은 누가 할까: 서블릿 응답, 에러 페이지, forward와 redirect</span>
+       </a>
+      <div class="post-nav-item is-next">
+         <span class="post-nav-label">다음 글</span>
+         <span class="post-nav-empty">없음</span>
+       </div>
+    </nav>
+
+    </div>
+  </main>
+
+</div>
+
+<script src="../../../sidebar-motion.js"></script>
+<script type="module">
+  // 본문의 ```mermaid 코드 블록을 다이어그램으로 바꿔 그림 (mermaid를 쓴 글에만 포함됨)
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.esm.min.mjs';
+  document.querySelectorAll('pre > code.language-mermaid').forEach(code => {
+    const div = document.createElement('div');
+    div.className = 'mermaid';
+    div.textContent = code.textContent;
+    code.parentElement.replaceWith(div);
+  });
+  mermaid.initialize({ startOnLoad: false });
+  mermaid.run();
+</script>
+</body>
+</html>
