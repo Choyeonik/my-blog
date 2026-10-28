@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bean이 100개라면?: @Bean 대신 @ComponentScan으로 자동 등록하기 — Portfolio Blog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500;700&family=EB+Garamond:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Gowun+Batang&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+
+<div class="layout">
+<aside class="sidebar">
+
+    <div class="brand">Yeonn</div>
+
+    <section class="categories">
+      <ul class="category-list">
+        <li>
+          <a class="category-total" href="../../../index.html">
+            <span class="cat-name">Total</span>
+            <span class="count">41</span>
+          </a>
+          <ul class="category-sub">
+      <li>
+        <a href="../../../index.html?filter=Project"><span class="cat-name">Project</span> <span class="count">2</span></a>
+        
+      </li>
+      <li>
+        <a href="../../../index.html?filter=Study"><span class="cat-name">Study</span> <span class="count">14</span></a>
+        
+        <ul class="category-sub-nested">
+          
+            <li><a href="../../../index.html?filter=Learned">Learned <span class="count">14</span></a></li>
+          
+        </ul>
+      </li>
+      <li>
+        <a href="../../../index.html?filter=Photo"><span class="cat-name">Photo</span> <span class="count">25</span></a>
+        
+      </li><li><a href="../../../index.html?filter=about"><span class="cat-name">About</span></a></li></ul>
+        </li>
+      </ul>
+    </section>
+
+    <div class="sidebar-links">
+      <a href="../../../write.html" class="write-link">새 글 쓰기 →</a>
+      <a href="../../../settings.html" class="write-link">설정 →</a>
+    </div>
+
+  </aside>
+
+  <main class="post-page">
+
+    <!-- 검정 고정 프레임 + 링바인더: 홈 화면(.main)과 같은 디자인이 개별 글 페이지에도 이어지도록 함 -->
+    <div class="main-frame-top" aria-hidden="true"></div>
+    <div class="main-frame-bottom" aria-hidden="true"></div>
+    <div class="main-frame-right" aria-hidden="true"></div>
+    <div class="ring-strip" aria-hidden="true">
+      <span class="ring"></span>
+      <span class="ring"></span>
+      <span class="ring"></span>
+    </div>
+
+    <div class="page-inner">
+
+    <div class="main-topbar">
+      <section class="search-box">
+        <form action="../../../index.html" method="get">
+          <input type="text" name="q" placeholder="검색어를 입력하세요">
+          <button type="submit" aria-label="검색">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+        </form>
+      </section>
+    </div>
+
+    <div class="post-header">
+      <div class="card-tag">Learned</div>
+      <h1>Bean이 100개라면?: @Bean 대신 @ComponentScan으로 자동 등록하기</h1>
+      <p class="post-desc">07_Spring-Core chap02 첫 번째 실습. 설정 클래스에 @Bean을 하나씩 적던 방식을 @ComponentScan과 @Component 계열 어노테이션으로 바꾸고, 스캔 범위와 제외 필터, 싱글톤 Bean의 상태 문제까지 정리했다.</p>
+      <div class="post-date">2026-10-27</div>
+    </div>
+
+    <article class="post-body">
+<h2 id="들어가며-situation">들어가며 (Situation)</h2>
+<p>07_Spring-Core 강의의 <code>chap02-dependency-injection</code>을 실습했다. 이번 챕터는 두 섹션으로 나뉘어 있어서 글도 두 편으로 나눴다.</p>
+<table>
+<thead>
+<tr>
+<th>순서</th>
+<th>패키지</th>
+<th>다룬 것</th>
+<th>글</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><code>section01</code></td>
+<td><code>@ComponentScan</code>으로 Bean 자동 등록</td>
+<td>이 글</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>section02</code></td>
+<td>필드 / setter / 생성자 주입 비교</td>
+<td>다음 글</td>
+</tr>
+</tbody></table>
+<p>실습 도메인은 chap01과 같은 <strong>결제</strong>다. <code>PaymentService</code>가 결제 비즈니스 로직을 맡고, 실제 결제는 <code>PaymentInterface</code>를 구현한 <code>NaverPayGateway</code>가 한다.</p>
+<pre><code class="language-mermaid">flowchart LR
+    A[Application] --&gt;|getBean| C[(IoC Container)]
+    C --&gt; S[PaymentService]
+    S --&gt;|PaymentInterface| G[NaverPayGateway]
+</code></pre>
+<p>의존성은 <code>build.gradle</code>에 <code>spring-context</code> 하나만 추가했다. Spring Boot 없이 순수 Spring Framework로 실습한다.</p>
+<pre><code class="language-groovy">/* spring-context : Spring 프레임 워크의 핵심 의존성. IoC Container 생성 */
+implementation &#39;org.springframework:spring-context:7.0.8&#39;
+</code></pre>
+<h2 id="문제-상황-task">문제 상황 (Task)</h2>
+<p>chap01에서는 설정 클래스(<code>AppConfig</code>)에 등록할 객체를 <code>@Bean</code> 메서드로 하나하나 적었다.</p>
+<pre><code class="language-java">@Configuration
+public class AppConfig {
+
+    @Bean
+    public KakaoPayGateway kakaoPayGateway() {
+        return new KakaoPayGateway();
+    }
+
+    @Bean
+    public NaverPayGateway naverPayGateway() {
+        return new NaverPayGateway();
+    }
+
+    @Bean(&quot;single&quot;)
+    @Scope(&quot;singleton&quot;)
+    public PaymentService paymentService() {
+        return new PaymentService(naverPayGateway());
+    }
+    // ...
+}
+</code></pre>
+<p>클래스 3개를 등록하는 데 메서드 4개가 필요했고, <code>PaymentService</code>에 어떤 Gateway를 넣을지도 내가 직접 <code>naverPayGateway()</code>를 호출해서 연결했다. section01 <code>Application</code>의 첫 주석이 바로 이 문제를 던진다.</p>
+<pre><code class="language-java">/* comment.
+*   AppConfig 파일 하위에 Bean 들을 정의해서
+*   IoC 컨테이너에 등록 했었다.
+*   ---
+*   문제 제기! : 만약 Bean 이 100개 라면?
+*  */
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>문제</th>
+<th>이유</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>설정 클래스가 계속 길어진다</td>
+<td>클래스 하나당 <code>@Bean</code> 메서드 하나</td>
+</tr>
+<tr>
+<td>연결도 직접 해야 한다</td>
+<td><code>new PaymentService(naverPayGateway())</code>처럼 생성자 인자를 내가 채움</td>
+</tr>
+<tr>
+<td>클래스를 추가할 때마다 두 곳을 고쳐야 한다</td>
+<td>클래스 파일 + <code>AppConfig</code></td>
+</tr>
+</tbody></table>
+<p><strong>등록할 클래스가 스스로 &quot;나를 Bean으로 등록해줘&quot;라고 표시하고, 컨테이너가 그걸 찾아가게 할 수는 없을까?</strong></p>
+<h2 id="해결-과정-action">해결 과정 (Action)</h2>
+<h3 id="1-클래스에-표시하기-component와-service">1. 클래스에 표시하기: <code>@Component</code>와 <code>@Service</code></h3>
+<p>먼저 Bean으로 등록할 클래스에 어노테이션을 붙였다. Gateway에는 <code>@Component</code>를 붙였다.</p>
+<pre><code class="language-java">@Component
+public class NaverPayGateway implements PaymentInterface {
+
+    @Override
+    public boolean processPay(String orderId, int amount) {
+        System.out.println(&quot;네이버페이로 결제 시작! : 주문 ID = &quot; + orderId + &quot;, 수량 = &quot; + amount);
+        return true;
+    }
+}
+</code></pre>
+<p><code>PaymentService</code>에는 <code>@Service</code>를 붙였다.</p>
+<pre><code class="language-java">/* comment.
+*   @Service 어노테이션은 @Component 의
+*   특수한 형태이다.
+*   MVC 패턴 중 Service 계층에 해당하는 Bean에
+*   붙이게 된다.
+*  */
+@Service
+public class PaymentService {
+
+    private final PaymentInterface paymentInterface;
+
+    public PaymentService(PaymentInterface paymentInterface) {
+        this.paymentInterface = paymentInterface;
+    }
+    // ...
+}
+</code></pre>
+<p><code>@Service</code>는 내부적으로 <code>@Component</code>가 붙어 있는 어노테이션이라 스캔 대상이 되는 건 똑같다. 공식 문서는 이런 어노테이션들을 <strong>스테레오타입(stereotype) 어노테이션</strong>이라고 부른다.</p>
+<table>
+<thead>
+<tr>
+<th>어노테이션</th>
+<th>붙이는 곳</th>
+<th>비고</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>@Component</code></td>
+<td>범용 컴포넌트</td>
+<td>이번 실습의 <code>NaverPayGateway</code>, <code>Test</code></td>
+</tr>
+<tr>
+<td><code>@Service</code></td>
+<td>서비스 계층</td>
+<td>이번 실습의 <code>PaymentService</code></td>
+</tr>
+<tr>
+<td><code>@Repository</code></td>
+<td>데이터 접근 계층</td>
+<td>영속성 예외 변환 기능이 추가된다</td>
+</tr>
+<tr>
+<td><code>@Controller</code></td>
+<td>웹 계층</td>
+<td>Spring MVC에서 사용</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><code>@Repository</code>, <code>@Service</code>, and <code>@Controller</code> are specializations of <code>@Component</code> for more specific use cases (in the persistence, service, and presentation layers, respectively).<br>— <a href="https://docs.spring.io/spring-framework/reference/core/beans/classpath-scanning.html">Spring Framework Reference: Classpath Scanning and Managed Components</a></p>
+</blockquote>
+<p>여기서 눈여겨본 건 <code>PaymentService</code>의 생성자다. chap01에서는 내가 <code>naverPayGateway()</code>를 넣어줬지만, 이제는 <code>AppConfig</code>에 그런 코드가 없다. 그런데도 실행하면 네이버페이 결제가 정상 출력된다. 컨테이너가 <code>PaymentInterface</code> 타입 Bean(<code>NaverPayGateway</code>)을 찾아서 생성자에 넣어준 것이다. 이게 다음 글의 주제인 <strong>의존성 주입</strong>이다.</p>
+<h3 id="2-찾아가게-하기-componentscan">2. 찾아가게 하기: <code>@ComponentScan</code></h3>
+<p>표시만 해서는 아무 일도 일어나지 않는다. 컨테이너에게 &quot;어디를 뒤져라&quot;라고 알려줘야 한다. <code>AppConfig</code>가 이렇게 바뀌었다.</p>
+<pre><code class="language-java">@Configuration
+@ComponentScan(basePackages = &quot;com.wanted.di.section01&quot; ,
+    excludeFilters = @ComponentScan.Filter(
+            // ...
+    )
+)
+//@ComponentScan
+public class AppConfig {
+
+}
+</code></pre>
+<p><code>@Bean</code> 메서드가 전부 사라지고 <strong>클래스 몸통이 비었다.</strong> Bean이 100개가 되어도 <code>AppConfig</code>는 이 상태 그대로다.</p>
+<p>컨테이너를 만드는 <code>Application</code> 코드는 chap01과 같다.</p>
+<pre><code class="language-java">// IoC Container 생성
+// IoC Container == Application Context == Bean Factory
+ApplicationContext context =
+        new AnnotationConfigApplicationContext(AppConfig.class);
+
+PaymentService pay = context.getBean(&quot;paymentService&quot;, PaymentService.class);
+pay.processPay(&quot;order-003&quot;, 3);
+</code></pre>
+<p><code>@Bean</code>에서는 메서드 이름이 Bean 이름이었는데, 스캔으로 등록하면 이름을 어디서 가져올까? <code>getBean(&quot;paymentService&quot;, ...)</code>로 꺼낸 걸 보면 <strong>클래스 이름의 첫 글자를 소문자로 바꾼 것</strong>이 기본 이름이다. (<code>PaymentService</code> → <code>paymentService</code>) 다음 글에서는 <code>@Service(&quot;field&quot;)</code>처럼 이름을 직접 지정해본다.</p>
+<p>전체 흐름을 그려보면 이렇다.</p>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant App as Application
+    participant Ctx as AnnotationConfigApplicationContext
+    participant Pkg as com.wanted.di.section01
+
+    App-&gt;&gt;Ctx: new (AppConfig.class)
+    Ctx-&gt;&gt;Ctx: AppConfig의 @ComponentScan 읽기
+    Ctx-&gt;&gt;Pkg: 하위 클래스 스캔
+    Pkg--&gt;&gt;Ctx: @Component / @Service 붙은 클래스
+    Ctx-&gt;&gt;Ctx: NaverPayGateway 생성
+    Ctx-&gt;&gt;Ctx: PaymentService 생성 (생성자에 NaverPayGateway 주입)
+    App-&gt;&gt;Ctx: getBean(&quot;paymentService&quot;)
+    Ctx--&gt;&gt;App: PaymentService
+</code></pre>
+<h3 id="3-스캔-범위-basepackages">3. 스캔 범위: <code>basePackages</code></h3>
+<p><code>AppConfig</code>에는 <code>//@ComponentScan</code>처럼 속성 없는 버전이 주석으로 남아 있다. 강의 주석에는 차이가 이렇게 적혀 있었다.</p>
+<pre><code class="language-java">/* comment.
+*   basePackages 지정을 하지 않으면
+*   스캔의 범위가 @ComponentScan 달려있는 클래스와
+*   동일한 레벨(같은 패키지)까지만 스캔이 가능하다.
+*  */
+</code></pre>
+<p><code>AppConfig</code>는 <code>section01.config</code> 패키지에 있고, 등록하려는 클래스는 <code>section01.gateway</code>, <code>section01.service</code>에 있다. <code>basePackages</code> 없이 스캔하면 <code>config</code> 패키지 기준으로만 찾으므로 <code>gateway</code>와 <code>service</code>는 범위 밖이다. 그래서 <code>basePackages = &quot;com.wanted.di.section01&quot;</code>로 한 단계 위를 지정했다.</p>
+<pre><code class="language-text">com.wanted.di.section01          ← basePackages로 지정한 시작점
+├── Application
+├── config                       ← basePackages 없으면 여기서 시작
+│   ├── AppConfig
+│   └── Test (@Component)
+├── gateway
+│   └── NaverPayGateway (@Component)
+└── service
+    └── PaymentService (@Service)
+</code></pre>
+<p>다만 공식 Javadoc을 확인해보니 &quot;같은 패키지까지만&quot;보다는 <strong>선언한 클래스의 패키지와 그 하위 패키지</strong>가 기본 범위였다.</p>
+<blockquote>
+<p>If specific packages are not defined, scanning will occur from the package of the class that declares this annotation.<br>— <a href="https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/ComponentScan.html">ComponentScan Javadoc</a></p>
+</blockquote>
+<p><code>config</code> 아래에 하위 패키지가 없어서 실습에서는 결과가 같다. 하지만 이 규칙 때문에 Spring Boot에서는 <code>@SpringBootApplication</code> 클래스를 <strong>최상위 패키지</strong>에 두는 관례가 생겼다고 한다.</p>
+<p><code>config</code> 패키지 안에 있는 빈 클래스 <code>Test</code>도 <code>@Component</code>가 붙어 있으니 같이 등록된다. 스캔 범위 확인용으로 둔 클래스로 보인다.</p>
+<!-- TODO: Test 클래스를 둔 목적이 강의에서 따로 설명됐는지? (예: basePackages 없이 스캔했을 때 Test만 등록되는 것을 확인) 실제로 basePackages 없이 돌려서 NoSuchBeanDefinitionException 같은 에러를 봤다면 에러 메시지를 알려주세요. -->
+
+<h3 id="4-스캔에서-빼기-excludefilters">4. 스캔에서 빼기: <code>excludeFilters</code></h3>
+<p>반대로 범위 안에 있지만 등록하고 싶지 않은 클래스도 있다. <code>excludeFilters</code>에 세 가지 방법이 주석으로 남아 있었다. 하나씩 주석을 풀어가며 실습한 흔적이다.</p>
+<pre><code class="language-java">excludeFilters = @ComponentScan.Filter(
+        // 1. 클래스명 제외
+//            type = FilterType.ASSIGNABLE_TYPE, classes = {PaymentService.class}
+        // 2. 어노테이션 제외
+//            type = FilterType.ANNOTATION, classes = {org.springframework.stereotype.Service.class}
+        // 3. 정규표현식 제외
+//            type = FilterType.REGEX, pattern = {&quot;com.wanted.di.section01.service.*&quot;}
+)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th><code>FilterType</code></th>
+<th>기준</th>
+<th>실습 코드에서 제외되는 것</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ASSIGNABLE_TYPE</code></td>
+<td>특정 클래스(와 그 하위 타입)</td>
+<td><code>PaymentService</code></td>
+</tr>
+<tr>
+<td><code>ANNOTATION</code></td>
+<td>특정 어노테이션이 붙은 클래스</td>
+<td><code>@Service</code>가 붙은 클래스 = <code>PaymentService</code></td>
+</tr>
+<tr>
+<td><code>REGEX</code></td>
+<td>클래스 전체 이름 정규식</td>
+<td><code>service</code> 패키지 아래 전부 = <code>PaymentService</code></td>
+</tr>
+<tr>
+<td><code>ASPECTJ</code></td>
+<td>AspectJ 타입 패턴</td>
+<td>(실습 안 함)</td>
+</tr>
+<tr>
+<td><code>CUSTOM</code></td>
+<td><code>TypeFilter</code> 직접 구현</td>
+<td>(실습 안 함)</td>
+</tr>
+</tbody></table>
+<p>세 방법 모두 결과적으로 <code>PaymentService</code>를 빼는 예제다. 이 상태에서 <code>Application</code>을 실행하면 <code>getBean(&quot;paymentService&quot;, ...)</code>에서 해당 이름의 Bean을 찾지 못해 예외가 난다.</p>
+<!-- TODO: 필터를 켜고 실행했을 때 실제로 본 예외 메시지(NoSuchBeanDefinitionException 등)를 알려주세요. 없으면 이 문장을 "예외가 날 것이다"로 바꾸겠습니다. -->
+
+<p>같은 결과를 세 가지로 낼 수 있다면 언제 무엇을 쓸까? 내 생각은 이렇다.</p>
+<ul>
+<li><strong>한두 개 클래스만 뺄 때</strong>는 <code>ASSIGNABLE_TYPE</code>이 가장 명확하다. 리팩터링으로 클래스 이름이 바뀌어도 컴파일러가 잡아준다.</li>
+<li><strong>계층 단위로 뺄 때</strong>(예: 테스트에서 웹 계층 제외)는 <code>ANNOTATION</code>.</li>
+<li><code>REGEX</code>는 문자열이라 패키지 이름이 바뀌면 조용히 안 맞게 된다. 실제로 section02의 <code>AppConfig</code>를 보면 정규식이 여전히 <code>&quot;com.wanted.di.section01.service.*&quot;</code>로 남아 있다. section01에서 복사해온 흔적인데, 주석을 풀었다면 section02에서는 아무것도 제외되지 않았을 것이다.</li>
+</ul>
+<h3 id="5-주의-bean은-싱글톤이다">5. 주의: Bean은 싱글톤이다</h3>
+<p><code>PaymentService</code>에는 일부러 넣은 듯한 필드가 하나 있다.</p>
+<pre><code class="language-java">private final PaymentInterface paymentInterface;
+/* comment.
+*   Bean 은 기본적으로 Singleton 이다.
+*   가장 주의!!!!
+*   - Bean 이 상태(필드) 값을 가지게 되면 모든 요청이
+*   - 해당 필드 값을 공유하게 된다.
+*   - 따라서 필드에는 행위 위주의 클래스(ex) service, dao) 만 작성하고
+*   - 데이터 저장이 필요한 경우에는 각 요청별로 DTO 를 통해서 데이터를
+*   - 저장한다.
+*  */
+private String orderId;
+
+public boolean processPay(String orderId, int amount) {
+    // ...
+    this.orderId = orderId;
+    // ...
+}
+</code></pre>
+<p><code>processPay</code>가 호출될 때마다 <code>this.orderId</code>를 덮어쓴다. 컨테이너 안에 <code>PaymentService</code>는 <strong>하나뿐</strong>이므로, 두 사용자가 동시에 결제하면 이런 일이 생길 수 있다.</p>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant A as 사용자 A
+    participant B as 사용자 B
+    participant S as PaymentService (싱글톤 1개)
+
+    A-&gt;&gt;S: processPay(&quot;order-A&quot;)
+    Note over S: orderId = &quot;order-A&quot;
+    B-&gt;&gt;S: processPay(&quot;order-B&quot;)
+    Note over S: orderId = &quot;order-B&quot;
+    A-&gt;&gt;S: getOrderId()
+    S--&gt;&gt;A: &quot;order-B&quot; (남의 주문 번호!)
+</code></pre>
+<p>그래서 정리하면 Bean의 필드에는 두 종류만 둔다.</p>
+<table>
+<thead>
+<tr>
+<th>필드에 둬도 되는 것</th>
+<th>필드에 두면 안 되는 것</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>다른 Bean (<code>PaymentInterface</code> 같은 의존 객체)</td>
+<td>요청마다 달라지는 값 (<code>orderId</code>, 금액, 사용자 정보)</td>
+</tr>
+<tr>
+<td>한 번 정해지면 안 바뀌는 설정값</td>
+<td>→ 메서드 매개변수나 DTO로 전달</td>
+</tr>
+</tbody></table>
+<p>chap01에서 <code>@Scope(&quot;prototype&quot;)</code>을 배웠으니 &quot;그럼 프로토타입으로 바꾸면 되지 않나?&quot;라고 생각할 수 있다. 하지만 서비스처럼 행위를 담당하는 객체를 매 요청마다 새로 만드는 건 낭비이고, 상태를 빼는 게 근본적인 해결이다.</p>
+<h2 id="결과-result">결과 (Result)</h2>
+<table>
+<thead>
+<tr>
+<th>항목</th>
+<th>chap01 (<code>@Bean</code>)</th>
+<th>chap02 section01 (<code>@ComponentScan</code>)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>AppConfig</code> 몸통</td>
+<td><code>@Bean</code> 메서드 4개</td>
+<td><strong>비어 있음</strong></td>
+</tr>
+<tr>
+<td>Bean 추가 시 수정할 곳</td>
+<td>클래스 + <code>AppConfig</code></td>
+<td>클래스에 어노테이션 1줄</td>
+</tr>
+<tr>
+<td>의존 객체 연결</td>
+<td><code>new PaymentService(naverPayGateway())</code> 직접 작성</td>
+<td>컨테이너가 생성자에 자동 주입</td>
+</tr>
+<tr>
+<td>Bean 이름</td>
+<td>메서드 이름</td>
+<td>클래스 이름 첫 글자 소문자</td>
+</tr>
+<tr>
+<td>등록 제외</td>
+<td>메서드를 안 쓰면 됨</td>
+<td><code>excludeFilters</code> (5가지 <code>FilterType</code>)</td>
+</tr>
+</tbody></table>
+<p>배운 점</p>
+<ul>
+<li><code>@Component</code>는 &quot;등록해줘&quot;라는 <strong>표시</strong>이고, <code>@ComponentScan</code>이 그 표시를 <strong>찾는</strong> 역할이다. 둘 중 하나만 있으면 아무 일도 안 일어난다.</li>
+<li>스캔 범위는 기본적으로 설정 클래스의 패키지 기준이다. 그래서 설정 클래스 위치가 곧 스캔 범위를 결정한다.</li>
+<li>정규식 필터는 패키지 이름이 바뀌면 조용히 틀어진다. section02로 복사된 정규식이 그 예였다.</li>
+<li>싱글톤 Bean에 요청별 데이터를 필드로 두면 요청끼리 값을 공유한다. 편해진 만큼, 컨테이너가 객체를 <strong>하나만</strong> 만든다는 사실을 잊으면 안 된다.</li>
+</ul>
+<p><a href="2026-10-27-%40Autowired%EB%8A%94-%EC%96%B4%EB%94%94%EC%97%90-%EB%B6%99%EC%97%AC%EC%95%BC-%ED%95%A0%EA%B9%8C-%ED%95%84%EB%93%9C%2C-setter%2C-%EC%83%9D%EC%84%B1%EC%9E%90-%EC%A3%BC%EC%9E%85-%EB%B9%84%EA%B5%90.html">다음 글</a>에서는 컨테이너가 <code>PaymentService</code>에 <code>NaverPayGateway</code>를 넣어준 방법, 즉 의존성 주입의 세 가지 방식을 비교한다.</p>
+<h2 id="더-학습하면-좋은-개념">더 학습하면 좋은 개념</h2>
+<ul>
+<li><strong><code>@Bean</code> vs <code>@Component</code>를 함께 쓰는 기준</strong> — 내가 소스를 고칠 수 없는 외부 라이브러리 클래스는 <code>@Component</code>를 붙일 수 없으니 여전히 <code>@Bean</code>으로 등록한다. 두 방식이 언제 각각 쓰이는지 알아야 실무 설정 파일이 읽힌다.</li>
+<li><strong>Bean 이름 충돌과 <code>@Primary</code> / <code>@Qualifier</code></strong> — 지금은 <code>PaymentInterface</code> 구현체가 <code>NaverPayGateway</code> 하나뿐이라 자동 주입이 됐다. chap01처럼 <code>KakaoPayGateway</code>까지 <code>@Component</code>로 등록하면 어떤 걸 넣을지 컨테이너가 고를 수 없다.</li>
+<li><strong><code>@SpringBootApplication</code>의 구성</strong> — 내부에 <code>@ComponentScan</code>이 들어 있다. 이번에 배운 스캔 범위 규칙이 Spring Boot 프로젝트 구조를 어떻게 결정하는지 이어진다.</li>
+<li><strong>스레드 안전성(Thread Safety)</strong> — 싱글톤 Bean 문제의 근본 원인. 서블릿도 인스턴스 하나를 여러 스레드가 공유한다는 점에서 같은 문제를 갖는다.</li>
+<li><strong>Bean Scope (<code>request</code>, <code>session</code>)</strong> — 웹 환경에서는 싱글톤·프로토타입 외에 요청·세션 단위 스코프가 있다. 요청별 데이터를 다루는 또 다른 방법이다.</li>
+</ul>
+<h2 id="참고-자료">참고 자료</h2>
+<ul>
+<li><a href="https://docs.spring.io/spring-framework/reference/core/beans/classpath-scanning.html">Spring Framework Reference - Classpath Scanning and Managed Components</a></li>
+<li><a href="https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/ComponentScan.html">Spring Framework Javadoc - @ComponentScan</a></li>
+<li><a href="https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/FilterType.html">Spring Framework Javadoc - FilterType</a></li>
+<li><a href="https://docs.spring.io/spring-framework/reference/core/beans/factory-scopes.html">Spring Framework Reference - Bean Scopes</a></li>
+</ul>
+
+    </article>
+
+    <div class="post-edit-bar">
+      <a class="post-edit-link" href="../../../write.html?edit=2026-10-27-Bean%EC%9D%B4-100%EA%B0%9C%EB%9D%BC%EB%A9%B4-%40Bean-%EB%8C%80%EC%8B%A0-%40ComponentScan%EC%9C%BC%EB%A1%9C-%EC%9E%90%EB%8F%99-%EB%93%B1%EB%A1%9D%ED%95%98%EA%B8%B0.html">수정하기 →</a>
+    </div>
+
+    <nav class="post-nav">
+      <a class="post-nav-item " href="../../Study/Learned/2026-10-27-%40Autowired%EB%8A%94-%EC%96%B4%EB%94%94%EC%97%90-%EB%B6%99%EC%97%AC%EC%95%BC-%ED%95%A0%EA%B9%8C-%ED%95%84%EB%93%9C%2C-setter%2C-%EC%83%9D%EC%84%B1%EC%9E%90-%EC%A3%BC%EC%9E%85-%EB%B9%84%EA%B5%90.html">
+         <span class="post-nav-label">이전 글</span>
+         <span class="post-nav-title">@Autowired는 어디에 붙여야 할까: 필드, setter, 생성자 주입 비교</span>
+       </a>
+      <div class="post-nav-item is-next">
+         <span class="post-nav-label">다음 글</span>
+         <span class="post-nav-empty">없음</span>
+       </div>
+    </nav>
+
+    </div>
+  </main>
+
+</div>
+
+<script src="../../../sidebar-motion.js"></script>
+<script type="module">
+  // 본문의 ```mermaid 코드 블록을 다이어그램으로 바꿔 그림 (mermaid를 쓴 글에만 포함됨)
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.esm.min.mjs';
+  document.querySelectorAll('pre > code.language-mermaid').forEach(code => {
+    const div = document.createElement('div');
+    div.className = 'mermaid';
+    div.textContent = code.textContent;
+    code.parentElement.replaceWith(div);
+  });
+  mermaid.initialize({ startOnLoad: false });
+  mermaid.run();
+</script>
+</body>
+</html>

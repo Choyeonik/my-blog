@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>@Autowired는 어디에 붙여야 할까: 필드, setter, 생성자 주입 비교 — Portfolio Blog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500;700&family=EB+Garamond:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Gowun+Batang&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+
+<div class="layout">
+<aside class="sidebar">
+
+    <div class="brand">Yeonn</div>
+
+    <section class="categories">
+      <ul class="category-list">
+        <li>
+          <a class="category-total" href="../../../index.html">
+            <span class="cat-name">Total</span>
+            <span class="count">41</span>
+          </a>
+          <ul class="category-sub">
+      <li>
+        <a href="../../../index.html?filter=Project"><span class="cat-name">Project</span> <span class="count">2</span></a>
+        
+      </li>
+      <li>
+        <a href="../../../index.html?filter=Study"><span class="cat-name">Study</span> <span class="count">14</span></a>
+        
+        <ul class="category-sub-nested">
+          
+            <li><a href="../../../index.html?filter=Learned">Learned <span class="count">14</span></a></li>
+          
+        </ul>
+      </li>
+      <li>
+        <a href="../../../index.html?filter=Photo"><span class="cat-name">Photo</span> <span class="count">25</span></a>
+        
+      </li><li><a href="../../../index.html?filter=about"><span class="cat-name">About</span></a></li></ul>
+        </li>
+      </ul>
+    </section>
+
+    <div class="sidebar-links">
+      <a href="../../../write.html" class="write-link">새 글 쓰기 →</a>
+      <a href="../../../settings.html" class="write-link">설정 →</a>
+    </div>
+
+  </aside>
+
+  <main class="post-page">
+
+    <!-- 검정 고정 프레임 + 링바인더: 홈 화면(.main)과 같은 디자인이 개별 글 페이지에도 이어지도록 함 -->
+    <div class="main-frame-top" aria-hidden="true"></div>
+    <div class="main-frame-bottom" aria-hidden="true"></div>
+    <div class="main-frame-right" aria-hidden="true"></div>
+    <div class="ring-strip" aria-hidden="true">
+      <span class="ring"></span>
+      <span class="ring"></span>
+      <span class="ring"></span>
+    </div>
+
+    <div class="page-inner">
+
+    <div class="main-topbar">
+      <section class="search-box">
+        <form action="../../../index.html" method="get">
+          <input type="text" name="q" placeholder="검색어를 입력하세요">
+          <button type="submit" aria-label="검색">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+        </form>
+      </section>
+    </div>
+
+    <div class="post-header">
+      <div class="card-tag">Learned</div>
+      <h1>@Autowired는 어디에 붙여야 할까: 필드, setter, 생성자 주입 비교</h1>
+      <p class="post-desc">07_Spring-Core chap02 두 번째 실습. 같은 결제 서비스를 필드 주입, setter 주입, 생성자 주입 세 가지로 만들어보고, 왜 생성자 주입이 공식 권장 방식인지 코드로 비교했다.</p>
+      <div class="post-date">2026-10-27</div>
+    </div>
+
+    <article class="post-body">
+<h2 id="들어가며-situation">들어가며 (Situation)</h2>
+<p><a href="2026-10-27-Bean%EC%9D%B4-100%EA%B0%9C%EB%9D%BC%EB%A9%B4-%40Bean-%EB%8C%80%EC%8B%A0-%40ComponentScan%EC%9C%BC%EB%A1%9C-%EC%9E%90%EB%8F%99-%EB%93%B1%EB%A1%9D%ED%95%98%EA%B8%B0.html">지난 글</a>에서 <code>chap02-dependency-injection</code>의 <code>section01</code>을 정리했다. <code>@ComponentScan</code>으로 Bean을 자동 등록했더니, <code>PaymentService</code> 생성자에 <code>NaverPayGateway</code>를 아무도 넣어주지 않았는데도 결제가 잘 됐다.</p>
+<p>이번 <code>section02</code>는 그 &quot;넣어주는&quot; 동작을 다룬다. <code>Application</code> 주석에 정의가 있다.</p>
+<pre><code class="language-java">/* comment.
+*   DI : 의존성 주입
+*   Spring 은 IoC 컨테이너 기능을 통해서
+*   개발자가 직접 객체와 객체 간의 결합을 관리하는 것이 아닌,
+*   IoC 컨테이너가 자동으로 객체 간의 의존성을 주입하는 것을
+*   의미한다. == (new X)
+*   ---
+*   1. field 주입
+*   2. setter 주입
+*   3. constructor 주입
+*  */
+</code></pre>
+<p>같은 결제 로직을 주입 방식만 바꿔서 세 클래스로 만들었다.</p>
+<table>
+<thead>
+<tr>
+<th>패키지</th>
+<th>클래스</th>
+<th>Bean 이름</th>
+<th>주입 위치</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>service.field</code></td>
+<td><code>PaymentServiceField</code></td>
+<td><code>&quot;field&quot;</code></td>
+<td>필드</td>
+</tr>
+<tr>
+<td><code>service.setter</code></td>
+<td><code>PaymentServiceSetter</code></td>
+<td><code>&quot;setter&quot;</code></td>
+<td>setter 메서드</td>
+</tr>
+<tr>
+<td><code>service.constructor</code></td>
+<td><code>PaymentServiceConstructor</code></td>
+<td><code>&quot;constructor&quot;</code></td>
+<td>생성자</td>
+</tr>
+</tbody></table>
+<p>세 클래스 모두 <code>@Service(&quot;이름&quot;)</code>으로 Bean 이름을 직접 지정했다. section01에서는 클래스 이름에서 자동으로 만들어진 <code>&quot;paymentService&quot;</code>로 꺼냈는데, 이번엔 지정한 이름으로 꺼낸다.</p>
+<pre><code class="language-java">ApplicationContext context =
+        new AnnotationConfigApplicationContext(AppConfig.class);
+
+PaymentServiceField pay = context.getBean(&quot;field&quot;, PaymentServiceField.class);
+pay.processPay(&quot;order-003&quot;, 3);
+
+System.out.println(&quot;=========================================================&quot;);
+
+PaymentServiceSetter pay2 = context.getBean(&quot;setter&quot;, PaymentServiceSetter.class);
+pay2.processPay(&quot;order-003&quot;, 3);
+</code></pre>
+<h2 id="문제-상황-task">문제 상황 (Task)</h2>
+<p>세 방식 모두 실행 결과는 같다. &quot;네이버페이로 결제 시작!&quot;이 찍히고 &quot;결제 성공!&quot;이 나온다. 그럼 뭘 써도 되는 걸까?</p>
+<p>결과가 같으니 차이는 <strong>코드가 무엇을 허용하고 무엇을 막는지</strong>에서 찾아야 했다. 비교 기준을 이렇게 잡았다.</p>
+<table>
+<thead>
+<tr>
+<th>기준</th>
+<th>질문</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>불변성</td>
+<td>주입된 의존 객체를 나중에 바꿀 수 있는가? (<code>final</code> 가능?)</td>
+</tr>
+<tr>
+<td>필수 보장</td>
+<td>의존 객체 없이 객체가 만들어질 수 있는가? (<code>null</code> 가능?)</td>
+</tr>
+<tr>
+<td>실수 방지</td>
+<td>누군가 <code>new</code>로 직접 대입하면 컴파일러가 막는가?</td>
+</tr>
+</tbody></table>
+<h2 id="해결-과정-action">해결 과정 (Action)</h2>
+<p>세 방식이 어디에 <code>@Autowired</code>를 붙이는지 먼저 그림으로 보면 이렇다.</p>
+<pre><code class="language-mermaid">flowchart TB
+    C[(IoC Container&lt;br/&gt;NaverPayGateway Bean)]
+    C --&gt;|&quot;① 객체 생성 후&lt;br/&gt;필드에 직접 대입 (리플렉션)&quot;| F[&quot;PaymentServiceField&lt;br/&gt;@Autowired private PaymentInterface&quot;]
+    C --&gt;|&quot;② 객체 생성 후&lt;br/&gt;setter 호출&quot;| S[&quot;PaymentServiceSetter&lt;br/&gt;@Autowired setPaymentInterface()&quot;]
+    C --&gt;|&quot;③ 객체 생성하면서&lt;br/&gt;생성자 인자로 전달&quot;| K[&quot;PaymentServiceConstructor&lt;br/&gt;private final PaymentInterface&quot;]
+</code></pre>
+<p>①②는 <strong>객체를 먼저 만든 뒤</strong> 의존 객체를 넣고, ③은 <strong>만드는 순간</strong> 넣는다. 이 차이가 아래 비교의 거의 전부다.</p>
+<h3 id="1-필드-주입">1. 필드 주입</h3>
+<pre><code class="language-java">@Service(&quot;field&quot;)
+public class PaymentServiceField {
+
+    /* comment.
+    *   @Autowired 어노테이션은 IoC 컨테이너에 있는 Bean 을
+    *   찾아서 사용하는 위치에 객체를 주입하겠다는 의미이다.
+    *   ---
+    *   필드 주입의 단점
+    *   - final 키워드를 사용할 수 없다.
+    *   - 필드에 직접 객체를 생성해서 대입해도 컴파일 에러가 발생하지 않는다.
+    *  */
+    @Autowired
+    private PaymentInterface paymentInterface;
+
+    public boolean processPay(String orderId, int amount) {
+
+//        paymentInterface = new NaverPayGateway();
+
+        System.out.println(&quot;결제 비즈니스 로직 시작! 주문 ID = &quot; + orderId + &quot;, 수량 = &quot; + amount);
+        boolean result = paymentInterface.processPay(orderId, amount);
+        // ...
+    }
+}
+</code></pre>
+<p>코드가 가장 짧다. 필드 위에 <code>@Autowired</code> 한 줄이면 끝이다.</p>
+<p>그런데 <code>processPay</code> 안에 주석 처리된 한 줄이 있다.</p>
+<pre><code class="language-java">//        paymentInterface = new NaverPayGateway();
+</code></pre>
+<p>이게 단점 두 번째 항목을 직접 확인한 흔적이다. 이 주석을 풀어도 <strong>컴파일 에러가 나지 않는다.</strong> <code>paymentInterface</code>가 <code>final</code>이 아니기 때문이다. 컨테이너가 열심히 주입해준 Bean을 메서드 안에서 <code>new</code>로 갈아끼워도 아무도 막지 않는다. DI를 쓰는 이유가 <code>new</code>를 없애는 것이었는데, 그걸 코드가 보장해주지 못한다.</p>
+<p><code>final</code>을 붙이면 되지 않을까? 안 된다. <code>final</code> 필드는 생성자가 끝나기 전에 값이 정해져야 하는데, 필드 주입은 <strong>객체가 다 만들어진 다음에</strong> 값을 넣기 때문이다.</p>
+<!-- TODO: 실제로 필드 주입에 final을 붙여보고 컴파일 에러("variable paymentInterface not initialized in the default constructor" 등)를 봤다면 알려주세요. -->
+
+<h3 id="2-setter-주입">2. setter 주입</h3>
+<pre><code class="language-java">@Service(&quot;setter&quot;)
+public class PaymentServiceSetter {
+
+    private PaymentInterface paymentInterface;
+
+    /* comment.
+    *   @Autowired 를 setter 메서드에 작성해서 의존성 주입
+    *   ---
+    *   단점
+    *   1. final 키워드를 사용할 수 없다.
+    *   2. setter 메서드가 호출되지 않으면 null 인 상태이다.
+    *   장점
+    *   1. 선택적 의존관계를 가질 수 있다.
+    *  */
+
+    @Autowired
+    public void setPaymentInterface(PaymentInterface paymentInterface) {
+        this.paymentInterface = paymentInterface;
+    }
+    // ...
+}
+</code></pre>
+<p>컨테이너가 객체를 만든 뒤 <code>setPaymentInterface()</code>를 호출해서 넣어준다. 필드 주입과 마찬가지로 생성 이후에 넣으니 <code>final</code>을 쓸 수 없다.</p>
+<p>단점 2번이 더 실감 났다. 컨테이너 밖에서, 예를 들어 테스트 코드에서 직접 객체를 만들면 이렇게 된다.</p>
+<pre><code class="language-java">// 예시 코드 (실습 코드 아님)
+PaymentServiceSetter service = new PaymentServiceSetter();
+service.processPay(&quot;order-003&quot;, 3);   // NullPointerException
+</code></pre>
+<p>생성자는 아무것도 요구하지 않으니 객체는 잘 만들어지고, <strong>실행해봐야</strong> <code>paymentInterface</code>가 <code>null</code>이라는 걸 알게 된다.</p>
+<p>대신 장점이 하나 있다. 의존 객체가 <strong>없어도 되는</strong> 경우를 표현할 수 있다. 공식 문서도 setter 주입을 이 용도로 권한다.</p>
+<blockquote>
+<p>Since you can mix constructor-based and setter-based DI, it is a good rule of thumb to use constructors for mandatory dependencies and setter methods or configuration methods for optional dependencies.<br>— <a href="https://docs.spring.io/spring-framework/reference/core/beans/dependencies/factory-collaborators.html">Spring Framework Reference: Dependency Injection</a></p>
+</blockquote>
+<p>선택적 의존성을 쓰려면 <code>@Autowired(required = false)</code>처럼 적어서, 해당 타입 Bean이 없을 때 컨테이너가 에러를 내지 않고 setter 호출을 건너뛰게 한다. 결제 서비스에게 결제 Gateway는 선택이 아니라 필수이니, 이 실습에서는 setter 주입을 쓸 이유가 없다.</p>
+<h3 id="3-생성자-주입">3. 생성자 주입</h3>
+<pre><code class="language-java">@Service(&quot;constructor&quot;)
+public class PaymentServiceConstructor {
+
+    /* comment.
+    *   @Autowired 어노테이션을 생성자에 붙인다.
+    *   생성자 주입 방식은 생성자가 1개 뿐이라면 자동으로
+    *   @Autowired 를 작성하지 않더라도 의존성이 주입 된다.
+    *   ---
+    *   장점
+    *   1. final 키워드를 통해 의존성이 변경되는 것을 방지(불변성 보장)
+    *   2. 필수 의존성 강제화
+    *   - final 키워드를 작성하면 초기화를 반드시 해주어야 하는데
+    *   - 생성자로 주입하게 되면 객체의 생성 시점에 의존 관계를
+    *   - 바로 정의할 수 있다.
+    *   ---
+    *   위 특징들로 인해서 생성자를 통한 의존성 주입 방식이
+    *   Spring 공식 권장 방식이다.
+    *  */
+    private final PaymentInterface paymentInterface;
+
+    @Autowired
+    public PaymentServiceConstructor(PaymentInterface paymentInterface) {
+        this.paymentInterface = paymentInterface;
+    }
+
+    public boolean processPay(String orderId, int amount) {
+
+//        paymentInterface = new NaverPayGateway();
+        // ...
+    }
+}
+</code></pre>
+<p>필드 주입 클래스와 똑같은 위치에 <code>// paymentInterface = new NaverPayGateway();</code>가 주석으로 남아 있다. 같은 실험을 한 것이다. 이번에는 <code>final</code>이 붙어 있으니 주석을 풀면 <strong>컴파일 에러</strong>가 난다. 필드 주입에서는 막지 못했던 실수를 컴파일러가 잡아준다.</p>
+<!-- TODO: 생성자 주입 쪽에서 주석을 풀었을 때 본 컴파일 에러 메시지(예: "cannot assign a value to final variable paymentInterface")를 알려주세요. -->
+
+<p><code>null</code> 문제도 사라진다. 생성자가 <code>PaymentInterface</code>를 요구하니, 컨테이너 밖에서도 의존 객체 없이는 객체를 만들 수 없다.</p>
+<pre><code class="language-java">// 예시 코드 (실습 코드 아님)
+new PaymentServiceConstructor();                         // 컴파일 에러: 생성자 인자 필요
+new PaymentServiceConstructor(new NaverPayGateway());   // OK, 테스트에서 가짜 Gateway도 넣을 수 있음
+</code></pre>
+<p>주석에 적힌 &quot;생성자가 1개면 <code>@Autowired</code> 생략 가능&quot;도 공식 문서에서 확인했다. Spring 4.3부터 적용된 규칙이다.</p>
+<blockquote>
+<p>As of Spring Framework 4.3, an <code>@Autowired</code> annotation on such a constructor is no longer necessary if the target bean defines only one constructor to begin with.<br>— <a href="https://docs.spring.io/spring-framework/reference/core/beans/annotation-config/autowired.html">Spring Framework Reference: Using @Autowired</a></p>
+</blockquote>
+<p>사실 section01과 section02의 <code>PaymentService</code>가 이미 그렇게 짜여 있었다. <code>@Autowired</code> 없이 생성자 하나만 있었는데도 주입이 됐다. 지난 글에서 &quot;아무도 안 넣어줬는데 결제가 됐다&quot;의 정체가 이거였다.</p>
+<pre><code class="language-java">@Service
+public class PaymentService {
+
+    private final PaymentInterface paymentInterface;
+
+    public PaymentService(PaymentInterface paymentInterface) {   // @Autowired 없음
+        this.paymentInterface = paymentInterface;
+    }
+}
+</code></pre>
+<p><code>Application</code>에서는 <code>&quot;field&quot;</code>와 <code>&quot;setter&quot;</code>만 꺼내서 실행하고, <code>&quot;constructor&quot;</code> Bean은 꺼내지 않는다. 하지만 컨테이너가 만들어질 때 싱글톤 Bean은 미리 생성되므로, 생성자 주입이 실패했다면 <code>getBean</code>을 호출하지 않아도 컨테이너 생성 단계에서 예외가 났을 것이다.</p>
+<!-- TODO: "constructor" Bean도 getBean으로 꺼내서 실행해보셨나요? 해봤다면 Application 코드에 없는 이유(나중에 지웠는지 등)를 알려주세요. -->
+
+<h2 id="결과-result">결과 (Result)</h2>
+<p>세 방식을 같은 기준으로 비교한 결과다.</p>
+<table>
+<thead>
+<tr>
+<th>기준</th>
+<th>필드 주입</th>
+<th>setter 주입</th>
+<th>생성자 주입</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>@Autowired</code> 위치</td>
+<td>필드</td>
+<td>setter 메서드</td>
+<td>생성자 (1개면 생략 가능)</td>
+</tr>
+<tr>
+<td>주입 시점</td>
+<td>객체 생성 후</td>
+<td>객체 생성 후</td>
+<td><strong>객체 생성 시</strong></td>
+</tr>
+<tr>
+<td><code>final</code> 사용</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>new</code>로 재대입</td>
+<td>컴파일 통과</td>
+<td>컴파일 통과</td>
+<td><strong>컴파일 에러</strong></td>
+</tr>
+<tr>
+<td>의존 객체 없이 생성</td>
+<td>가능 → NPE 위험</td>
+<td>가능 → NPE 위험</td>
+<td><strong>불가능</strong></td>
+</tr>
+<tr>
+<td>컨테이너 밖 테스트</td>
+<td>리플렉션 필요</td>
+<td>setter 호출 필요</td>
+<td>생성자에 바로 전달</td>
+</tr>
+<tr>
+<td>적합한 용도</td>
+<td>(권장 안 함)</td>
+<td>선택적 의존성</td>
+<td>필수 의존성 (기본값)</td>
+</tr>
+</tbody></table>
+<p>코드 차이로 보면 생성자 주입이 필드 주입보다 3<del>4줄 길다. 그 3</del>4줄로 &quot;의존 객체가 반드시 있고, 절대 바뀌지 않는다&quot;는 보장을 <strong>컴파일 시점에</strong> 얻는다.</p>
+<p>배운 점</p>
+<ul>
+<li>세 방식의 차이는 결국 <strong>&quot;객체를 만든 다음에 넣느냐, 만들면서 넣느냐&quot;</strong> 하나에서 나온다. 만들면서 넣어야 <code>final</code>을 쓸 수 있고, <code>final</code>이 있어야 불변성과 필수성이 보장된다.</li>
+<li>필드 주입과 생성자 주입에 같은 <code>new NaverPayGateway()</code> 실험 줄을 넣어보니 차이가 분명했다. 한쪽은 조용히 통과하고, 한쪽은 컴파일러가 막는다.</li>
+<li>section01부터 써온 <code>@Autowired</code> 없는 생성자도 생성자 주입이었다. 생성자가 하나면 Spring이 알아서 주입한다.</li>
+<li>앞으로 기본은 생성자 주입, 정말 선택적인 의존성만 setter 주입으로 쓰겠다.</li>
+</ul>
+<h2 id="더-학습하면-좋은-개념">더 학습하면 좋은 개념</h2>
+<ul>
+<li><strong><code>@Qualifier</code>와 <code>@Primary</code></strong> — 지금은 <code>PaymentInterface</code> 구현체가 하나라 타입만으로 주입됐다. <code>KakaoPayGateway</code>가 추가되면 어떤 걸 넣을지 지정해야 한다. 생성자 주입 매개변수에도 붙일 수 있다.</li>
+<li><strong>순환 참조(Circular Dependency)</strong> — A가 B를, B가 A를 생성자로 요구하면 둘 다 만들 수 없다. 생성자 주입은 이 문제를 애플리케이션 시작 시점에 바로 드러내 준다는 점에서 또 하나의 장점이 된다.</li>
+<li><strong>Lombok <code>@RequiredArgsConstructor</code></strong> — <code>final</code> 필드를 받는 생성자를 자동으로 만들어준다. 생성자 주입의 &quot;코드가 길다&quot;는 단점을 없애서 실무에서 거의 기본처럼 쓰인다.</li>
+<li><strong><code>Optional&lt;T&gt;</code>, <code>ObjectProvider&lt;T&gt;</code> 주입</strong> — <code>@Autowired(required = false)</code> 말고 선택적 의존성을 표현하는 다른 방법들.</li>
+<li><strong>테스트 대역(Test Double)과 Mock</strong> — 생성자 주입이 테스트에 유리한 진짜 이유. 가짜 <code>PaymentInterface</code>를 넣어서 결제 실패 분기(<code>결제 실패..</code>)도 테스트할 수 있다.</li>
+</ul>
+<h2 id="참고-자료">참고 자료</h2>
+<ul>
+<li><a href="https://docs.spring.io/spring-framework/reference/core/beans/dependencies/factory-collaborators.html">Spring Framework Reference - Dependency Injection</a></li>
+<li><a href="https://docs.spring.io/spring-framework/reference/core/beans/annotation-config/autowired.html">Spring Framework Reference - Using @Autowired</a></li>
+<li><a href="https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/Autowired.html">Spring Framework Javadoc - @Autowired</a></li>
+</ul>
+
+    </article>
+
+    <div class="post-edit-bar">
+      <a class="post-edit-link" href="../../../write.html?edit=2026-10-27-%40Autowired%EB%8A%94-%EC%96%B4%EB%94%94%EC%97%90-%EB%B6%99%EC%97%AC%EC%95%BC-%ED%95%A0%EA%B9%8C-%ED%95%84%EB%93%9C%2C-setter%2C-%EC%83%9D%EC%84%B1%EC%9E%90-%EC%A3%BC%EC%9E%85-%EB%B9%84%EA%B5%90.html">수정하기 →</a>
+    </div>
+
+    <nav class="post-nav">
+      <a class="post-nav-item " href="../../Study/Learned/2026-10-23-redirect%EA%B0%80-%EC%9E%8A%EC%96%B4%EB%B2%84%EB%A6%B0-%EC%A0%95%EB%B3%B4-%EC%A7%80%ED%82%A4%EA%B8%B0-%EC%BF%A0%ED%82%A4%2C-%EC%84%B8%EC%85%98%2C-%EA%B7%B8%EB%A6%AC%EA%B3%A0-%ED%95%84%ED%84%B0.html">
+         <span class="post-nav-label">이전 글</span>
+         <span class="post-nav-title">redirect가 잊어버린 정보 지키기: 쿠키, 세션, 그리고 필터</span>
+       </a>
+      <a class="post-nav-item is-next" href="../../Study/Learned/2026-10-27-Bean%EC%9D%B4-100%EA%B0%9C%EB%9D%BC%EB%A9%B4-%40Bean-%EB%8C%80%EC%8B%A0-%40ComponentScan%EC%9C%BC%EB%A1%9C-%EC%9E%90%EB%8F%99-%EB%93%B1%EB%A1%9D%ED%95%98%EA%B8%B0.html">
+         <span class="post-nav-label">다음 글</span>
+         <span class="post-nav-title">Bean이 100개라면?: @Bean 대신 @ComponentScan으로 자동 등록하기</span>
+       </a>
+    </nav>
+
+    </div>
+  </main>
+
+</div>
+
+<script src="../../../sidebar-motion.js"></script>
+<script type="module">
+  // 본문의 ```mermaid 코드 블록을 다이어그램으로 바꿔 그림 (mermaid를 쓴 글에만 포함됨)
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.esm.min.mjs';
+  document.querySelectorAll('pre > code.language-mermaid').forEach(code => {
+    const div = document.createElement('div');
+    div.className = 'mermaid';
+    div.textContent = code.textContent;
+    code.parentElement.replaceWith(div);
+  });
+  mermaid.initialize({ startOnLoad: false });
+  mermaid.run();
+</script>
+</body>
+</html>
